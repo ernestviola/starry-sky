@@ -14,5 +14,53 @@ Should be able to test the API and maybe the database
 
 ## Routes
 
-/get test
-/post test
+/test
+
+- get: get a list of stars to find in the sim
+
+```json
+// response
+{
+  "success": true,
+  "stars": [
+    {
+      "name": "",
+      "found": false
+    },
+    {
+      "name": "",
+      "found": false
+    }
+  ]
+}
+```
+
+- post: submit a star to the sim and return the list
+
+```json
+// request
+{
+  "coordinates": [123, 456]
+}
+```
+
+```json
+// response
+{
+  "success": true,
+  "stars": [
+    {
+      "name": "",
+      "found": true
+    }
+  ]
+}
+```
+
+```json
+// response
+{
+  "success": true,
+  "message": "no star found"
+}
+```
