@@ -383,7 +383,7 @@ const PointLabels = ({ starPos, RAHeight }) => {
   );
 };
 
-const App = () => {
+const StarMapModel = () => {
   const [gridSize, setGridSize] = useState(10);
   const [starRadius, setStarRadius] = useState(3);
   const [declinationAngle, setDeclinationAngle] = useState(Math.PI / 6);
@@ -457,4 +457,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default StarMapModel;
