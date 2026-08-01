@@ -1,35 +1,22 @@
-const toRad = (deg) => {
-  return (Math.PI * deg) / 180;
-};
+import express from 'express';
+import starRouter from './routes/starRouter.js';
 
-const getX = (ra, dec) => {
-  const rad_ra = toRad(ra);
-  const rad_dec = toRad(dec);
-  return Math.cos(rad_ra) * Math.cos(rad_dec);
-};
+const PORT = process.env.PORT || 3000;
 
-const getY = (ra, dec) => {
-  const rad_ra = toRad(ra);
-  const rad_dec = toRad(dec);
+const app = express();
 
-  return Math.sin(rad_ra) * Math.cos(rad_dec);
-};
+// MIDDLEWARE
 
-const getZ = (ra, dec) => {
-  const rad_dec = toRad(dec);
-  return Math.sin(rad_dec);
-};
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-const ra = 90;
-const dec = 140;
+// ROUTES
+app.use('/api/stars', starRouter);
 
-const x = getX(ra, dec);
-const y = getY(ra, dec);
-const z = getZ(ra, dec);
+// Error Handling
 
-console.log({ x, y, z });
-
-const isOnUnitSphere = Math.abs(x * x + y * y + z * z - 1) < 1e-10;
-
-console.log('Check', isOnUnitSphere);
-console.log('Sum', x * x + y * y + z * z);
+// Serve
+app.listen(PORT, (err) => {
+  if (err) throw new Error('Trouble starting the app.');
+  console.log(`App listening on PORT: ${PORT}`);
+});

@@ -129,6 +129,7 @@ const ModelGrid = ({ gridSize }) => {
       />
       <ambientLight intensity={0.6} />
       <directionalLight position={[5, 5, -5]} intensity={1} />
+      {/* x axis */}
       <Html position={[lineSize + 0.1, 0, 0]}>
         <div style={{ color: 'white' }}>+X</div>
       </Html>
