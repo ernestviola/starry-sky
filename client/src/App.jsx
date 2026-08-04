@@ -1,7 +1,7 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Line, Html, Grid, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useMemo } from 'react';
 
 const ModelGrid = () => {
   const gridSize = 1;
@@ -78,19 +78,94 @@ const ZenithTargetDirection = ({ zenith }) => {
 };
 
 const ConstellationAnglesBasedOnCamera = ({ setDec, setRa }) => {
+  const lastRa = useRef(null);
+  const lastDec = useRef(null);
+  const threshold = 0.05;
+
+  const angularDifference = (a, b) => {
+    let diff = a - b;
+    // wrap into (-π, π]
+    diff = ((diff + Math.PI) % (2 * Math.PI)) - Math.PI;
+    return Math.abs(diff);
+  };
+
   useFrame((state) => {
     const direction = new THREE.Vector3();
 
     state.camera.getWorldDirection(direction);
 
     const dec = Math.asin(direction.y);
-    const ra = Math.atan2(direction.z, direction.x);
+    const ra = Math.atan2(direction.x, direction.z);
 
-    setDec(dec);
-    setRa(ra);
+    const changed =
+      lastRa.current === null ||
+      angularDifference(ra, lastRa.current) > threshold ||
+      Math.abs(dec - lastDec.current) > threshold;
+
+    if (changed) {
+      setDec(dec);
+      setRa(ra);
+      lastDec.current = dec;
+      lastRa.current = ra;
+    }
   });
 
   return null;
+};
+
+const FovZoomControls = () => {
+  const { camera, gl } = useThree();
+
+  useEffect(() => {
+    const handleWheel = (e) => {
+      e.preventDefault();
+      const newFov = THREE.MathUtils.clamp(
+        camera.fov + e.deltaY * 0.05,
+        10,
+        90,
+      );
+      camera.fov = newFov;
+      camera.updateProjectionMatrix();
+    };
+
+    gl.domElement.addEventListener('wheel', handleWheel, { passive: false });
+    return () => gl.domElement.removeEventListener('wheel', handleWheel);
+  }, [camera, gl]);
+
+  return null;
+};
+
+const Star3dObjects = ({ stars }) => {
+  const starArray = useMemo(() => Object.values(stars), [stars]);
+
+  const positions = useMemo(() => {
+    const arr = new Float32Array(starArray.length * 3);
+
+    starArray.forEach((star, i) => {
+      const x = Math.cos(star.decrad) * Math.sin(star.rarad);
+      const y = Math.sin(star.decrad);
+      const z = Math.cos(star.decrad) * Math.cos(star.rarad);
+      arr[i * 3] = x;
+      arr[i * 3 + 1] = y;
+      arr[i * 3 + 2] = z;
+    });
+
+    return arr;
+  }, [starArray]);
+
+  return (
+    <points>
+      <bufferGeometry key={starArray.length}>
+        <bufferAttribute
+          attach='attributes-position'
+          count={starArray.length}
+          array={positions}
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <pointsMaterial size={0.005} color={'white'} />
+    </points>
+  );
 };
 
 const App = () => {
@@ -102,6 +177,7 @@ const App = () => {
 
   const [ra, setRa] = useState(0);
   const [dec, setDec] = useState(0);
+  const [stars, setStars] = useState({});
 
   const [zenith, setZenith] = useState([0, 0, 0.1]);
 
@@ -130,6 +206,32 @@ const App = () => {
     setZenith([zenithX, zenithY, zenithZ]);
   }, [currentGeolocation]);
 
+  useEffect(() => {
+    const fetchStarFrame = async () => {
+      try {
+        const url = new URL(`${import.meta.env.VITE_STAR_API}api/stars/frame`);
+        url.searchParams.append('ra', ra);
+        url.searchParams.append('dec', dec);
+        const response = await fetch(url.toString());
+
+        if (!response.ok) {
+          throw new Error('Problems fetching star data.');
+        }
+
+        const data = await response.json();
+        const newStars = {};
+        for (const star of data.frame) {
+          newStars[star.id] = star;
+        }
+        setStars((prev) => ({ ...prev, ...newStars }));
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchStarFrame();
+  }, [ra, dec]);
+
   const getUserGeolocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
@@ -153,9 +255,12 @@ const App = () => {
           minDistance={0.01}
           maxDistance={0.01} // locks camera-to-target distance, so it can only rotate, never zoom/move
           enablePan={false} // prevents dragging the target (and thus the "look point") away
+          enableZoom={false}
         />
         <ConstellationAnglesBasedOnCamera setDec={setDec} setRa={setRa} />
         <ZenithTargetDirection zenith={zenith} />
+        <Star3dObjects stars={stars} />
+        <FovZoomControls />
       </Canvas>
     </div>
   );
