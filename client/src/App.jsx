@@ -1,7 +1,10 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Line, Html, Grid, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect } from 'react';
+
+import { ang2vec, query_disc_inclusive_ring } from '@hscmap/healpix';
+import { nside } from '../config.js';
 
 const ModelGrid = () => {
   const gridSize = 1;
@@ -82,6 +85,8 @@ const ConstellationAnglesBasedOnCamera = ({ setDec, setRa }) => {
   const lastDec = useRef(null);
   const threshold = 0.05;
 
+  const direction = useRef(new THREE.Vector3());
+
   const angularDifference = (a, b) => {
     let diff = a - b;
     // wrap into (-π, π]
@@ -90,12 +95,10 @@ const ConstellationAnglesBasedOnCamera = ({ setDec, setRa }) => {
   };
 
   useFrame((state) => {
-    const direction = new THREE.Vector3();
+    state.camera.getWorldDirection(direction.current);
 
-    state.camera.getWorldDirection(direction);
-
-    const dec = Math.asin(direction.y);
-    const ra = Math.atan2(direction.x, direction.z);
+    const dec = Math.asin(direction.current.y);
+    const ra = Math.atan2(direction.current.x, direction.current.z);
 
     const changed =
       lastRa.current === null ||
@@ -135,31 +138,92 @@ const FovZoomControls = () => {
   return null;
 };
 
+const FrustumRadiusTracker = ({ setRadius }) => {
+  const { camera, size } = useThree();
+
+  const radius = useRef(null);
+  const threshold = 0.02;
+
+  useFrame(() => {
+    const verticalFovRad = (camera.fov * Math.PI) / 180;
+    const aspect = size.width / size.height;
+
+    const halfHeight = Math.tan(verticalFovRad / 2);
+    const halfWidth = halfHeight * aspect;
+
+    const cornerRadius = Math.atan(Math.sqrt(halfWidth ** 2 + halfHeight ** 2));
+
+    const bufferMargin = 0.3; // radians, adjust to taste
+
+    const newRadius = cornerRadius + bufferMargin;
+
+    const changed =
+      radius.current === null ||
+      Math.abs(radius.current - newRadius) > threshold;
+
+    if (changed) {
+      setRadius(newRadius);
+      radius.current = newRadius;
+    }
+  });
+
+  return null;
+};
+
+const MAX_STARS = 120000;
+
 const Star3dObjects = ({ stars }) => {
-  const starArray = useMemo(() => Object.values(stars), [stars]);
+  const positionRef = useRef(null);
+  if (positionRef.current === null) {
+    positionRef.current = new Float32Array(MAX_STARS * 3);
+  }
+  const idToIndexRef = useRef(new Map());
+  const nextIndexRef = useRef(0);
+  const attributeRef = useRef();
+  const geometryRef = useRef();
 
-  const positions = useMemo(() => {
-    const arr = new Float32Array(starArray.length * 3);
+  useEffect(() => {
+    const idToIndex = idToIndexRef.current;
+    const positions = positionRef.current;
+    let changed = false;
 
-    starArray.forEach((star, i) => {
+    for (const star of Object.values(stars)) {
+      if (idToIndex.has(star.id)) continue;
+
+      const index = nextIndexRef.current;
+      if (index >= MAX_STARS) {
+        console.warn('Star buffer is full, dropping star', star.id);
+        continue;
+      }
+
       const x = Math.cos(star.decrad) * Math.sin(star.rarad);
       const y = Math.sin(star.decrad);
       const z = Math.cos(star.decrad) * Math.cos(star.rarad);
-      arr[i * 3] = x;
-      arr[i * 3 + 1] = y;
-      arr[i * 3 + 2] = z;
-    });
 
-    return arr;
-  }, [starArray]);
+      positions[index * 3] = x;
+      positions[index * 3 + 1] = y;
+      positions[index * 3 + 2] = z;
+
+      idToIndex.set(star.id, index);
+      nextIndexRef.current += 1;
+      changed = true;
+    }
+
+    if (changed && attributeRef.current && geometryRef.current) {
+      attributeRef.current.needsUpdate = true;
+      geometryRef.current.setDrawRange(0, nextIndexRef.current);
+      geometryRef.current.computeBoundingSphere();
+    }
+  }, [stars]);
 
   return (
     <points>
-      <bufferGeometry key={starArray.length}>
+      <bufferGeometry ref={geometryRef}>
         <bufferAttribute
+          ref={attributeRef}
           attach='attributes-position'
-          count={starArray.length}
-          array={positions}
+          count={MAX_STARS}
+          array={positionRef.current}
           itemSize={3}
         />
       </bufferGeometry>
@@ -175,9 +239,13 @@ const App = () => {
     longitude: -73.935242,
   });
 
+  const [radius, setRadius] = useState(0.5);
+
   const [ra, setRa] = useState(0);
   const [dec, setDec] = useState(0);
   const [stars, setStars] = useState({});
+
+  const [receivedFrames, setReceivedFrames] = useState(new Set());
 
   const [zenith, setZenith] = useState([0, 0, 0.1]);
 
@@ -209,9 +277,24 @@ const App = () => {
   useEffect(() => {
     const fetchStarFrame = async () => {
       try {
+        const theta = Math.PI / 2 - dec;
+        const phi = ra;
+        const v = ang2vec(theta, phi);
+
+        const frameIds = new Set();
+        query_disc_inclusive_ring(nside, v, radius, (ipix) =>
+          frameIds.add(ipix),
+        );
+
+        const requestedFrames = frameIds.difference(receivedFrames);
+
+        // a list of frames that were received from
+
         const url = new URL(`${import.meta.env.VITE_STAR_API}api/stars/frame`);
-        url.searchParams.append('ra', ra);
-        url.searchParams.append('dec', dec);
+        url.searchParams.append(
+          'frames',
+          Array.from(requestedFrames).join(','),
+        );
         const response = await fetch(url.toString());
 
         if (!response.ok) {
@@ -219,11 +302,25 @@ const App = () => {
         }
 
         const data = await response.json();
-        const newStars = {};
-        for (const star of data.frame) {
-          newStars[star.id] = star;
-        }
-        setStars((prev) => ({ ...prev, ...newStars }));
+
+        setReceivedFrames((prev) => new Set([...prev, ...data.frameIds]));
+
+        setStars((prev) => {
+          let hasNew = false;
+          for (const star of data.stars) {
+            if (!prev[star.id]) {
+              hasNew = true;
+              break;
+            }
+          }
+
+          if (!hasNew) return prev;
+          const next = { ...prev };
+          for (const star of data.stars) {
+            next[star.id] = star;
+          }
+          return next;
+        });
       } catch (error) {
         console.log(error);
       }
@@ -248,7 +345,7 @@ const App = () => {
 
   return (
     <div className='' style={{ height: '100vh', width: '100vw' }}>
-      <Canvas camera={{ position: [0, 0, 0] }}>
+      <Canvas frameloop='demand' camera={{ position: [0, 0, 0] }}>
         <ModelGrid />
         <OrbitControls
           target={[zenith[0] * 0.01, zenith[1] * 0.01, zenith[2] * 0.01]} // just in front of camera, not at camera's exact position
@@ -261,6 +358,7 @@ const App = () => {
         <ZenithTargetDirection zenith={zenith} />
         <Star3dObjects stars={stars} />
         <FovZoomControls />
+        <FrustumRadiusTracker setRadius={setRadius} />
       </Canvas>
     </div>
   );

@@ -1,9 +1,13 @@
 import { prisma } from '../libs/prisma.js';
 import { validationResult, matchedData, query } from 'express-validator';
-import { ang2pix_ring } from '@hscmap/healpix';
-import { nside } from '../config.js';
 
-const frameQueryValidation = [query('ra').isFloat(), query('dec').isFloat()];
+const frameQueryValidation = [
+  query('frames')
+    .exists()
+    .customSanitizer((value) => value.split(',').map(Number))
+    .custom((arr) => arr.length > 0 && arr.every((n) => Number.isInteger(n)))
+    .withMessage('frames must be a comma-separated list of integers'),
+];
 
 const starController = {};
 
@@ -24,14 +28,10 @@ starController.getFrame = [
     }
 
     try {
-      const { ra, dec } = matchedData(req);
-      const theta = Math.PI / 2 - dec;
-      const phi = ra;
-
-      const healpixId = ang2pix_ring(nside, theta, phi);
+      const { frames } = matchedData(req);
 
       const starFrame = await prisma.hygStar.findMany({
-        where: { healpixId },
+        where: { healpixId: { in: frames } },
         select: {
           id: true,
           healpixId: true,
@@ -45,9 +45,16 @@ starController.getFrame = [
         },
       });
 
+      const frameIds = [...new Set(starFrame.map((star) => star.healpixId))];
+
       return res
         .status(200)
-        .json({ count: starFrame.length, frame: starFrame, success: true });
+        .json({
+          count: starFrame.length,
+          frameIds,
+          stars: starFrame,
+          success: true,
+        });
     } catch (error) {
       next(error);
     }
