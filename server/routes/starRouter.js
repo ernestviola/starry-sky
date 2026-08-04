@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import starController from '../controllers/starcontroller.js';
+import starController from '../controllers/starController.js';
 
 const starRouter = Router();
 
