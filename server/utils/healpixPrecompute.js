@@ -1,4 +1,5 @@
 import { prisma } from '../libs/prisma.js';
+import { nside } from '../config.js';
 import * as healpix from '@hscmap/healpix';
 
 const stars = await prisma.hygStar.findMany();
@@ -13,7 +14,7 @@ for (let i = 0; i < stars.length; i += chunkSize) {
     const theta = Math.PI / 2 - star.decrad;
     const phi = star.rarad;
 
-    const healpixId = healpix.ang2pix_ring(8, theta, phi);
+    const healpixId = healpix.ang2pix_ring(nside, theta, phi);
 
     return prisma.hygStar.update({
       where: { id: star.id },

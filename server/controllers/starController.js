@@ -1,6 +1,7 @@
 import { prisma } from '../libs/prisma.js';
 import { validationResult, matchedData, query } from 'express-validator';
 import { ang2pix_ring } from '@hscmap/healpix';
+import { nside } from '../config.js';
 
 const frameQueryValidation = [query('ra').isFloat(), query('dec').isFloat()];
 
@@ -27,7 +28,7 @@ starController.getFrame = [
       const theta = Math.PI / 2 - dec;
       const phi = ra;
 
-      const healpixId = ang2pix_ring(8, theta, phi);
+      const healpixId = ang2pix_ring(nside, theta, phi);
 
       const starFrame = await prisma.hygStar.findMany({
         where: { healpixId },
