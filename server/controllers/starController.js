@@ -4,6 +4,7 @@ import { validationResult, matchedData, query } from 'express-validator';
 const frameQueryValidation = [
   query('frames')
     .exists()
+    .bail()
     .customSanitizer((value) => value.split(',').map(Number))
     .custom((arr) => arr.length > 0 && arr.every((n) => Number.isInteger(n)))
     .withMessage('frames must be a comma-separated list of integers'),
@@ -40,6 +41,8 @@ starController.getFrame = [
           x: true,
           y: true,
           z: true,
+          ci: true,
+          mag: true,
           proper: true,
           con: true,
         },
@@ -47,14 +50,12 @@ starController.getFrame = [
 
       const frameIds = [...new Set(starFrame.map((star) => star.healpixId))];
 
-      return res
-        .status(200)
-        .json({
-          count: starFrame.length,
-          frameIds,
-          stars: starFrame,
-          success: true,
-        });
+      return res.status(200).json({
+        count: starFrame.length,
+        frameIds,
+        stars: starFrame,
+        success: true,
+      });
     } catch (error) {
       next(error);
     }

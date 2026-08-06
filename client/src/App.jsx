@@ -6,6 +6,8 @@ import { useRef, useState, useEffect } from 'react';
 import { ang2vec, query_disc_inclusive_ring } from '@hscmap/healpix';
 import { nside } from '../config.js';
 
+import Star3dObjects from './components/Star3DObjects.jsx';
+
 const ModelGrid = () => {
   const gridSize = 1;
   const lineSize = gridSize / 2;
@@ -170,68 +172,6 @@ const FrustumRadiusTracker = ({ setRadius }) => {
   return null;
 };
 
-const MAX_STARS = 120000;
-
-const Star3dObjects = ({ stars }) => {
-  const positionRef = useRef(null);
-  if (positionRef.current === null) {
-    positionRef.current = new Float32Array(MAX_STARS * 3);
-  }
-  const idToIndexRef = useRef(new Map());
-  const nextIndexRef = useRef(0);
-  const attributeRef = useRef();
-  const geometryRef = useRef();
-
-  useEffect(() => {
-    const idToIndex = idToIndexRef.current;
-    const positions = positionRef.current;
-    let changed = false;
-
-    for (const star of Object.values(stars)) {
-      if (idToIndex.has(star.id)) continue;
-
-      const index = nextIndexRef.current;
-      if (index >= MAX_STARS) {
-        console.warn('Star buffer is full, dropping star', star.id);
-        continue;
-      }
-
-      const x = Math.cos(star.decrad) * Math.sin(star.rarad);
-      const y = Math.sin(star.decrad);
-      const z = Math.cos(star.decrad) * Math.cos(star.rarad);
-
-      positions[index * 3] = x;
-      positions[index * 3 + 1] = y;
-      positions[index * 3 + 2] = z;
-
-      idToIndex.set(star.id, index);
-      nextIndexRef.current += 1;
-      changed = true;
-    }
-
-    if (changed && attributeRef.current && geometryRef.current) {
-      attributeRef.current.needsUpdate = true;
-      geometryRef.current.setDrawRange(0, nextIndexRef.current);
-      geometryRef.current.computeBoundingSphere();
-    }
-  }, [stars]);
-
-  return (
-    <points>
-      <bufferGeometry ref={geometryRef}>
-        <bufferAttribute
-          ref={attributeRef}
-          attach='attributes-position'
-          count={MAX_STARS}
-          array={positionRef.current}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <pointsMaterial size={0.005} color={'white'} />
-    </points>
-  );
-};
-
 const App = () => {
   // default geolocaiton NYC
   const [currentGeolocation, setCurrentGeolocation] = useState({
@@ -290,6 +230,7 @@ const App = () => {
 
         // a list of frames that were received from
 
+        if (requestedFrames.size === 0) return;
         const url = new URL(`${import.meta.env.VITE_STAR_API}api/stars/frame`);
         url.searchParams.append(
           'frames',
@@ -345,9 +286,10 @@ const App = () => {
 
   return (
     <div className='' style={{ height: '100vh', width: '100vw' }}>
-      <Canvas frameloop='demand' camera={{ position: [0, 0, 0] }}>
+      <Canvas camera={{ position: [0, 0, 0] }}>
         <ModelGrid />
         <OrbitControls
+          rotateSpeed={0.5}
           target={[zenith[0] * 0.01, zenith[1] * 0.01, zenith[2] * 0.01]} // just in front of camera, not at camera's exact position
           minDistance={0.01}
           maxDistance={0.01} // locks camera-to-target distance, so it can only rotate, never zoom/move
