@@ -8,44 +8,59 @@ datasource db {
 }
 
 model HygStar {
-  id           Int     @id
-  healpixId    Int?
-  hip          Int?
-  hd           Int?
-  hr           Int?
-  gl           String?
-  bf           String?
-  proper       String?
-  ra           Float
-  dec          Float
-  dist         Float?
-  pmra         Float?
-  pmdec        Float?
-  rv           Float?
-  mag          Float?
-  absmag       Float?
-  spect        String?
-  ci           Float?
-  x            Float?
-  y            Float?
-  z            Float?
-  vx           Float?
-  vy           Float?
-  vz           Float?
-  rarad        Float?
-  decrad       Float?
-  pmrarad      Float?
-  pmdecrad     Float?
-  bayer        String?
-  flam         Int?
-  con          String?
-  comp         Int?
-  comp_primary Int?
-  base         String?
-  lum          Float?
-  var          String?
-  var_min      Float?
-  var_max      Float?
+  id                 Int                 @id
+  healpixId          Int?
+  hip                Int?
+  hd                 Int?
+  hr                 Int?
+  gl                 String?
+  bf                 String?
+  proper             String?
+  ra                 Float
+  dec                Float
+  dist               Float?
+  pmra               Float?
+  pmdec              Float?
+  rv                 Float?
+  mag                Float?
+  absmag             Float?
+  spect              String?
+  ci                 Float?
+  x                  Float?
+  y                  Float?
+  z                  Float?
+  vx                 Float?
+  vy                 Float?
+  vz                 Float?
+  rarad              Float?
+  decrad             Float?
+  pmrarad            Float?
+  pmdecrad           Float?
+  bayer              String?
+  flam               Int?
+  con                String?
+  comp               Int?
+  comp_primary       Int?
+  base               String?
+  lum                Float?
+  var                String?
+  var_min            Float?
+  var_max            Float?
+  constellationLines ConstellationLine[]
 
   @@map("hyg_stars")
+}
+
+model ConstellationLine {
+  id            Int      @id @default(autoincrement())
+  constellation String
+  segmentIndex  Int
+  pointIndex    Int
+  rarad         Float
+  decrad        Float
+  starId        Int?
+  healpixId     Int?
+  star          HygStar? @relation(fields: [starId], references: [id])
+
+  @@map("constellation_lines")
 }

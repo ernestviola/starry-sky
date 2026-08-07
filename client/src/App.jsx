@@ -6,7 +6,8 @@ import { useRef, useState, useEffect } from 'react';
 import { ang2vec, query_disc_inclusive_ring } from '@hscmap/healpix';
 import { nside } from '../config.js';
 
-import Star3dObjects from './components/Star3DObjects.jsx';
+import Star3dObjects from './components/Star3dObjects.jsx';
+import ConstellationLines from './components/ConstellationLines.jsx';
 
 const ModelGrid = () => {
   const gridSize = 1;
@@ -184,8 +185,12 @@ const App = () => {
   const [ra, setRa] = useState(0);
   const [dec, setDec] = useState(0);
   const [stars, setStars] = useState({});
+  const [constellationLines, setConstellationLines] = useState({});
 
   const [receivedFrames, setReceivedFrames] = useState(new Set());
+  const [receivedConstellations, setReceivedConstellations] = useState(
+    new Set(),
+  );
 
   const [zenith, setZenith] = useState([0, 0, 0.1]);
 
@@ -215,22 +220,17 @@ const App = () => {
   }, [currentGeolocation]);
 
   useEffect(() => {
+    const theta = Math.PI / 2 - dec;
+    const phi = ra;
+    const v = ang2vec(theta, phi);
+    const frameIds = new Set();
+    query_disc_inclusive_ring(nside, v, radius, (ipix) => frameIds.add(ipix));
+
+    const requestedFrames = frameIds.difference(receivedFrames);
+    if (requestedFrames.size === 0) return;
+
     const fetchStarFrame = async () => {
       try {
-        const theta = Math.PI / 2 - dec;
-        const phi = ra;
-        const v = ang2vec(theta, phi);
-
-        const frameIds = new Set();
-        query_disc_inclusive_ring(nside, v, radius, (ipix) =>
-          frameIds.add(ipix),
-        );
-
-        const requestedFrames = frameIds.difference(receivedFrames);
-
-        // a list of frames that were received from
-
-        if (requestedFrames.size === 0) return;
         const url = new URL(`${import.meta.env.VITE_STAR_API}api/stars/frame`);
         url.searchParams.append(
           'frames',
@@ -267,7 +267,55 @@ const App = () => {
       }
     };
 
+    const fetchConstellationFrame = async () => {
+      try {
+        const url = new URL(
+          `${import.meta.env.VITE_STAR_API}api/constellations/frame`,
+        );
+        url.searchParams.append(
+          'frames',
+          Array.from(requestedFrames).join(','),
+        );
+        url.searchParams.append(
+          'receivedConstellations',
+          Array.from(receivedConstellations).join(','),
+        );
+
+        const response = await fetch(url.toString());
+
+        if (!response.ok) {
+          throw new Error('Problems fetching star data.');
+        }
+
+        const data = await response.json();
+
+        setReceivedConstellations(
+          (prev) => new Set([...prev, ...data.constellations]),
+        );
+
+        setConstellationLines((prev) => {
+          let hasNew = false;
+          for (const line of data.constellationLines) {
+            if (!prev[line.id]) {
+              hasNew = true;
+              break;
+            }
+          }
+
+          if (!hasNew) return prev;
+          const next = { ...prev };
+          for (const line of data.constellationLines) {
+            next[line.id] = line;
+          }
+          return next;
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
     fetchStarFrame();
+    fetchConstellationFrame();
   }, [ra, dec]);
 
   const getUserGeolocation = () => {
@@ -298,9 +346,10 @@ const App = () => {
         />
         <ConstellationAnglesBasedOnCamera setDec={setDec} setRa={setRa} />
         <ZenithTargetDirection zenith={zenith} />
-        <Star3dObjects stars={stars} />
         <FovZoomControls />
         <FrustumRadiusTracker setRadius={setRadius} />
+        <Star3dObjects stars={stars} />
+        <ConstellationLines constellationLines={constellationLines} />
       </Canvas>
     </div>
   );
