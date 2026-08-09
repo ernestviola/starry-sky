@@ -65,11 +65,11 @@ constellationController.getFrame = [
           starId: true,
           healpixId: true,
         },
-        orderBy: {
-          constellation: 'asc',
-          segmentIndex: 'asc',
-          pointIndex: 'asc',
-        },
+        orderBy: [
+          { constellation: 'asc' },
+          { segmentIndex: 'asc' },
+          { pointIndex: 'asc' },
+        ],
       });
 
       console.log(Date.now(), 'Returned Count:', fullConstellations.length);

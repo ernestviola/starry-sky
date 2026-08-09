@@ -10,7 +10,7 @@ datasource db {
 model HygStar {
   id                 Int                 @id
   healpixId          Int?
-  hip                Int?
+  hip                Int?                @unique
   hd                 Int?
   hr                 Int?
   gl                 String?
@@ -47,6 +47,7 @@ model HygStar {
   var_min            Float?
   var_max            Float?
   constellationLines ConstellationLine[]
+  constellations     Constellation[]
 
   @@map("hyg_stars")
 }
@@ -63,4 +64,14 @@ model ConstellationLine {
   star          HygStar? @relation(fields: [starId], references: [id])
 
   @@map("constellation_lines")
+}
+
+model Constellation {
+  id                Int      @id @default(autoincrement())
+  constellationName String
+  byname            String?
+  lineIndex         Int
+  hip               Int?
+  healpixId         Int?
+  star              HygStar? @relation(fields: [hip], references: [hip])
 }
