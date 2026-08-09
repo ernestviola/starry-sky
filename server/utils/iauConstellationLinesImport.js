@@ -19,10 +19,12 @@ for (const constellation of geojson.constellations) {
   for (const [i, line] of constellation.lines.entries()) {
     const lineIndex = i;
     for (const [i, hip] of line.entries()) {
+      const pointIndex = i;
       rows.push({
         constellationName,
         byname,
         lineIndex,
+        pointIndex,
         hip,
       });
     }

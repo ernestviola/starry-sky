@@ -71,7 +71,10 @@ model Constellation {
   constellationName String
   byname            String?
   lineIndex         Int
+  pointIndex        Int
   hip               Int?
   healpixId         Int?
   star              HygStar? @relation(fields: [hip], references: [hip])
+
+  @@unique([constellationName, lineIndex, pointIndex])
 }
