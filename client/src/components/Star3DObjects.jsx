@@ -254,6 +254,7 @@ const Star3dObjects = ({ stars, viewedFrames }) => {
       positions[positionsIndex * 3 + 2],
     );
     indicatorRingMeshRef.current.lookAt(camera.position);
+
     return starId;
   };
 
@@ -302,6 +303,14 @@ const Star3dObjects = ({ stars, viewedFrames }) => {
 
   useFrame((state) => {
     const starId = hoveredStar();
+
+    if (indicatorRingMeshRef.current) {
+      indicatorRingMeshRef.current.scale.set(
+        camera.fov / 100,
+        camera.fov / 100,
+        camera.fov / 100,
+      );
+    }
     visitedStarManager(starId);
   });
 
