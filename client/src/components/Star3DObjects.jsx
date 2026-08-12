@@ -72,7 +72,7 @@ const Star3dObjects = ({ stars, viewedFrames }) => {
   const raycasterRef = useRef(new THREE.Raycaster());
   const raycastPointsRef = useRef(); // points object passed to the raycaster
 
-  const indicatorRingMeshRef = useRef([0.3, 0.3, 0.3]);
+  const indicatorRingMeshRef = useRef();
 
   // initialize raycaster threshold
   useEffect(() => {
@@ -264,9 +264,6 @@ const Star3dObjects = ({ stars, viewedFrames }) => {
     const sizes = sizeRef.current;
 
     if (starId !== null && !visitedStars.has(starId)) {
-      // check if
-      // just decrease all visitedStars
-      // add the star with it's initial size and index
       const MAX_SCALER = 2;
       const MAX_SIZE = 70;
       const MIN_SIZE = 25;
@@ -295,13 +292,13 @@ const Star3dObjects = ({ stars, viewedFrames }) => {
         sizes[attributes.index] -=
           (sizes[attributes.index] - attributes.initial_size) * EASING_SCALER;
       } else {
-        delete visitedStars.delete(starId);
+        visitedStars.delete(starId);
       }
       sizeAttrRef.current.needsUpdate = true;
     }
   };
 
-  useFrame((state) => {
+  useFrame(() => {
     const starId = hoveredStar();
 
     if (indicatorRingMeshRef.current) {

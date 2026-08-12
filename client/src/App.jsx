@@ -195,10 +195,6 @@ const App = () => {
   const [zenith, setZenith] = useState([0, 0, 0.1]);
 
   useEffect(() => {
-    getUserGeolocation();
-  }, []);
-
-  useEffect(() => {
     const milliSecInADay = 1000 * 60 * 60 * 24;
     const daysSinceJan2000 =
       (Date.now() - new Date(2000, 0, 1)) / milliSecInADay;
@@ -318,7 +314,7 @@ const App = () => {
 
     fetchStarFrame();
     fetchConstellationFrame();
-  }, [ra, dec]);
+  }, [ra, dec, radius]);
 
   const getUserGeolocation = () => {
     if (navigator.geolocation) {
@@ -333,6 +329,10 @@ const App = () => {
       console.error('Geolocation is not supported by this browser.');
     }
   };
+
+  useEffect(() => {
+    getUserGeolocation();
+  }, []);
 
   return (
     <div className='' style={{ height: '100vh', width: '100vw' }}>

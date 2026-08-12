@@ -47,7 +47,6 @@ const ConstellationLines = ({ constellationLines }) => {
     const shapeConstellations = () => {
       const shaped = {};
       Object.values(constellationLines).map((data) => {
-        // add a constellation with an array of segments
         if (!shaped[data.constellationName]) {
           const { constellation, ...rest } = data;
           shaped[data.constellationName] = {
@@ -60,8 +59,6 @@ const ConstellationLines = ({ constellationLines }) => {
         const lines = shaped[data.constellationName].lines;
 
         if (lines.length != data.lineIndex + 1) {
-          // need to add a new index
-          // empty array
           lines.push([]);
         }
 
@@ -88,6 +85,7 @@ const ConstellationLines = ({ constellationLines }) => {
               color='#aaaaaa'
               key={`${con}${i}`}
               transparent={true}
+              opacity={0.5}
             />
           );
         });
