@@ -229,8 +229,10 @@ const Star3dObjects = ({ stars, viewedFrames }) => {
       return;
     }
 
-    const objectIndex = objects[0].index;
-    console.log(objects.length);
+    const closest = objects.reduce((best, current) => {
+      return current.distanceToRay < best.distanceToRay ? current : best;
+    });
+    const objectIndex = closest.index;
 
     const starId = raycastIndexToId.get(objectIndex);
     setCurrentStar(starId);
