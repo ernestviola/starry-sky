@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
 
 const MAX_STARS = 120000;
 const MAG_EXPONENT = 1.5;
 const MIN_MAG = -1.44;
 const MAX_MAG = 6;
-const SIZE_SCALE = 20;
+const SIZE_SCALE = 40;
 
 const starVertexShader = `
   attribute float size;
@@ -28,14 +29,16 @@ const starFragmentShader = `
   varying float vSize;
 
   void main() {
-    // if (vSize <= 0.0) discard;
     vec2 coord = gl_PointCoord - vec2(0.5);
-    if (length(coord) > 0.5) discard;
-    gl_FragColor = vec4(vColor, 1.0);
+    float dist = length(coord);
+    if (dist > 0.5) discard;
+
+    float alpha = 1.0 - (dist / 0.5);
+    gl_FragColor = vec4(vColor, alpha);
   }
 `;
 
-const Star3dObjects = ({ stars }) => {
+const Star3dObjects = ({ stars, viewedFrames }) => {
   const positionRef = useRef(null);
   const colorRef = useRef(null);
   const sizeRef = useRef(null);
@@ -45,6 +48,16 @@ const Star3dObjects = ({ stars }) => {
   const colorAttrRef = useRef();
   const sizeAttrRef = useRef();
   const geometryRef = useRef();
+
+  const pointerXRef = useRef();
+  const pointerYRef = useRef();
+
+  const [currentStar, setCurrentStar] = useState(null);
+
+  const { pointer, camera } = useThree();
+  const raycasterRef = useRef(new THREE.Raycaster());
+  const raycastPointsRef = useRef();
+  const raycastIndexToIdRef = useRef();
 
   if (positionRef.current === null) {
     positionRef.current = new Float32Array(MAX_STARS * 3);
@@ -97,6 +110,10 @@ const Star3dObjects = ({ stars }) => {
     const z = Math.cos(decrad) * Math.cos(rarad);
     return { x, y, z };
   };
+
+  useEffect(() => {
+    raycasterRef.current.params.Points.threshold = 0.01;
+  }, []);
 
   useEffect(() => {
     const idToIndex = idToIndexRef.current;
@@ -153,36 +170,123 @@ const Star3dObjects = ({ stars }) => {
     }
   }, [stars]);
 
+  useEffect(() => {
+    if (raycastPointsRef.current) {
+      raycastPointsRef.current.geometry.dispose();
+    }
+
+    const buffer = new THREE.BufferGeometry();
+    const filteredStars = Object.values(stars).filter(
+      (star) =>
+        star.mag <= MAX_MAG &&
+        star.mag >= MIN_MAG &&
+        viewedFrames.has(star.healpixId),
+    );
+
+    // viewedPointsRef to get passed to the raycaster
+    // bufferGeometry for this new list of points
+
+    const positionArr = new Float32Array(filteredStars.length * 3);
+    const smallIndexToId = new Map();
+
+    // create float32buffer and add x,y,z positions
+    for (let i = 0; i < filteredStars.length; i++) {
+      const position = starPosition(
+        filteredStars[i].decrad,
+        filteredStars[i].rarad,
+      );
+      positionArr[i * 3] = position.x;
+      positionArr[i * 3 + 1] = position.y;
+      positionArr[i * 3 + 2] = position.z;
+
+      smallIndexToId.set(i, filteredStars[i].id);
+    }
+
+    buffer.setAttribute('position', new THREE.BufferAttribute(positionArr, 3));
+
+    const raycastPoints = new THREE.Points(buffer);
+    raycastPointsRef.current = raycastPoints;
+    raycastIndexToIdRef.current = smallIndexToId;
+  }, [stars, viewedFrames]);
+
+  useFrame((state) => {
+    if (!raycastPointsRef.current) return;
+
+    if (pointer.x === pointerXRef.current && pointer.y === pointerYRef.current)
+      return;
+
+    pointerXRef.current = pointer.x;
+    pointerYRef.current = pointer.y;
+
+    const raycaster = raycasterRef.current; // raycast object from THREE js
+    const raycastIndexToId = raycastIndexToIdRef.current; // map from the hidden raycast
+
+    raycaster.setFromCamera(pointer, camera);
+
+    const objects = raycaster.intersectObject(raycastPointsRef.current);
+    if (objects.length === 0) {
+      setCurrentStar(null);
+      return;
+    }
+
+    const objectIndex = objects[0].index;
+    console.log(objects.length);
+
+    const starId = raycastIndexToId.get(objectIndex);
+    setCurrentStar(starId);
+  });
+
+  useEffect(() => {
+    const idToIndex = idToIndexRef.current;
+    const sizes = sizeRef.current;
+
+    const currentStarIndex = idToIndex.get(currentStar);
+
+    const prevSize = sizes[currentStarIndex];
+    sizes[currentStarIndex] = 60;
+
+    sizeAttrRef.current.needsUpdate = true;
+
+    return () => {
+      sizes[currentStarIndex] = prevSize;
+      sizeAttrRef.current.needsUpdate = true;
+    };
+  }, [currentStar]);
+
   return (
-    <points>
-      <bufferGeometry ref={geometryRef}>
-        <bufferAttribute
-          ref={positionAttrRef}
-          attach='attributes-position'
-          count={MAX_STARS}
-          array={positionRef.current}
-          itemSize={3}
+    <>
+      <points renderOrder={1}>
+        <bufferGeometry ref={geometryRef}>
+          <bufferAttribute
+            ref={positionAttrRef}
+            attach='attributes-position'
+            count={MAX_STARS}
+            array={positionRef.current}
+            itemSize={3}
+          />
+          <bufferAttribute
+            ref={colorAttrRef}
+            attach='attributes-color'
+            count={MAX_STARS}
+            array={colorRef.current}
+            itemSize={3}
+          />
+          <bufferAttribute
+            ref={sizeAttrRef}
+            attach='attributes-size'
+            count={MAX_STARS}
+            array={sizeRef.current}
+            itemSize={1}
+          />
+        </bufferGeometry>
+        <shaderMaterial
+          vertexShader={starVertexShader}
+          fragmentShader={starFragmentShader}
+          depthTest={false}
+          transparent={true}
         />
-        <bufferAttribute
-          ref={colorAttrRef}
-          attach='attributes-color'
-          count={MAX_STARS}
-          array={colorRef.current}
-          itemSize={3}
-        />
-        <bufferAttribute
-          ref={sizeAttrRef}
-          attach='attributes-size'
-          count={MAX_STARS}
-          array={sizeRef.current}
-          itemSize={1}
-        />
-      </bufferGeometry>
-      <shaderMaterial
-        vertexShader={starVertexShader}
-        fragmentShader={starFragmentShader}
-      />
-    </points>
+      </points>
+    </>
   );
 };
 

@@ -67,13 +67,7 @@ Should be able to test the API and maybe the database
 
 ## Next Steps
 
-In order to simulate the visuals, I need to create an API that returns the stars in the particular piece of sky.
+Figure out which star is being hovered over so we can display information near the mouse as well as highlight the star we're hovering
+Need to be able display star information during hover by accessing the data that is getting passed to the star
 
-Rather than returning all 120,000 stars and maybe more satellites, I can get a default location of San Diego, CA. Then we can ask the user for their location.
-
-With the users location we can then move the sphere and fill out that piece of the sky.
-
-We could put out multiple requests so that way we can fill out the rest of the window.7
-
-Simulate the visuals
-Build out the API
+Show constellation names on the constellations

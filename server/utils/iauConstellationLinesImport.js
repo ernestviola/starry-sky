@@ -4,7 +4,7 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 
 const raw = await fs.readFile(
-  path.join(os.homedir(), '/Downloads/data/modernIAUConstellationLines.json'),
+  path.join(os.homedir(), '/Downloads/data/skyculturesConstellationLines.json'),
   'utf-8',
 );
 

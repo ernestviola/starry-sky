@@ -14,7 +14,6 @@ const ModelGrid = () => {
   const lineSize = gridSize / 2;
   return (
     <>
-      <color attach='background' args={['#323232']} />
       <Grid
         args={[gridSize, gridSize, gridSize]}
         side={THREE.DoubleSide}
@@ -187,6 +186,7 @@ const App = () => {
   const [stars, setStars] = useState({});
   const [constellationLines, setConstellationLines] = useState({});
 
+  const [viewedFrames, setViewedFrames] = useState(new Set());
   const [receivedFrames, setReceivedFrames] = useState(new Set());
   const [receivedConstellations, setReceivedConstellations] = useState(
     new Set(),
@@ -225,6 +225,8 @@ const App = () => {
     const v = ang2vec(theta, phi);
     const frameIds = new Set();
     query_disc_inclusive_ring(nside, v, radius, (ipix) => frameIds.add(ipix));
+
+    setViewedFrames(frameIds);
 
     const requestedFrames = frameIds.difference(receivedFrames);
     if (requestedFrames.size === 0) return;
@@ -335,7 +337,8 @@ const App = () => {
   return (
     <div className='' style={{ height: '100vh', width: '100vw' }}>
       <Canvas camera={{ position: [0, 0, 0] }}>
-        <ModelGrid />
+        <color attach='background' args={['#000000']} />
+        {/* <ModelGrid /> */}
         <OrbitControls
           rotateSpeed={0.5}
           target={[zenith[0] * 0.01, zenith[1] * 0.01, zenith[2] * 0.01]} // just in front of camera, not at camera's exact position
@@ -348,7 +351,7 @@ const App = () => {
         <ZenithTargetDirection zenith={zenith} />
         <FovZoomControls />
         <FrustumRadiusTracker setRadius={setRadius} />
-        <Star3dObjects stars={stars} />
+        <Star3dObjects stars={stars} viewedFrames={viewedFrames} />
         <ConstellationLines constellationLines={constellationLines} />
       </Canvas>
     </div>

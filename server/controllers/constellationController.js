@@ -11,7 +11,6 @@ const frameQueryValidation = [
     .custom((arr) => arr.length > 0 && arr.every((n) => Number.isInteger(n)))
     .withMessage('frames must be a comma-separated list of integers.'),
   query('receivedConstellations')
-    .optional()
     .customSanitizer((value) => (value ? value.split(',') : []))
     .custom((arr) =>
       arr.every((con) => typeof con === 'string' && con.length > 0),
@@ -35,14 +34,14 @@ constellationController.getFrame = [
 
     try {
       const { frames, receivedConstellations } = matchedData(req);
-      const visibleConstellations = await prisma.constellationLine.findMany({
+      const visibleConstellations = await prisma.constellation.findMany({
         where: { healpixId: { in: frames } },
-        select: { constellation: true },
-        distinct: ['constellation'],
+        select: { constellationName: true },
+        distinct: ['constellationName'],
       });
 
       const constellationArray = visibleConstellations.map(
-        (data) => data.constellation,
+        (data) => data.constellationName,
       );
 
       const receivedConstellationSet = new Set([...receivedConstellations]);
@@ -51,23 +50,26 @@ constellationController.getFrame = [
         (con) => !receivedConstellationSet.has(con),
       );
 
-      const fullConstellations = await prisma.constellationLine.findMany({
+      const fullConstellations = await prisma.constellation.findMany({
         where: {
-          constellation: { in: filteredConstellations },
+          constellationName: { in: filteredConstellations },
         },
         select: {
           id: true,
-          constellation: true,
-          segmentIndex: true,
+          constellationName: true,
+          lineIndex: true,
           pointIndex: true,
-          rarad: true,
-          decrad: true,
-          starId: true,
           healpixId: true,
+          star: {
+            select: {
+              decrad: true,
+              rarad: true,
+            },
+          },
         },
         orderBy: [
-          { constellation: 'asc' },
-          { segmentIndex: 'asc' },
+          { constellationName: 'asc' },
+          { lineIndex: 'asc' },
           { pointIndex: 'asc' },
         ],
       });
