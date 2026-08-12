@@ -39,37 +39,45 @@ const starFragmentShader = `
 `;
 
 const Star3dObjects = ({ stars, viewedFrames }) => {
-  const positionRef = useRef(null);
-  const colorRef = useRef(null);
-  const sizeRef = useRef(null);
-  const idToIndexRef = useRef(new Map());
+  // currently processed star
   const nextIndexRef = useRef(0);
+
+  // star attribute arrays
+  const positionRef = useRef(new Float32Array(MAX_STARS * 3));
+  const colorRef = useRef(new Float32Array(MAX_STARS * 3));
+  const sizeRef = useRef(new Float32Array(MAX_STARS));
+
+  // star attribute references
   const positionAttrRef = useRef();
   const colorAttrRef = useRef();
   const sizeAttrRef = useRef();
   const geometryRef = useRef();
 
+  // ref tracking all prev hovered stars used for easing animation
+  const visitedStarsRef = useRef(new Map());
+
+  // maps for quick lookup
+  const idToIndexRef = useRef(new Map());
+  const raycastIndexToIdRef = useRef();
+
+  // most recent pointer location
   const pointerXRef = useRef();
   const pointerYRef = useRef();
 
-  const [currentStar, setCurrentStar] = useState(null);
+  // the currently hovered star. starId or null
+  const [currentStarId, setCurrentStarId] = useState(null);
 
+  // three js objects used for object detection
   const { pointer, camera } = useThree();
   const raycasterRef = useRef(new THREE.Raycaster());
-  const raycastPointsRef = useRef();
-  const raycastIndexToIdRef = useRef();
+  const raycastPointsRef = useRef(); // points object passed to the raycaster
 
-  if (positionRef.current === null) {
-    positionRef.current = new Float32Array(MAX_STARS * 3);
-  }
+  const indicatorRingMeshRef = useRef([0.3, 0.3, 0.3]);
 
-  if (colorRef.current === null) {
-    colorRef.current = new Float32Array(MAX_STARS * 3);
-  }
-
-  if (sizeRef.current === null) {
-    sizeRef.current = new Float32Array(MAX_STARS);
-  }
+  // initialize raycaster threshold
+  useEffect(() => {
+    raycasterRef.current.params.Points.threshold = 0.03;
+  }, []);
 
   const starColor = (ci) => {
     if (ci === null || ci === undefined) {
@@ -111,10 +119,7 @@ const Star3dObjects = ({ stars, viewedFrames }) => {
     return { x, y, z };
   };
 
-  useEffect(() => {
-    raycasterRef.current.params.Points.threshold = 0.01;
-  }, []);
-
+  // draw stars with position, color, and size
   useEffect(() => {
     const idToIndex = idToIndexRef.current;
     const positions = positionRef.current;
@@ -209,54 +214,108 @@ const Star3dObjects = ({ stars, viewedFrames }) => {
     raycastIndexToIdRef.current = smallIndexToId;
   }, [stars, viewedFrames]);
 
-  useFrame((state) => {
-    if (!raycastPointsRef.current) return;
-
+  // returns null if hovering over empty space. returns the hovered star in all other cases
+  const hoveredStar = () => {
+    if (!raycastPointsRef.current) return; // there is no list of points to do raycasting on
     if (pointer.x === pointerXRef.current && pointer.y === pointerYRef.current)
-      return;
+      return currentStarId; // the mouse hasn't moved so we should keep the previous value of whatever we're looking at
 
     pointerXRef.current = pointer.x;
     pointerYRef.current = pointer.y;
 
-    const raycaster = raycasterRef.current; // raycast object from THREE js
+    const raycaster = raycasterRef.current; // raycaster object from THREE js
     const raycastIndexToId = raycastIndexToIdRef.current; // map from the hidden raycast
 
     raycaster.setFromCamera(pointer, camera);
 
     const objects = raycaster.intersectObject(raycastPointsRef.current);
+
+    // no available objects to set star to so we're looking at empty space
     if (objects.length === 0) {
-      setCurrentStar(null);
-      return;
+      setCurrentStarId(null);
+      indicatorRingMeshRef.current.position.set(0, 0, 0);
+      return null;
     }
 
     const closest = objects.reduce((best, current) => {
       return current.distanceToRay < best.distanceToRay ? current : best;
     });
+
     const objectIndex = closest.index;
 
     const starId = raycastIndexToId.get(objectIndex);
-    setCurrentStar(starId);
-  });
+    setCurrentStarId(starId);
+    const positionsIndex = idToIndexRef.current.get(starId);
+    const positions = positionRef.current;
 
-  useEffect(() => {
+    indicatorRingMeshRef.current.position.set(
+      positions[positionsIndex * 3],
+      positions[positionsIndex * 3 + 1],
+      positions[positionsIndex * 3 + 2],
+    );
+    indicatorRingMeshRef.current.lookAt(camera.position);
+    return starId;
+  };
+
+  const visitedStarManager = (starId) => {
+    const visitedStars = visitedStarsRef.current;
     const idToIndex = idToIndexRef.current;
     const sizes = sizeRef.current;
 
-    const currentStarIndex = idToIndex.get(currentStar);
+    if (starId !== null && !visitedStars.has(starId)) {
+      // check if
+      // just decrease all visitedStars
+      // add the star with it's initial size and index
+      const MAX_SCALER = 2;
+      const MAX_SIZE = 70;
+      const MIN_SIZE = 25;
 
-    const prevSize = sizes[currentStarIndex];
-    sizes[currentStarIndex] = 60;
+      const index = idToIndex.get(starId);
 
-    sizeAttrRef.current.needsUpdate = true;
+      const calculatedSize = sizes[index] * MAX_SCALER;
 
-    return () => {
-      sizes[currentStarIndex] = prevSize;
+      visitedStars.set(starId, {
+        index,
+        initial_size: sizes[index],
+        max_size: Math.min(Math.max(calculatedSize, MIN_SIZE), MAX_SIZE),
+      });
+    }
+
+    const EASING_SCALER = 0.15;
+
+    for (const [starId, attributes] of visitedStars) {
+      if (
+        currentStarId === starId &&
+        sizes[attributes.index] < attributes.max_size
+      ) {
+        sizes[attributes.index] +=
+          (attributes.max_size - sizes[attributes.index]) * EASING_SCALER;
+      } else if (sizes[attributes.index] > attributes.initial_size) {
+        sizes[attributes.index] -=
+          (sizes[attributes.index] - attributes.initial_size) * EASING_SCALER;
+      } else {
+        delete visitedStars.delete(starId);
+      }
       sizeAttrRef.current.needsUpdate = true;
-    };
-  }, [currentStar]);
+    }
+  };
+
+  useFrame((state) => {
+    const starId = hoveredStar();
+    visitedStarManager(starId);
+  });
 
   return (
     <>
+      <mesh ref={indicatorRingMeshRef} renderOrder={2}>
+        <ringGeometry args={[0.028, 0.03, 30]} />
+        <meshBasicMaterial
+          color='#fff'
+          side={THREE.DoubleSide}
+          depthTest={false}
+        />
+      </mesh>
+
       <points renderOrder={1}>
         <bufferGeometry ref={geometryRef}>
           <bufferAttribute

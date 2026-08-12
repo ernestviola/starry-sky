@@ -74,8 +74,6 @@ constellationController.getFrame = [
         ],
       });
 
-      console.log(Date.now(), 'Returned Count:', fullConstellations.length);
-
       return res.status(200).json({
         success: true,
         constellations: constellationArray,
