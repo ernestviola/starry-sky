@@ -4,10 +4,10 @@ import * as THREE from 'three';
 import { useRef, useState, useEffect } from 'react';
 
 import { ang2vec, query_disc_inclusive_ring } from '@hscmap/healpix';
-import { nside } from './components/StarMap/config.js';
+import { nside } from './config.js';
 
-import Star3dObjects from './components/StarMap/Star3dObjects.jsx';
-import ConstellationLines from './components/StarMap/ConstellationLines.jsx';
+import Star3dObjects from './Star3dObjects.jsx';
+import ConstellationLines from './ConstellationLines.jsx';
 
 const ModelGrid = () => {
   const gridSize = 1;
@@ -172,7 +172,7 @@ const FrustumRadiusTracker = ({ setRadius }) => {
   return null;
 };
 
-const App = () => {
+const StarMap = () => {
   // default geolocaiton NYC
   // nyc lat: 40.73061 long: -73.935242
 
@@ -363,4 +363,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default StarMap;
