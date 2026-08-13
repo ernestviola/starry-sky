@@ -8,6 +8,7 @@ import { nside } from './config.js';
 
 import Star3dObjects from './Star3dObjects.jsx';
 import ConstellationLines from './ConstellationLines.jsx';
+import { useStarData } from '../../contexts/StarDataContext.jsx';
 
 const ModelGrid = () => {
   const gridSize = 1;
@@ -173,10 +174,21 @@ const FrustumRadiusTracker = ({ setRadius }) => {
 };
 
 const StarMap = ({ hoveredStarId, setHoveredStarId }) => {
+  const {
+    starsDictionary,
+    setStarsDictionary,
+    receivedHealpixIds,
+    setReceivedHealpixIds,
+    constellationLinesDictionary,
+    setConstellationLinesDictionary,
+    receivedConstellationNames,
+    setReceivedConstellationNames,
+  } = useStarData();
+
   // default geolocaiton NYC
   // nyc lat: 40.73061 long: -73.935242
 
-  // 33.13208N, 116.21170 W
+  // san diego 33.13208N, 116.21170 W
   const [currentGeolocation, setCurrentGeolocation] = useState({
     latitude: 40.73061,
     longitude: -73.935242,
@@ -186,14 +198,8 @@ const StarMap = ({ hoveredStarId, setHoveredStarId }) => {
 
   const [ra, setRa] = useState(0);
   const [dec, setDec] = useState(0);
-  const [stars, setStars] = useState({});
-  const [constellationLines, setConstellationLines] = useState({});
 
   const [viewedFrames, setViewedFrames] = useState(new Set());
-  const [receivedFrames, setReceivedFrames] = useState(new Set());
-  const [receivedConstellations, setReceivedConstellations] = useState(
-    new Set(),
-  );
   const [zenith, setZenith] = useState([0, 0, 0.1]);
 
   const orbitControlRef = useRef();
@@ -228,7 +234,7 @@ const StarMap = ({ hoveredStarId, setHoveredStarId }) => {
 
     setViewedFrames(frameIds);
 
-    const requestedFrames = frameIds.difference(receivedFrames);
+    const requestedFrames = frameIds.difference(receivedHealpixIds);
     if (requestedFrames.size === 0) return;
 
     const fetchStarFrame = async () => {
@@ -246,9 +252,9 @@ const StarMap = ({ hoveredStarId, setHoveredStarId }) => {
 
         const data = await response.json();
 
-        setReceivedFrames((prev) => new Set([...prev, ...data.frameIds]));
+        setReceivedHealpixIds((prev) => new Set([...prev, ...data.frameIds]));
 
-        setStars((prev) => {
+        setStarsDictionary((prev) => {
           let hasNew = false;
           for (const star of data.stars) {
             if (!prev[star.id]) {
@@ -279,8 +285,8 @@ const StarMap = ({ hoveredStarId, setHoveredStarId }) => {
           Array.from(requestedFrames).join(','),
         );
         url.searchParams.append(
-          'receivedConstellations',
-          Array.from(receivedConstellations).join(','),
+          'receivedConstellationNames',
+          Array.from(receivedConstellationNames).join(','),
         );
 
         const response = await fetch(url.toString());
@@ -291,11 +297,11 @@ const StarMap = ({ hoveredStarId, setHoveredStarId }) => {
 
         const data = await response.json();
 
-        setReceivedConstellations(
+        setReceivedConstellationNames(
           (prev) => new Set([...prev, ...data.constellations]),
         );
 
-        setConstellationLines((prev) => {
+        setConstellationLinesDictionary((prev) => {
           let hasNew = false;
           for (const line of data.constellationLines) {
             if (!prev[line.id]) {
@@ -339,7 +345,10 @@ const StarMap = ({ hoveredStarId, setHoveredStarId }) => {
   }, []);
 
   return (
-    <div className='' style={{ height: '100vh', width: '100vw' }}>
+    <div
+      className=''
+      style={{ height: '100vh', width: '100vw', position: 'relative' }}
+    >
       <Canvas camera={{ position: [0, 0, 0] }}>
         <color attach='background' args={['#000000']} />
         {/* <ModelGrid /> */}
@@ -357,12 +366,14 @@ const StarMap = ({ hoveredStarId, setHoveredStarId }) => {
         <FovZoomControls />
         <FrustumRadiusTracker setRadius={setRadius} />
         <Star3dObjects
-          stars={stars}
+          starsDictionary={starsDictionary}
           viewedFrames={viewedFrames}
           hoveredStarId={hoveredStarId}
           setHoveredStarId={setHoveredStarId}
         />
-        <ConstellationLines constellationLines={constellationLines} />
+        <ConstellationLines
+          constellationLinesDictionary={constellationLinesDictionary}
+        />
       </Canvas>
     </div>
   );

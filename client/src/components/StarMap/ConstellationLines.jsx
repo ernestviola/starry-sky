@@ -4,7 +4,7 @@ import { Line } from '@react-three/drei';
 
 const STEP_SIZE = 0.005;
 
-const ConstellationLines = ({ constellationLines }) => {
+const ConstellationLines = ({ constellationLinesDictionary }) => {
   const [constellations, setConstellations] = useState({});
 
   const slerp = (a, b, t) => {
@@ -46,7 +46,7 @@ const ConstellationLines = ({ constellationLines }) => {
   useEffect(() => {
     const shapeConstellations = () => {
       const shaped = {};
-      Object.values(constellationLines).map((data) => {
+      Object.values(constellationLinesDictionary).map((data) => {
         if (!shaped[data.constellationName]) {
           const { constellation, ...rest } = data;
           shaped[data.constellationName] = {
@@ -72,7 +72,7 @@ const ConstellationLines = ({ constellationLines }) => {
     };
 
     setConstellations(shapeConstellations());
-  }, [constellationLines]);
+  }, [constellationLinesDictionary]);
   return (
     <>
       {Object.entries(constellations).map(([con, values]) => {

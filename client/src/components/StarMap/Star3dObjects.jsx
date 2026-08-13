@@ -39,7 +39,7 @@ const starFragmentShader = `
 `;
 
 const Star3dObjects = ({
-  stars,
+  starsDictionary,
   viewedFrames,
   hoveredStarId,
   setHoveredStarId,
@@ -130,7 +130,7 @@ const Star3dObjects = ({
 
     let changed = false;
 
-    for (const star of Object.values(stars)) {
+    for (const star of Object.values(starsDictionary)) {
       if (idToIndex.has(star.id)) continue;
 
       const index = nextIndexRef.current;
@@ -175,7 +175,7 @@ const Star3dObjects = ({
       geometryRef.current.setDrawRange(0, nextIndexRef.current);
       geometryRef.current.computeBoundingSphere();
     }
-  }, [stars]);
+  }, [starsDictionary]);
 
   useEffect(() => {
     if (raycastPointsRef.current) {
@@ -183,7 +183,7 @@ const Star3dObjects = ({
     }
 
     const buffer = new THREE.BufferGeometry();
-    const filteredStars = Object.values(stars).filter(
+    const filteredStars = Object.values(starsDictionary).filter(
       (star) =>
         star.mag <= MAX_MAG &&
         star.mag >= MIN_MAG &&
@@ -214,7 +214,7 @@ const Star3dObjects = ({
     const raycastPoints = new THREE.Points(buffer);
     raycastPointsRef.current = raycastPoints;
     raycastIndexToIdRef.current = smallIndexToId;
-  }, [stars, viewedFrames]);
+  }, [starsDictionary, viewedFrames]);
 
   // returns null if hovering over empty space. returns the hovered star in all other cases
   const detectHoveredStar = () => {
@@ -246,6 +246,7 @@ const Star3dObjects = ({
     const objectIndex = closest.index;
 
     const starId = raycastIndexToId.get(objectIndex);
+    console.log(starId);
     setHoveredStarId(starId);
     const positionsIndex = idToIndexRef.current.get(starId);
     const positions = positionRef.current;

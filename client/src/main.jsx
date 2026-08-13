@@ -4,14 +4,17 @@ import { createBrowserRouter, RouterProvider } from 'react-router';
 import './index.css';
 import Home from './routes/Home.jsx';
 import Play from './routes/Play.jsx';
+import { StarDataProvider } from './contexts/StarDataContext.jsx';
 
 const router = createBrowserRouter([
   { path: '/', element: <Home /> },
-  { path: '/', element: <Play /> },
+  { path: '/play', element: <Play /> },
 ]);
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <StarDataProvider>
+      <RouterProvider router={router} />
+    </StarDataProvider>
   </StrictMode>,
 );

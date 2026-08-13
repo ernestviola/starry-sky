@@ -6,13 +6,13 @@ const Home = () => {
   const [hoveredStarId, setHoveredStarId] = useState(null);
 
   return (
-    <>
+    <div style={{ position: 'relative' }}>
       <StarMap
         hoveredStarId={hoveredStarId}
         setHoveredStarId={setHoveredStarId}
       />
-      <StarDetails starId={hoveredStarId} />
-    </>
+      <StarDetails hoveredStarId={hoveredStarId} />
+    </div>
   );
 };
 
