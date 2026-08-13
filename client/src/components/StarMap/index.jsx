@@ -172,7 +172,7 @@ const FrustumRadiusTracker = ({ setRadius }) => {
   return null;
 };
 
-const StarMap = () => {
+const StarMap = ({ hoveredStarId, setHoveredStarId }) => {
   // default geolocaiton NYC
   // nyc lat: 40.73061 long: -73.935242
 
@@ -356,7 +356,12 @@ const StarMap = () => {
         <ZenithTargetDirection zenith={zenith} />
         <FovZoomControls />
         <FrustumRadiusTracker setRadius={setRadius} />
-        <Star3dObjects stars={stars} viewedFrames={viewedFrames} />
+        <Star3dObjects
+          stars={stars}
+          viewedFrames={viewedFrames}
+          hoveredStarId={hoveredStarId}
+          setHoveredStarId={setHoveredStarId}
+        />
         <ConstellationLines constellationLines={constellationLines} />
       </Canvas>
     </div>

@@ -38,7 +38,12 @@ const starFragmentShader = `
   }
 `;
 
-const Star3dObjects = ({ stars, viewedFrames }) => {
+const Star3dObjects = ({
+  stars,
+  viewedFrames,
+  hoveredStarId,
+  setHoveredStarId,
+}) => {
   // currently processed star
   const nextIndexRef = useRef(0);
 
@@ -63,9 +68,6 @@ const Star3dObjects = ({ stars, viewedFrames }) => {
   // most recent pointer location
   const pointerXRef = useRef();
   const pointerYRef = useRef();
-
-  // the currently hovered star. starId or null
-  const [currentStarId, setCurrentStarId] = useState(null);
 
   // three js objects used for object detection
   const { pointer, camera } = useThree();
@@ -215,10 +217,10 @@ const Star3dObjects = ({ stars, viewedFrames }) => {
   }, [stars, viewedFrames]);
 
   // returns null if hovering over empty space. returns the hovered star in all other cases
-  const hoveredStar = () => {
+  const detectHoveredStar = () => {
     if (!raycastPointsRef.current) return; // there is no list of points to do raycasting on
     if (pointer.x === pointerXRef.current && pointer.y === pointerYRef.current)
-      return currentStarId; // the mouse hasn't moved so we should keep the previous value of whatever we're looking at
+      return hoveredStarId; // the mouse hasn't moved so we should keep the previous value of whatever we're looking at
 
     pointerXRef.current = pointer.x;
     pointerYRef.current = pointer.y;
@@ -232,7 +234,7 @@ const Star3dObjects = ({ stars, viewedFrames }) => {
 
     // no available objects to set star to so we're looking at empty space
     if (objects.length === 0) {
-      setCurrentStarId(null);
+      setHoveredStarId(null);
       indicatorRingMeshRef.current.position.set(0, 0, 0);
       return null;
     }
@@ -244,7 +246,7 @@ const Star3dObjects = ({ stars, viewedFrames }) => {
     const objectIndex = closest.index;
 
     const starId = raycastIndexToId.get(objectIndex);
-    setCurrentStarId(starId);
+    setHoveredStarId(starId);
     const positionsIndex = idToIndexRef.current.get(starId);
     const positions = positionRef.current;
 
@@ -283,7 +285,7 @@ const Star3dObjects = ({ stars, viewedFrames }) => {
 
     for (const [starId, attributes] of visitedStars) {
       if (
-        currentStarId === starId &&
+        hoveredStarId === starId &&
         sizes[attributes.index] < attributes.max_size
       ) {
         sizes[attributes.index] +=
@@ -299,7 +301,7 @@ const Star3dObjects = ({ stars, viewedFrames }) => {
   };
 
   useFrame(() => {
-    const starId = hoveredStar();
+    const starId = detectHoveredStar();
 
     if (indicatorRingMeshRef.current) {
       indicatorRingMeshRef.current.scale.set(
