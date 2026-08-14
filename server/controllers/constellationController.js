@@ -10,13 +10,13 @@ const frameQueryValidation = [
     .customSanitizer((value) => value.split(',').map(Number))
     .custom((arr) => arr.length > 0 && arr.every((n) => Number.isInteger(n)))
     .withMessage('frames must be a comma-separated list of integers.'),
-  query('receivedConstellations')
+  query('receivedConstellationNames')
     .customSanitizer((value) => (value ? value.split(',') : []))
     .custom((arr) =>
       arr.every((con) => typeof con === 'string' && con.length > 0),
     )
     .withMessage(
-      'receivedConstellations must be a comma-separated list of strings.',
+      'receivedConstellationNames must be a comma-separated list of strings.',
     ),
 ];
 
@@ -33,7 +33,7 @@ constellationController.getFrame = [
     }
 
     try {
-      const { frames, receivedConstellations } = matchedData(req);
+      const { frames, receivedConstellationNames } = matchedData(req);
       const visibleConstellations = await prisma.constellation.findMany({
         where: { healpixId: { in: frames } },
         select: { constellationName: true },
@@ -44,7 +44,7 @@ constellationController.getFrame = [
         (data) => data.constellationName,
       );
 
-      const receivedConstellationSet = new Set([...receivedConstellations]);
+      const receivedConstellationSet = new Set([...receivedConstellationNames]);
 
       const filteredConstellations = constellationArray.filter(
         (con) => !receivedConstellationSet.has(con),

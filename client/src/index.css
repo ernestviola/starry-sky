@@ -73,3 +73,7 @@ h6 {
 #__next {
   isolation: isolate;
 }
+
+html {
+  font-size: 62.5%;
+}

@@ -35,6 +35,7 @@ starController.getFrame = [
         where: { healpixId: { in: frames } },
         select: {
           id: true,
+          hip: true,
           healpixId: true,
           rarad: true,
           decrad: true,
