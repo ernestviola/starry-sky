@@ -246,7 +246,6 @@ const Star3dObjects = ({
     const objectIndex = closest.index;
 
     const starId = raycastIndexToId.get(objectIndex);
-    console.log(starId);
     setHoveredStarId(starId);
     const positionsIndex = idToIndexRef.current.get(starId);
     const positions = positionRef.current;

@@ -9,6 +9,8 @@ const Play = () => {
   const [gameToken, setGameToken] = useState(null);
   const [starsFoundDictionary, setStarsFoundDictionary] = useState({});
 
+  const hoveredStarIdRef = useRef();
+
   const dialogRef = useRef();
 
   const dialogStyle = {
@@ -21,6 +23,10 @@ const Play = () => {
   useEffect(() => {
     dialogRef.current.showModal();
   }, []);
+
+  useEffect(() => {
+    hoveredStarIdRef.current = hoveredStarId;
+  }, [hoveredStarId]);
 
   const handleStartGame = async () => {
     try {
@@ -40,7 +46,7 @@ const Play = () => {
       const decoded = jwtDecode(data.token);
 
       const starsDictionary = {};
-      for (const star in decoded.starsToFind) {
+      for (const star of decoded.starsToFind) {
         starsDictionary[star.id] = false;
       }
 
@@ -55,13 +61,31 @@ const Play = () => {
   };
 
   const checkAllStarsFound = () => {
-    return (
-      Object.keys(starsFoundDictionary).filter((found) => {
-        found === false;
-      }).length > 0
-    );
+    const stillNeedToFind = Object.values(starsFoundDictionary).filter(
+      (found) => {
+        return found === false;
+      },
+    ).length;
+    return stillNeedToFind <= 0;
   };
-  const handleStarClick = () => {};
+
+  const handleStarClick = () => {
+    const starId = hoveredStarIdRef.current;
+
+    if (starId !== null && starsFoundDictionary[starId] !== undefined) {
+      setStarsFoundDictionary((prev) => {
+        const foundStars = { ...prev, [starId]: true };
+        return foundStars;
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (checkAllStarsFound() && gameStarted) {
+      console.log('Submit');
+    }
+  }, [starsFoundDictionary]);
+
   return (
     <div style={{ position: 'relative' }}>
       <dialog ref={dialogRef} style={dialogStyle}>
@@ -71,6 +95,7 @@ const Play = () => {
       <StarMap
         hoveredStarId={hoveredStarId}
         setHoveredStarId={setHoveredStarId}
+        handleClick={handleStarClick}
       />
     </div>
   );

@@ -10,65 +10,6 @@ import Star3dObjects from './Star3dObjects.jsx';
 import ConstellationLines from './ConstellationLines.jsx';
 import { useStarData } from '../../contexts/StarDataContext.jsx';
 
-const ModelGrid = () => {
-  const gridSize = 1;
-  const lineSize = gridSize / 2;
-  return (
-    <>
-      <Grid
-        args={[gridSize, gridSize, gridSize]}
-        side={THREE.DoubleSide}
-        cellSize={0.1}
-        cellColor='#2080ff'
-        cellThickness={1}
-      />
-      {/* x axis */}
-      <Html position={[lineSize + 0.1, 0, 0]}>
-        <div style={{ color: 'white' }}>+X</div>
-      </Html>
-      <Html position={[-(lineSize + 0.1), 0, 0]}>
-        <div style={{ color: 'white' }}>-X</div>
-      </Html>
-      <Line
-        points={[
-          [-lineSize, 0, 0],
-          [lineSize, 0, 0],
-        ]}
-        color='red'
-      />
-      {/* y axis */}
-      <Html position={[0, -(lineSize + 0.1), 0]}>
-        <div style={{ color: 'white' }}>-Y</div>
-      </Html>
-      <Html position={[0, lineSize + 0.1, 0]}>
-        <div style={{ color: 'white' }}>+Y</div>
-      </Html>
-      <Line
-        points={[
-          [0, -lineSize, 0],
-          [0, lineSize, 0],
-        ]}
-        color='green'
-      />
-
-      {/* z axis */}
-      <Html position={[0, 0, -(lineSize + 0.1)]}>
-        <div style={{ color: 'white' }}>-Z</div>
-      </Html>
-      <Html position={[0, 0, lineSize + 0.1]}>
-        <div style={{ color: 'white' }}>+Z</div>
-      </Html>
-      <Line
-        points={[
-          [0, 0, -lineSize],
-          [0, 0, lineSize],
-        ]}
-        color='blue'
-      />
-    </>
-  );
-};
-
 const ZenithTargetDirection = ({ zenith }) => {
   return (
     <mesh>
@@ -173,7 +114,16 @@ const FrustumRadiusTracker = ({ setRadius }) => {
   return null;
 };
 
-const StarMap = ({ hoveredStarId, setHoveredStarId }) => {
+const CanvasClick = ({ handleClick }) => {
+  const { gl } = useThree();
+  useEffect(() => {
+    const canvas = gl.domElement;
+    canvas.addEventListener('click', handleClick);
+    return () => canvas.removeEventListener('click', handleClick);
+  }, [handleClick]);
+};
+
+const StarMap = ({ hoveredStarId, setHoveredStarId, handleClick }) => {
   const {
     starsDictionary,
     setStarsDictionary,
@@ -374,6 +324,7 @@ const StarMap = ({ hoveredStarId, setHoveredStarId }) => {
         <ConstellationLines
           constellationLinesDictionary={constellationLinesDictionary}
         />
+        <CanvasClick handleClick={handleClick} />
       </Canvas>
     </div>
   );
