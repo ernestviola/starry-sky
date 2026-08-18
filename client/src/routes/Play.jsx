@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import StarMap from '../components/StarMap/index.jsx';
 import { jwtDecode } from 'jwt-decode';
+import GameTimer from '../components/GameTimer.jsx';
 
 const Play = () => {
   const [loading, setLoading] = useState(false);
@@ -8,6 +9,8 @@ const Play = () => {
   const [gameStarted, setGameStarted] = useState(false);
   const [gameToken, setGameToken] = useState(null);
   const [starsFoundDictionary, setStarsFoundDictionary] = useState({});
+
+  const [gameStartTime, setGameStartTime] = useState(null);
 
   const hoveredStarIdRef = useRef();
 
@@ -45,6 +48,8 @@ const Play = () => {
 
       const decoded = jwtDecode(data.token);
 
+      setGameStartTime(decoded.startTime);
+
       const starsDictionary = {};
       for (const star of decoded.starsToFind) {
         starsDictionary[star.id] = false;
@@ -81,9 +86,26 @@ const Play = () => {
   };
 
   useEffect(() => {
-    if (checkAllStarsFound() && gameStarted) {
-      console.log('Submit');
+    async function handleStarsFound() {
+      if (checkAllStarsFound() && gameStarted) {
+        console.log('Submit');
+
+        const url = new URL(`${import.meta.env.VITE_STAR_API}api/game/submit`);
+        const response = await fetch(url.toString(), {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${gameToken}`,
+          },
+        });
+
+        const data = await response.json();
+        const timeInSeconds = data.totalTime / 1000;
+
+        console.log(`${timeInSeconds.toFixed(2)}s`);
+      }
     }
+
+    handleStarsFound();
   }, [starsFoundDictionary]);
 
   return (
@@ -96,6 +118,18 @@ const Play = () => {
         hoveredStarId={hoveredStarId}
         setHoveredStarId={setHoveredStarId}
         handleClick={handleStarClick}
+      />
+      <GameTimer
+        startTime={gameStartTime}
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          backgroundColor: 'black',
+          color: 'white',
+          fontSize: '1.6em',
+          padding: '4px',
+        }}
       />
     </div>
   );

@@ -23,7 +23,19 @@ gameController.start = async (req, res, next) => {
   }
 };
 
-gameController.submit = (req, res) => {
+gameController.submit = (req, res, next) => {
   // submit both star ids and
+  try {
+    const totalTime = Date.now() - req.user.startTime;
+    res.status(201).json({
+      success: true,
+      totalTime,
+    });
+  } catch (error) {
+    next(error);
+  }
+
+  if (req.user.startTime) {
+  }
 };
 export default gameController;

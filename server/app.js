@@ -4,6 +4,9 @@ import starRouter from './routes/starRouter.js';
 import constellationRouter from './routes/constellationRouter.js';
 import gameRouter from './routes/gameRouter.js';
 
+import passport from 'passport';
+import './libs/passport.js';
+
 const PORT = process.env.PORT || 3000;
 const allowedOrigins = [process.env.STARRY_SKY_FRONTEND];
 
@@ -24,6 +27,9 @@ app.use(
     },
   }),
 );
+
+app.use(passport.initialize());
+
 // ROUTES
 app.use('/api/stars', starRouter);
 app.use('/api/constellations', constellationRouter);
