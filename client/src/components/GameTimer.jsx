@@ -18,7 +18,7 @@ const GameTimer = ({ startTime, totalTime, style }) => {
     return <div style={style}>{(totalTime / 1000).toFixed(2)}s</div>;
   }
 
-  if (currentTime) {
+  if (startTime) {
     return <div style={style}>{currentTime}</div>;
   }
 };

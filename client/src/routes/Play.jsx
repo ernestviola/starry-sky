@@ -15,7 +15,8 @@ const Play = () => {
 
   const hoveredStarIdRef = useRef();
 
-  const dialogRef = useRef();
+  const dialogGameStartRef = useRef();
+  const dialogSubmitScoreRef = useRef();
 
   const dialogStyle = {
     textAlign: 'center',
@@ -25,7 +26,7 @@ const Play = () => {
   };
 
   useEffect(() => {
-    dialogRef.current.showModal();
+    dialogGameStartRef.current.showModal();
   }, []);
 
   useEffect(() => {
@@ -57,7 +58,7 @@ const Play = () => {
       }
 
       setStarsFoundDictionary(starsDictionary);
-      dialogRef.current.close();
+      dialogGameStartRef.current.close();
       setGameStarted(true);
     } catch (error) {
       console.log(error);
@@ -105,6 +106,7 @@ const Play = () => {
         setGameTotalTime(data.totalTime);
 
         console.log(`${timeInSeconds.toFixed(2)}s`);
+        dialogSubmitScoreRef.current.showModal();
       }
     }
 
@@ -113,15 +115,29 @@ const Play = () => {
 
   return (
     <div style={{ position: 'relative' }}>
-      <dialog ref={dialogRef} style={dialogStyle}>
-        <h1>Use the map to find Sirius and Polaris and submit your score</h1>
-        <button onClick={handleStartGame}>Start</button>
-      </dialog>
       <StarMap
         hoveredStarId={hoveredStarId}
         setHoveredStarId={setHoveredStarId}
         handleClick={handleStarClick}
       />
+      <dialog ref={dialogGameStartRef} style={dialogStyle}>
+        <h1>Use the map to find Sirius and Polaris and submit your score</h1>
+        <button onClick={handleStartGame}>Start</button>
+      </dialog>
+      <dialog ref={dialogSubmitScoreRef} style={dialogStyle}>
+        <h1>Submit Time!</h1>
+        <p style={{ fontSize: '2.4em' }}>
+          {(gameTotalTime / 1000).toFixed(2)}s
+        </p>
+        <div>
+          <label htmlFor='name' style={{ fontSize: '1.6em' }}>
+            <input type='text' id='name' placeholder='Name' />
+          </label>
+        </div>
+        <button style={{ fontSize: '1.6em' }} type='button'>
+          Submit
+        </button>
+      </dialog>
       <GameTimer
         startTime={gameStartTime}
         totalTime={gameTotalTime}
