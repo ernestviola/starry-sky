@@ -11,6 +11,7 @@ const Play = () => {
   const [starsFoundDictionary, setStarsFoundDictionary] = useState({});
 
   const [gameStartTime, setGameStartTime] = useState(null);
+  const [gameTotalTime, setGameTotalTime] = useState(null);
 
   const hoveredStarIdRef = useRef();
 
@@ -101,6 +102,8 @@ const Play = () => {
         const data = await response.json();
         const timeInSeconds = data.totalTime / 1000;
 
+        setGameTotalTime(data.totalTime);
+
         console.log(`${timeInSeconds.toFixed(2)}s`);
       }
     }
@@ -121,6 +124,7 @@ const Play = () => {
       />
       <GameTimer
         startTime={gameStartTime}
+        totalTime={gameTotalTime}
         style={{
           position: 'absolute',
           top: 0,

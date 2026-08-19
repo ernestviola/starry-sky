@@ -78,3 +78,11 @@ model Constellation {
 
   @@unique([constellationName, lineIndex, pointIndex])
 }
+
+model Leaderboard {
+  id                   Int    @id @default(autoincrement())
+  name                 String
+  totalTimeMiliseconds Int
+  geoLat               Float
+  geoLong              Float
+}
