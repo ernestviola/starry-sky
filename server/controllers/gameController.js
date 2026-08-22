@@ -26,10 +26,15 @@ gameController.start = async (req, res, next) => {
 gameController.submit = (req, res, next) => {
   // submit both star ids and
   try {
-    const totalTime = Date.now() - req.user.startTime;
+    const token = jwt.sign(
+      {
+        totalTime: Date.now() - req.user.startTime,
+      },
+      process.env.PASSPORT_JS_SECRET,
+    );
     res.status(201).json({
       success: true,
-      totalTime,
+      token,
     });
   } catch (error) {
     next(error);
@@ -38,4 +43,11 @@ gameController.submit = (req, res, next) => {
   if (req.user.startTime) {
   }
 };
+
+gameController.submitName = (req, res, next) => {
+  try {
+    const totalTime = req.user.totalTime;
+  } catch (error) {}
+};
+
 export default gameController;
