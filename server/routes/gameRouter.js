@@ -7,5 +7,6 @@ const gameRouter = Router();
 gameRouter.post('/start', gameController.start);
 
 gameRouter.post('/submit', authJWT, gameController.submit);
+gameRouter.post('/submit/name', authJWT, gameController.submitName);
 
 export default gameRouter;

@@ -47,6 +47,12 @@ gameController.submit = (req, res, next) => {
 gameController.submitName = (req, res, next) => {
   try {
     const totalTime = req.user.totalTime;
+    console.log(totalTime);
+    console.log(req.body);
+
+    res.status(201).json({
+      success: true,
+    });
   } catch (error) {}
 };
 
