@@ -1,11 +1,53 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './leaderboard.module.css';
 
 const Leaderboard = ({ ref, leaderboardId }) => {
-  useEffect(() => {
-    // load local scores
+  const [globalLoading, setGlobalLoading] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
+
+  useEffect(async () => {
     // load global scores
+    await loadGlobal();
   }, []);
+
+  const loadGlobal = async (page, leaderboardId) => {
+    setGlobalLoading(true);
+
+    try {
+      const url = new URL(
+        `${import.meta.env.VITE_STAR_API}api/game/leaderboard/global`,
+      );
+      const response = await fetch(url.toString(), {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Problems starting the game, please retry.');
+      }
+    } catch (error) {
+    } finally {
+      setGlobalLoading(false);
+    }
+  };
+
+  const loadLocal = async (page) => {
+    setLocalLoading(true);
+    try {
+      const url = new URL(
+        `${import.meta.env.VITE_STAR_API}api/game/leaderboard/local`,
+      );
+      const response = await fetch(url.toString(), {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Problems starting the game, please retry.');
+      }
+    } catch (error) {
+    } finally {
+      setLocalLoading(false);
+    }
+  };
 
   return (
     <dialog ref={ref} className={styles.leaderboard}>
