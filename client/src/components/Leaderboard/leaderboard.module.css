@@ -1,0 +1,31 @@
+/* minWidth: '400px',
+    textAlign: 'center',
+    backgroundColor: 'black',
+    color: 'white',
+    zIndex: 1, */
+
+.leaderboard {
+  min-width: 400px;
+  background-color: black;
+  color: white;
+}
+
+.leaderboard > h1 {
+  text-align: center;
+  font-size: 3.2em;
+}
+
+.tabs {
+  display: flex;
+  width: 100%;
+}
+
+.tab {
+  flex: 1;
+  border: 2px solid white;
+}
+
+.tab > h2 {
+  font-size: 2.4em;
+  text-align: center;
+}

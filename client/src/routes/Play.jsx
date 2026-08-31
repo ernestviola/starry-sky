@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import StarMap from '../components/StarMap/index.jsx';
 import { jwtDecode } from 'jwt-decode';
 import GameTimer from '../components/GameTimer.jsx';
+import Leaderboard from '../components/Leaderboard/Leaderboard.jsx';
 
 const Play = () => {
   const [loading, setLoading] = useState(false);
@@ -12,12 +13,15 @@ const Play = () => {
   const [gameToken, setGameToken] = useState(null);
   const [gameFinishedToken, setGameFinishedToken] = useState(null);
   const [name, setName] = useState('');
+  const [leaderboardId, setLeaderboardId] = useState(null);
+
   const [starsFoundDictionary, setStarsFoundDictionary] = useState({});
 
   const hoveredStarIdRef = useRef();
 
   const dialogGameStartRef = useRef();
   const dialogSubmitScoreRef = useRef();
+  const dialogLeaderboard = useRef();
 
   const dialogStyle = {
     minWidth: '400px',
@@ -28,7 +32,8 @@ const Play = () => {
   };
 
   useEffect(() => {
-    dialogGameStartRef.current.showModal();
+    // dialogGameStartRef.current.showModal();
+    dialogLeaderboard.current.showModal();
   }, []);
 
   useEffect(() => {
@@ -176,7 +181,11 @@ const Play = () => {
       const data = await response.json();
 
       if (data.success) {
-        //
+        // show the leaderboard and the users position
+        setLeaderboardId(data.leaderboardId);
+        // close the dialog
+        dialogSubmitScoreRef.current.close();
+        // show the leaderboard modal
       }
     } catch (error) {
       console.log(error);
@@ -223,6 +232,7 @@ const Play = () => {
           </button>
         </form>
       </dialog>
+      <Leaderboard ref={dialogLeaderboard} leadboardId={leaderboardId} />
       <GameTimer
         startTime={gameStartTime}
         totalTime={gameTotalTime}

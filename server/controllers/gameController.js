@@ -1,9 +1,15 @@
 import jwt from 'jsonwebtoken';
 import { prisma } from '../libs/prisma.js';
 
+import { body, validationResult, matchedData } from 'express-validator';
+
 const gameController = {};
 
-const submitValidator = [];
+const submitValidator = [
+  body('name').isString(),
+  body('latitude').isNumeric().optional(),
+  body('longitude').isNumeric().optional(),
+];
 
 gameController.start = async (req, res, next) => {
   try {
@@ -44,16 +50,44 @@ gameController.submit = (req, res, next) => {
   }
 };
 
-gameController.submitName = (req, res, next) => {
-  try {
-    const totalTime = req.user.totalTime;
-    console.log(totalTime);
-    console.log(req.body);
+gameController.submitName = [
+  submitValidator,
+  async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const queryErrors = {};
+      errors.array().forEach((error) => {
+        queryErrors[error.path] = error.msg;
+      });
+      return res.status(400).json({ queryErrors, success: false });
+    }
 
-    res.status(201).json({
-      success: true,
-    });
-  } catch (error) {}
-};
+    try {
+      const { name, latitude, longitude } = matchedData(req);
+      const totalTime = req.user.totalTime;
+
+      console.log(totalTime);
+      console.log(req.body);
+
+      const leaderboard = await prisma.leaderboard.create({
+        data: {
+          name,
+          totalTimeMiliseconds: totalTime,
+          geoLat: latitude,
+          geoLong: longitude,
+        },
+      });
+
+      console.log(leaderboard);
+
+      res.status(201).json({
+        success: true,
+        leaderboardId: 2,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },
+];
 
 export default gameController;
