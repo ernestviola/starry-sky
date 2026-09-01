@@ -232,7 +232,7 @@ const Play = () => {
           </button>
         </form>
       </dialog>
-      <Leaderboard ref={dialogLeaderboard} leadboardId={leaderboardId} />
+      <Leaderboard ref={dialogLeaderboard} leaderboardId={leaderboardId} />
       <GameTimer
         startTime={gameStartTime}
         totalTime={gameTotalTime}

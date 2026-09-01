@@ -5,9 +5,15 @@ const Leaderboard = ({ ref, leaderboardId }) => {
   const [globalLoading, setGlobalLoading] = useState(false);
   const [localLoading, setLocalLoading] = useState(false);
 
-  useEffect(async () => {
+  const [globalLeaderboard, setGlobalLeaderboard] = useState([]);
+
+  useEffect(() => {
     // load global scores
-    await loadGlobal();
+    const load = async () => {
+      await loadGlobal();
+    };
+
+    load();
   }, []);
 
   const loadGlobal = async (page, leaderboardId) => {
