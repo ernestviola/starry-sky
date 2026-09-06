@@ -14,6 +14,7 @@ const Play = () => {
   const [gameFinishedToken, setGameFinishedToken] = useState(null);
   const [name, setName] = useState('');
   const [leaderboardId, setLeaderboardId] = useState(null);
+  const [refreshLeaderboard, setRefreshLeaderboard] = useState(false);
 
   const [starsFoundDictionary, setStarsFoundDictionary] = useState({});
 
@@ -32,8 +33,8 @@ const Play = () => {
   };
 
   useEffect(() => {
-    // dialogGameStartRef.current.showModal();
-    dialogLeaderboard.current.showModal();
+    dialogGameStartRef.current.showModal();
+    // dialogLeaderboard.current.showModal();
   }, []);
 
   useEffect(() => {
@@ -43,6 +44,8 @@ const Play = () => {
   const handleStartGame = async () => {
     try {
       setLoading(true);
+      setGameTotalTime(null);
+      setGameFinishedToken(null);
       const url = new URL(`${import.meta.env.VITE_STAR_API}api/game/start`);
       const response = await fetch(url.toString(), {
         method: 'POST',
@@ -66,6 +69,9 @@ const Play = () => {
 
       setStarsFoundDictionary(starsDictionary);
       dialogGameStartRef.current.close();
+      dialogLeaderboard.current.close();
+      dialogSubmitScoreRef.current.close();
+
       setGameStarted(true);
     } catch (error) {
       console.log(error);
@@ -183,8 +189,11 @@ const Play = () => {
       if (data.success) {
         // show the leaderboard and the users position
         setLeaderboardId(data.leaderboardId);
+
         // close the dialog
         dialogSubmitScoreRef.current.close();
+        dialogLeaderboard.current.showModal();
+        setRefreshLeaderboard(true);
         // show the leaderboard modal
       }
     } catch (error) {
@@ -232,7 +241,13 @@ const Play = () => {
           </button>
         </form>
       </dialog>
-      <Leaderboard ref={dialogLeaderboard} leaderboardId={leaderboardId} />
+      <Leaderboard
+        ref={dialogLeaderboard}
+        leaderboardId={leaderboardId}
+        handleStartGame={handleStartGame}
+        refreshLeaderboard={refreshLeaderboard}
+        setRefreshLeaderboard={setRefreshLeaderboard}
+      />
       <GameTimer
         startTime={gameStartTime}
         totalTime={gameTotalTime}

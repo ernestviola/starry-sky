@@ -35,7 +35,6 @@ leaderboardController.getGlobal = [
 
       let leaderboard;
       if (leaderboardId >= 1) {
-        console.log('Has leaderboardId');
         leaderboard = await prisma.$queryRaw`
         with ranked as (
 
@@ -88,9 +87,6 @@ leaderboardController.getGlobal = [
 
       const count = await prisma.leaderboard.count();
       const lastPosition = serialized.at(-1)?.position ?? 0;
-
-      console.log(serialized);
-      console.log(page);
 
       res.status(201).json({
         success: true,
