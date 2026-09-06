@@ -10,6 +10,6 @@ gameRouter.post('/start', gameController.start);
 gameRouter.post('/submit', authJWT, gameController.submit);
 gameRouter.post('/submit/name', authJWT, gameController.submitName);
 
-gameRouter.route('/leaderboard', leaderboardRouter);
+gameRouter.use('/leaderboard', leaderboardRouter);
 
 export default gameRouter;

@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react';
 import styles from './leaderboard.module.css';
+import { BiLeftArrow, BiRightArrow } from 'react-icons/bi';
 
 const Leaderboard = ({ ref, leaderboardId }) => {
   const [globalLoading, setGlobalLoading] = useState(false);
   const [localLoading, setLocalLoading] = useState(false);
 
-  const [globalLeaderboard, setGlobalLeaderboard] = useState([]);
+  const [globalLeaderboardData, setGlobalLeaderboardData] = useState({
+    leaderboard: [],
+    page: 1,
+  });
 
   useEffect(() => {
     // load global scores
@@ -24,34 +28,21 @@ const Leaderboard = ({ ref, leaderboardId }) => {
         `${import.meta.env.VITE_STAR_API}api/game/leaderboard/global`,
       );
       const response = await fetch(url.toString(), {
-        method: 'POST',
+        method: 'GET',
       });
 
       if (!response.ok) {
         throw new Error('Problems starting the game, please retry.');
       }
+
+      const data = await response.json();
+      console.log(data.leaderboard);
+      setGlobalLeaderboardData(data);
+
+      console.log(data);
     } catch (error) {
     } finally {
       setGlobalLoading(false);
-    }
-  };
-
-  const loadLocal = async (page) => {
-    setLocalLoading(true);
-    try {
-      const url = new URL(
-        `${import.meta.env.VITE_STAR_API}api/game/leaderboard/local`,
-      );
-      const response = await fetch(url.toString(), {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        throw new Error('Problems starting the game, please retry.');
-      }
-    } catch (error) {
-    } finally {
-      setLocalLoading(false);
     }
   };
 
@@ -66,17 +57,31 @@ const Leaderboard = ({ ref, leaderboardId }) => {
           <h2>Local</h2>
         </div>
       </div>
-      <div>
-        <div>
+      <div className={styles.rankings}>
+        <div className={styles.header}>
+          <h3>Rank</h3>
           <h3>Name</h3>
           <h3>Time</h3>
         </div>
-        <div>list of users and scores</div>
+
+        {globalLeaderboardData.leaderboard.map((entry) => {
+          return (
+            <div className={styles.row} key={entry.id}>
+              <span>{entry.rank}</span>
+              <span>{entry.name}</span>
+              <span>{(entry.totalTimeMiliseconds / 1000).toFixed(2)}s</span>
+            </div>
+          );
+        })}
       </div>
       <div>
-        <button>;leftarrow ;leftarrow </button>
-        <div>page group and buttons</div>
-        <button>;rightarrow ;rightarrow</button>
+        <button>
+          <BiLeftArrow />{' '}
+        </button>
+        <div>{globalLeaderboardData.page}</div>
+        <button>
+          <BiRightArrow />
+        </button>
       </div>
 
       <button>Retry</button>

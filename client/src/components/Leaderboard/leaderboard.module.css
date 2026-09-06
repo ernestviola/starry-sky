@@ -29,3 +29,27 @@
   font-size: 2.4em;
   text-align: center;
 }
+
+.rankings {
+  display: grid;
+  grid-template-columns: 0.5fr 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.header,
+.row {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  text-align: center;
+}
+
+.header {
+  border-bottom: 2px solid white;
+  font-size: 1.6em;
+}
+
+.row {
+  padding: 0.5rem 0;
+  font-size: 1.4em;
+}
