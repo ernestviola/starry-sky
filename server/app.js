@@ -44,7 +44,10 @@ app.use((error, req, res, next) => {
 });
 
 // Serve
-app.listen(PORT, (err) => {
-  if (err) throw new Error('Trouble starting the app.');
-  console.log(`App listening on PORT: ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test')
+  app.listen(PORT, (err) => {
+    if (err) throw new Error('Trouble starting the app.');
+    console.log(`App listening on PORT: ${PORT}`);
+  });
+
+export default app;

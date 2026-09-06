@@ -20,7 +20,7 @@ const globalValidation = [
 leaderboardController.getGlobal = [
   globalValidation,
   async (req, res, next) => {
-    const pageSize = 3;
+    const pageSize = 10;
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
