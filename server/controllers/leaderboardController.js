@@ -31,7 +31,7 @@ leaderboardController.getGlobal = [
       return res.status(400).json({ queryErrors, success: false });
     }
     try {
-      const { page = 1, leaderboardId } = matchedData(req);
+      let { page = 1, leaderboardId } = matchedData(req);
 
       let leaderboard;
       if (leaderboardId >= 1) {
@@ -57,6 +57,8 @@ leaderboardController.getGlobal = [
         )
         order by position
         `;
+
+        page = Number(leaderboard.at(-1).pageNumber);
       } else {
         let skip;
         skip = (page - 1) * pageSize;

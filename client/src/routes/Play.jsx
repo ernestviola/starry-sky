@@ -22,7 +22,27 @@ const Play = () => {
 
   const dialogGameStartRef = useRef();
   const dialogSubmitScoreRef = useRef();
-  const dialogLeaderboard = useRef();
+  const dialogLeaderboardRef = useRef();
+
+  useEffect(() => {
+    const preventEscape = (event) => {
+      if (
+        event.key === 'Escape' &&
+        (dialogGameStartRef.current?.open ||
+          dialogSubmitScoreRef.current?.open ||
+          dialogLeaderboardRef.current?.open)
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+
+    window.addEventListener('keydown', preventEscape, true);
+
+    return () => {
+      window.removeEventListener('keydown', preventEscape, true);
+    };
+  }, []);
 
   const dialogStyle = {
     minWidth: '400px',
@@ -34,7 +54,7 @@ const Play = () => {
 
   useEffect(() => {
     dialogGameStartRef.current.showModal();
-    // dialogLeaderboard.current.showModal();
+    // dialogLeaderboardRef.current.showModal();
   }, []);
 
   useEffect(() => {
@@ -69,7 +89,7 @@ const Play = () => {
 
       setStarsFoundDictionary(starsDictionary);
       dialogGameStartRef.current.close();
-      dialogLeaderboard.current.close();
+      dialogLeaderboardRef.current.close();
       dialogSubmitScoreRef.current.close();
 
       setGameStarted(true);
@@ -192,7 +212,7 @@ const Play = () => {
 
         // close the dialog
         dialogSubmitScoreRef.current.close();
-        dialogLeaderboard.current.showModal();
+        dialogLeaderboardRef.current.showModal();
         setRefreshLeaderboard(true);
         // show the leaderboard modal
       }
@@ -209,12 +229,20 @@ const Play = () => {
         handleClick={handleStarClick}
       />
 
-      <dialog ref={dialogGameStartRef} style={dialogStyle}>
+      <dialog
+        ref={dialogGameStartRef}
+        style={dialogStyle}
+        onCancel={(e) => e.preventDefault()}
+      >
         <h1>Use the map to find Sirius and Polaris and submit your score</h1>
         <button onClick={handleStartGame}>Start</button>
       </dialog>
 
-      <dialog ref={dialogSubmitScoreRef} style={{ ...dialogStyle }}>
+      <dialog
+        ref={dialogSubmitScoreRef}
+        style={{ ...dialogStyle }}
+        onCancel={(e) => e.preventDefault()}
+      >
         <form
           action=''
           style={{ display: 'flex', flexDirection: 'column', gap: '1em' }}
@@ -242,7 +270,7 @@ const Play = () => {
         </form>
       </dialog>
       <Leaderboard
-        ref={dialogLeaderboard}
+        ref={dialogLeaderboardRef}
         leaderboardId={leaderboardId}
         handleStartGame={handleStartGame}
         refreshLeaderboard={refreshLeaderboard}

@@ -20,8 +20,10 @@ const Leaderboard = ({
   useEffect(() => {
     // load global scores
     const load = async () => {
-      await loadGlobal();
+      await loadGlobal(null, leaderboardId);
     };
+
+    console.log(leaderboardId);
 
     load();
     setRefreshLeaderboard(false);
@@ -87,7 +89,11 @@ const Leaderboard = ({
   };
 
   return (
-    <dialog ref={ref} className={styles.leaderboard}>
+    <dialog
+      ref={ref}
+      className={styles.leaderboard}
+      onCancel={(e) => e.preventDefault()}
+    >
       <h1>Leaderboard</h1>
       {/* <div className={styles.tabs}>
         <div className={styles.tab}>

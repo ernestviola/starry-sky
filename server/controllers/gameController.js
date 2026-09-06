@@ -82,7 +82,7 @@ gameController.submitName = [
 
       res.status(201).json({
         success: true,
-        leaderboardId: 2,
+        leaderboardId: leaderboard.id,
       });
     } catch (error) {
       console.log(error);
