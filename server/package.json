@@ -7,7 +7,7 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest",
+    "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles",
     "dev": "node --watch app.js"
   },
   "dependencies": {
