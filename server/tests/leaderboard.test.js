@@ -16,5 +16,16 @@ describe('GET /api/game/leaderboard', () => {
     test('');
   });
 
-  describe('response unsuccessful tests', () => {});
+  describe('response unsuccessful tests', () => {
+    test('unsuccessful after invalid id', async () => {
+      const response = await request(app)
+        .get('/api/game/leaderboard?page=-2')
+        .expect(400);
+    });
+    test('unsuccessful after invalid star', async () => {
+      const response = await request(app)
+        .get('/api/game/leaderboard?page=-2')
+        .expect(400);
+    });
+  });
 });
