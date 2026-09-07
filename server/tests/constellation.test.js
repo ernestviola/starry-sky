@@ -10,7 +10,7 @@ import app from '../app.js';
 describe('GET /api/constellation/frame', () => {
   let response;
 
-  describe('with valid frames', () => {
+  describe('response successful tests', () => {
     beforeAll(async () => {
       response = await request(app)
         .get('/api/constellations/frame?frames=2')
@@ -62,7 +62,7 @@ describe('GET /api/constellation/frame', () => {
     });
   });
 
-  describe('with invalid frames', () => {
+  describe('response unsuccessful tests', () => {
     test('rejects a request without frames', async () => {
       const response = await request(app)
         .get('/api/constellations/frame')
