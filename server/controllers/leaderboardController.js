@@ -90,7 +90,7 @@ leaderboardController.getGlobal = [
       const count = await prisma.leaderboard.count();
       const lastPosition = serialized.at(-1)?.position ?? 0;
 
-      res.status(201).json({
+      res.status(200).json({
         success: true,
         leaderboard: serialized,
         page,
