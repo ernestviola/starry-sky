@@ -7,3 +7,11 @@ test('displays the completed game time', () => {
 
   expect(screen.getByText('2.50s')).toBeInTheDocument();
 });
+
+test('game timer is absent when it has no start time', () => {
+  render(<GameTimer />);
+
+  const timer = screen.queryByRole('timer');
+
+  expect(timer).not.toBeInTheDocument();
+});
