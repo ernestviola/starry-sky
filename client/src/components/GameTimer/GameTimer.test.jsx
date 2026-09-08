@@ -15,3 +15,7 @@ test('game timer is absent when it has no start time', () => {
 
   expect(timer).not.toBeInTheDocument();
 });
+
+test.todo('does total time count increase?');
+test.todo('does the component unmount correctly');
+test.todo('does it preserve its style');
