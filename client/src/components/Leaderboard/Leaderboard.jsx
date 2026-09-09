@@ -10,7 +10,6 @@ const Leaderboard = ({
   setRefreshLeaderboard,
 }) => {
   const [globalLoading, setGlobalLoading] = useState(false);
-  const [localLoading, setLocalLoading] = useState(false);
 
   const [globalLeaderboardData, setGlobalLeaderboardData] = useState({
     leaderboard: [],
@@ -95,14 +94,6 @@ const Leaderboard = ({
       onCancel={(e) => e.preventDefault()}
     >
       <h1>Leaderboard</h1>
-      {/* <div className={styles.tabs}>
-        <div className={styles.tab}>
-          <h2>Global</h2>
-        </div>
-        <div className={styles.tab}>
-          <h2>Local</h2>
-        </div>
-      </div> */}
       <div className={styles.rankings}>
         <div className={styles.header}>
           <h3>Rank</h3>
