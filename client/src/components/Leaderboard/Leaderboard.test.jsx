@@ -2,12 +2,6 @@ import { render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 import Leaderboard from './Leaderboard.jsx';
 
-// ref,
-// leaderboardId,
-// handleStartGame,
-// refreshLeaderboard,
-// setRefreshLeaderboard,
-
 test.todo('What happens given a leaderboardId');
 test.todo('What happens when there is no leaderboardId');
 test.todo('Is the next button disabled when hasNext is false?');
