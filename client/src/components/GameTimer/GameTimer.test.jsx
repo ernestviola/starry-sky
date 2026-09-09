@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { vi } from 'vitest';
 import GameTimer from './GameTimer.jsx';
 
@@ -16,6 +16,28 @@ test('game timer is absent when it has no start time', () => {
   expect(timer).not.toBeInTheDocument();
 });
 
-test.todo('does total time count increase?');
+test('total time count increases', () => {
+  vi.useFakeTimers();
+
+  const startTime = 1000;
+  vi.setSystemTime(startTime);
+
+  render(<GameTimer startTime={startTime} />);
+
+  act(() => {
+    vi.advanceTimersByTime(1000);
+  });
+
+  const firstTime = screen.getByRole('timer').textContent;
+
+  act(() => {
+    vi.advanceTimersByTime(1000);
+  });
+
+  const secondTime = screen.getByRole('timer').textContent;
+
+  expect(firstTime).toBe('1.00s');
+  expect(secondTime).toBe('2.00s');
+});
 test.todo('does the component unmount correctly');
 test.todo('does it preserve its style');

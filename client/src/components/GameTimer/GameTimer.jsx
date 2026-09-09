@@ -14,7 +14,7 @@ const GameTimer = ({ startTime, totalTime, style }) => {
     return () => clearInterval(currentInterval);
   }, [startTime]);
 
-  if (startTime && totalTime) {
+  if (totalTime) {
     return (
       <div role='timer' style={style}>
         {(totalTime / 1000).toFixed(2)}s
