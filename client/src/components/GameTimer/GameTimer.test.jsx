@@ -39,5 +39,27 @@ test('total time count increases', () => {
   expect(firstTime).toBe('1.00s');
   expect(secondTime).toBe('2.00s');
 });
-test.todo('does the component unmount correctly');
-test.todo('does it preserve its style');
+
+test('does the component unmount correctly', () => {
+  const { unmount } = render(<GameTimer startTime={1000} />);
+
+  expect(screen.getByRole('timer')).toBeInTheDocument();
+
+  unmount();
+
+  expect(screen.queryByRole('timer')).not.toBeInTheDocument();
+});
+
+test('does it preserve its style', () => {
+  const style = {
+    color: 'rgb(255,0,0)',
+  };
+
+  render(<GameTimer startTime={1000} style={style} />);
+
+  const timer = screen.getByRole('timer');
+
+  expect(timer).toHaveStyle({
+    color: 'rgb(255,0,0)',
+  });
+});
