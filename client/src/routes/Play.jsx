@@ -86,7 +86,7 @@ const Play = () => {
       const starsDictionary = {};
       for (const star of decoded.starsToFind) {
         starsDictionary[star.id] = {
-          name: star.name,
+          name: star.proper,
           found: false,
         };
       }
@@ -137,12 +137,8 @@ const Play = () => {
         const data = await response.json();
         const decoded = jwtDecode(data.token);
 
-        const timeInSeconds = decoded.totalTime / 1000;
-
         setGameTotalTime(decoded.totalTime);
         setGameFinishedToken(data.token);
-
-        console.log(`${timeInSeconds.toFixed(2)}s`);
         dialogSubmitScoreRef.current.showModal();
       }
     }
@@ -279,20 +275,25 @@ const Play = () => {
         refreshLeaderboard={refreshLeaderboard}
         setRefreshLeaderboard={setRefreshLeaderboard}
       />
-      <GameTimer
-        startTime={gameStartTime}
-        totalTime={gameTotalTime}
+      <div
         style={{
           position: 'absolute',
           top: 0,
           right: 0,
-          backgroundColor: 'black',
-          color: 'white',
-          fontSize: '1.6em',
-          padding: '4px',
         }}
-      />
-      <SearchList items={starsFoundDictionary} />
+      >
+        <GameTimer
+          startTime={gameStartTime}
+          totalTime={gameTotalTime}
+          style={{
+            backgroundColor: 'black',
+            color: 'white',
+            fontSize: '1.6em',
+            padding: '4px',
+          }}
+        />
+        <SearchList items={starsFoundDictionary} />
+      </div>
     </div>
   );
 };

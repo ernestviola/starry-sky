@@ -22,8 +22,6 @@ const Leaderboard = ({
       await loadGlobal(null, leaderboardId);
     };
 
-    console.log(leaderboardId);
-
     load();
     setRefreshLeaderboard(false);
   }, [refreshLeaderboard]);
@@ -51,10 +49,7 @@ const Leaderboard = ({
       }
 
       const data = await response.json();
-      console.log(data.leaderboard);
       setGlobalLeaderboardData(data);
-
-      console.log(data);
     } catch (error) {
     } finally {
       setGlobalLoading(false);
@@ -77,10 +72,7 @@ const Leaderboard = ({
       }
 
       const data = await response.json();
-      console.log(data.leaderboard);
       setGlobalLeaderboardData(data);
-
-      console.log(data);
     } catch (error) {
     } finally {
       setGlobalLoading(false);

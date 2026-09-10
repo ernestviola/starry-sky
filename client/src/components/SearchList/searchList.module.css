@@ -1,4 +1,7 @@
 .searchList {
+  color: white;
+  display: flex;
+  flex-direction: column;
 }
 
 .found {
