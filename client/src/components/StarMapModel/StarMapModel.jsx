@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Grid, OrbitControls, Line, Html } from '@react-three/drei';
 import * as THREE from 'three';
+import styles from './starMapModel.module.css';
 
 /**
  * ability to scale the star inward towards the earth
@@ -262,6 +263,7 @@ const Controls = ({
   const [xInput, setXInput] = useState(String(starPos[0]));
   const [yInput, setYInput] = useState(String(starPos[1]));
   const [zInput, setZInput] = useState(String(starPos[2]));
+  const [showControls, setShowControls] = useState(false);
 
   useEffect(() => {
     setXInput(starPos[0]);
@@ -269,82 +271,76 @@ const Controls = ({
     setZInput(starPos[2]);
   }, [starPos]);
   return (
-    <div
-      style={{
-        position: 'absolute',
-        bottom: '20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        display: 'flex',
-      }}
-    >
+    <div className={styles.controllerParent}>
       {/* RA Height Control */}
-      <label htmlFor=''>
-        RA Height: {RAHeight}
-        <input
-          type='range'
-          min={-Math.min(Math.abs(starPos[1]), 1)}
-          max={Math.min(1, Math.abs(starPos[1]))}
-          step={0.01}
-          value={RAHeight}
-          onChange={(e) => setRAHeight(parseFloat(e.target.value))}
-        />
-      </label>
+      <div className={styles.controlsContainer}>
+        <label htmlFor=''>
+          RA Height: {RAHeight}
+          <input
+            type='range'
+            min={-Math.min(Math.abs(starPos[1]), 1)}
+            max={Math.min(1, Math.abs(starPos[1]))}
+            step={0.01}
+            value={RAHeight}
+            onChange={(e) => setRAHeight(parseFloat(e.target.value))}
+          />
+        </label>
 
-      {/* Star Distance Control */}
-      <label htmlFor=''>
-        Star Distance: {starRadius.toFixed(2)}
-        <input
-          type='range'
-          min={1}
-          max={5}
-          step={0.01}
-          value={starRadius}
-          onChange={(e) => setStarRadius(parseFloat(e.target.value))}
-        />
-      </label>
+        {/* Star Distance Control */}
+        <label htmlFor=''>
+          Star Distance: {starRadius.toFixed(2)}
+          <input
+            type='range'
+            min={1}
+            max={5}
+            step={0.01}
+            value={starRadius}
+            onChange={(e) => setStarRadius(parseFloat(e.target.value))}
+          />
+        </label>
 
-      {/* Star X,Y,Z */}
-      <label htmlFor=''>
-        X:{' '}
-        <input
-          type='number'
-          step={0.01}
-          value={xInput}
-          onChange={(e) => {
-            setXInput(e.target.value);
-            const parsed = parseFloat(e.target.value);
-            reCalcParameters(parsed, starPos[1], starPos[2]);
-          }}
-        />
-      </label>
-      <label htmlFor=''>
-        Y:{' '}
-        <input
-          type='number'
-          step={0.01}
-          value={yInput}
-          onChange={(e) => {
-            setYInput(e.target.value);
-            const parsed = parseFloat(e.target.value);
-            reCalcParameters(starPos[0], parsed, starPos[2]);
-          }}
-        />
-      </label>
-      <label htmlFor=''>
-        Z:{' '}
-        <input
-          type='number'
-          step={0.01}
-          value={zInput}
-          onChange={(e) => {
-            setZInput(e.target.value);
-            const parsed = parseFloat(e.target.value);
-            reCalcParameters(starPos[0], starPos[1], parsed);
-          }}
-        />
-      </label>
-      <div>r1 = starRadius, r2 = cos()</div>
+        {/* Star X,Y,Z */}
+        <label htmlFor=''>
+          X:{' '}
+          <input
+            type='number'
+            step={0.01}
+            value={xInput}
+            onChange={(e) => {
+              setXInput(e.target.value);
+              const parsed = parseFloat(e.target.value);
+              reCalcParameters(parsed, starPos[1], starPos[2]);
+            }}
+          />
+        </label>
+        <label htmlFor=''>
+          Y:{' '}
+          <input
+            type='number'
+            step={0.01}
+            value={yInput}
+            onChange={(e) => {
+              setYInput(e.target.value);
+              const parsed = parseFloat(e.target.value);
+              reCalcParameters(starPos[0], parsed, starPos[2]);
+            }}
+          />
+        </label>
+        <label htmlFor=''>
+          Z:{' '}
+          <input
+            type='number'
+            step={0.01}
+            value={zInput}
+            onChange={(e) => {
+              setZInput(e.target.value);
+              const parsed = parseFloat(e.target.value);
+              reCalcParameters(starPos[0], starPos[1], parsed);
+            }}
+          />
+        </label>
+        <div>r1 = starRadius, r2 = cos()</div>
+      </div>
     </div>
   );
 };
@@ -436,8 +432,8 @@ const StarMapModel = () => {
   };
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-      <Canvas camera={{ position: [1, 3, 10] }}>
+    <div className={styles.container}>
+      <Canvas camera={{ position: [1, 3, 10] }} className={styles.canvas}>
         <ModelGrid gridSize={gridSize} />
         <PointLabels starPos={starPos} RAHeight={RAHeight} />
         <Declination starPos={starPos} />

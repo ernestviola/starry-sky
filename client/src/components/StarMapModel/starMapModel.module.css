@@ -1,0 +1,48 @@
+/* display: flex,
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: 'black',
+        color: 'white',
+        gap: '.5em', */
+
+.container {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+  gap: 2rem;
+  width: min(100%, 100rem);
+  margin: 0 auto;
+  align-items: start;
+}
+
+.canvas {
+  width: 100%;
+  aspect-ratio: 1;
+  min-height: 30rem;
+}
+
+.controllerParent {
+  margin: 2em;
+}
+
+.controlsContainer {
+  padding: 2em;
+  border: 2px solid purple;
+  display: flex;
+  flex-direction: column;
+  background-color: black;
+  color: white;
+  gap: 0.5em;
+}
+
+.controlsContainer[hidden] {
+  display: none;
+}
+
+.controlsContainer > label {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
