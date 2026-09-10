@@ -86,7 +86,7 @@ const Play = () => {
       const starsDictionary = {};
       for (const star of decoded.starsToFind) {
         starsDictionary[star.id] = {
-          proper: star.proper,
+          name: star.name,
           found: false,
         };
       }

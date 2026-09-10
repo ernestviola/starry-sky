@@ -11,10 +11,16 @@ test('component should be in the document', () => {
 });
 
 test('given a list, it should render each of the list items', () => {
-  const stars = [
-    { id: 1, proper: 'Sirius' },
-    { id: 2, proper: 'Polaris' },
-  ];
+  const stars = {
+    1: {
+      found: false,
+      name: 'Sirius',
+    },
+    2: {
+      found: false,
+      name: 'Polaris',
+    },
+  };
 
   render(<SearchList items={stars} />);
 
@@ -24,10 +30,18 @@ test('given a list, it should render each of the list items', () => {
 });
 
 test('given a star was found we should mark it as found', () => {
-  const stars = [{ id: 1, proper: 'Sirius' }];
-  const found = { 1: true };
+  const stars = {
+    1: {
+      found: true,
+      name: 'Sirius',
+    },
+    2: {
+      found: false,
+      name: 'Polaris',
+    },
+  };
 
-  render(<SearchList items={stars} itemsFound={found} />);
+  render(<SearchList items={stars} />);
 
   const star = screen.getByText('Sirius');
 
@@ -36,17 +50,29 @@ test('given a star was found we should mark it as found', () => {
 });
 
 test('updates when a star is found', () => {
-  const stars = [{ id: 1, proper: 'Sirius' }];
+  const stars = {
+    1: {
+      found: false,
+      name: 'Sirius',
+    },
+  };
 
-  const { rerender } = render(
-    <SearchList items={stars} itemsFound={{ 1: false }} />,
-  );
+  const { rerender } = render(<SearchList items={stars} />);
 
   const star = screen.getByText('Sirius');
 
   expect(star).not.toHaveClass(styles.found);
 
-  rerender(<SearchList items={stars} itemsFound={{ 1: true }} />);
+  rerender(
+    <SearchList
+      items={{
+        1: {
+          found: true,
+          name: 'Sirius',
+        },
+      }}
+    />,
+  );
 
   expect(star).toHaveClass(styles.found);
 });

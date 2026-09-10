@@ -5,14 +5,16 @@ const SearchList = ({ items = [] }) => {
     <div role='list' className={styles.searchList}>
       {Object.entries(items)
         .sort((a, b) => a - b)
-        .map(([key, item]) => {
+        .map((keyValue) => {
+          const item = keyValue[1];
+          console.log(item);
           return (
             <span
               role='listitem'
               key={item.id}
               className={item.found ? styles.found : ''}
             >
-              {item.proper}
+              {item.name}
             </span>
           );
         })}
