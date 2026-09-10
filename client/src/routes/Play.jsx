@@ -1,8 +1,9 @@
 import { useRef, useState, useEffect } from 'react';
 import StarMap from '../components/StarMap/index.jsx';
 import { jwtDecode } from 'jwt-decode';
-import GameTimer from '../components/GameTimer.jsx';
+import GameTimer from '../components/GameTimer/GameTimer.jsx';
 import Leaderboard from '../components/Leaderboard/Leaderboard.jsx';
+import SearchList from '../components/SearchList/SearchList.jsx';
 
 const Play = () => {
   const [loading, setLoading] = useState(false);
@@ -84,7 +85,10 @@ const Play = () => {
 
       const starsDictionary = {};
       for (const star of decoded.starsToFind) {
-        starsDictionary[star.id] = false;
+        starsDictionary[star.id] = {
+          proper: star.proper,
+          found: false,
+        };
       }
 
       setStarsFoundDictionary(starsDictionary);
@@ -101,12 +105,9 @@ const Play = () => {
   };
 
   const checkAllStarsFound = () => {
-    const stillNeedToFind = Object.values(starsFoundDictionary).filter(
-      (found) => {
-        return found === false;
-      },
-    ).length;
-    return stillNeedToFind <= 0;
+    return (
+      Object.values(starsFoundDictionary).filter((star) => !star.found) >= 0
+    );
   };
 
   const handleStarClick = () => {
@@ -114,7 +115,9 @@ const Play = () => {
 
     if (starId !== null && starsFoundDictionary[starId] !== undefined) {
       setStarsFoundDictionary((prev) => {
-        const foundStars = { ...prev, [starId]: true };
+        const starToUpdate = prev[starId];
+        starToUpdate.found = true;
+        const foundStars = { ...prev, [starId]: starToUpdate };
         return foundStars;
       });
     }
@@ -289,6 +292,7 @@ const Play = () => {
           padding: '4px',
         }}
       />
+      <SearchList items={starsFoundDictionary} />
     </div>
   );
 };
