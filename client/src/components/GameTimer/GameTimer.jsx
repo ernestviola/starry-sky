@@ -17,7 +17,7 @@ const GameTimer = ({ startTime, totalTime, style }) => {
   if (totalTime) {
     return (
       <div role='timer' style={style}>
-        {(totalTime / 1000).toFixed(2)}s
+        Time: {(totalTime / 1000).toFixed(2)}s
       </div>
     );
   }
@@ -25,7 +25,7 @@ const GameTimer = ({ startTime, totalTime, style }) => {
   if (startTime) {
     return (
       <div role='timer' style={style}>
-        {currentTime}
+        Time: {currentTime}
       </div>
     );
   }

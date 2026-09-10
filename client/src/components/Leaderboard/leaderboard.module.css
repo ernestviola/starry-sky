@@ -65,6 +65,11 @@
   background-color: transparent;
   color: white;
   border: none;
+  cursor: pointer;
+}
+
+.pager button:disabled {
+  cursor: auto;
 }
 
 .retry {

@@ -275,25 +275,33 @@ const Play = () => {
         refreshLeaderboard={refreshLeaderboard}
         setRefreshLeaderboard={setRefreshLeaderboard}
       />
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          right: 0,
-        }}
-      >
-        <GameTimer
-          startTime={gameStartTime}
-          totalTime={gameTotalTime}
+      {gameStarted && (
+        <div
           style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
             backgroundColor: 'black',
             color: 'white',
-            fontSize: '1.6em',
-            padding: '4px',
+            padding: '2em',
+            margin: '1em',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '.5em',
+            border: '2px solid purple',
           }}
-        />
-        <SearchList items={starsFoundDictionary} />
-      </div>
+        >
+          <GameTimer
+            startTime={gameStartTime}
+            totalTime={gameTotalTime}
+            style={{
+              fontSize: '1.6em',
+              textAlign: 'right',
+            }}
+          />
+          <SearchList items={starsFoundDictionary} />
+        </div>
+      )}
     </div>
   );
 };
