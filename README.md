@@ -67,7 +67,19 @@ Should be able to test the API and maybe the database
 
 ## Next Steps
 
-Figure out which star is being hovered over so we can display information near the mouse as well as highlight the star we're hovering
-Need to be able display star information during hover by accessing the data that is getting passed to the star
+- Add a navbar
+- Build a homepage with a hero. Explaining the app with links to explore and play
+- Fix the UI
+  - find a font i want to use
+  - decide on colors (black, purple, and white)
+  - decide on how to style containers and floating elements
+- Write the about page and style
+- Cloudbuild file
+- Docker containers for client and server
+- Setup database
 
-Show constellation names on the constellations
+# Sources
+
+HygStar data
+either d3-celestial's constellations.lines.json or
+Stellarium's constellationship.fab
