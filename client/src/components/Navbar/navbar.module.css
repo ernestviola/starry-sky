@@ -1,0 +1,21 @@
+.navbar {
+  background-color: black;
+}
+
+.navbar > ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 0.5em;
+  font-size: 1.8em;
+  color: white;
+}
+
+.navbar > ul > li > a {
+  text-decoration: none;
+}
+
+.navbar > ul > li > a:visited {
+  color: white;
+}
