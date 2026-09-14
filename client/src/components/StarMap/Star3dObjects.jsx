@@ -42,7 +42,7 @@ const Star3dObjects = ({
   starsDictionary,
   viewedFrames,
   hoveredStarId,
-  setHoveredStarId,
+  setHoveredStarId = null,
 }) => {
   // currently processed star
   const nextIndexRef = useRef(0);
@@ -218,6 +218,7 @@ const Star3dObjects = ({
 
   // returns null if hovering over empty space. returns the hovered star in all other cases
   const detectHoveredStar = () => {
+    if (setHoveredStarId === null) return;
     if (!raycastPointsRef.current) return; // there is no list of points to do raycasting on
     if (pointer.x === pointerXRef.current && pointer.y === pointerYRef.current)
       return hoveredStarId; // the mouse hasn't moved so we should keep the previous value of whatever we're looking at

@@ -1,24 +1,37 @@
 .navbar {
-  background-color: black;
-  padding: 1em 0em;
   display: grid;
-  grid-template-columns: 1fr 5fr 1fr;
+  grid-template-columns: 1fr 3fr;
+  align-items: center;
+  padding: var(--space-4) var(--space-8);
+  background-color: transparent;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.logo {
+  font-size: 2rem;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.logo:hover {
+  text-shadow: var(--color-text-primary) 0px 0px 10px;
 }
 
 .navbar > ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 4rem;
+  list-style: none;
   font-size: 1.8em;
-  color: white;
+  padding: 0;
 }
 
-.navbar > ul > li > a {
+.navbar a {
+  color: var(--color-text-body);
   text-decoration: none;
 }
 
-.navbar > ul > li > a:visited {
-  color: white;
+.navbar a:hover,
+.navbar a.active {
+  color: var(--color-accent);
 }
