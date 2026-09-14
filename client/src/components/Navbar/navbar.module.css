@@ -33,6 +33,7 @@
 .logo,
 .navbar > nav a {
   color: var(--color-text-body);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
   text-decoration: none;
 }
 
