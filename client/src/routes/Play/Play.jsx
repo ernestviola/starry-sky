@@ -227,8 +227,12 @@ const Play = () => {
         className={styles.dialog}
         onCancel={(e) => e.preventDefault()}
       >
-        <h1>Use the map to find Sirius and Polaris and submit your score</h1>
-        <button onClick={handleStartGame}>Start</button>
+        <div className={styles.startGame}>
+          <h1>Use the map to find Sirius and Polaris and submit your score</h1>
+          <button className={styles.submitButton} onClick={handleStartGame}>
+            Start
+          </button>
+        </div>
       </dialog>
 
       <dialog
@@ -242,9 +246,7 @@ const Play = () => {
           onSubmit={handleSubmitName}
         >
           <h1>Submit Time!</h1>
-          <p className={styles.score}>
-            {(gameTotalTime / 1000).toFixed(2)}s
-          </p>
+          <p className={styles.score}>{(gameTotalTime / 1000).toFixed(2)}s</p>
           <label className={styles.nameLabel} htmlFor='name'>
             <input
               type='text'
@@ -254,10 +256,7 @@ const Play = () => {
               onChange={(e) => setName(e.target.value)}
             />
           </label>
-          <button
-            className={styles.submitButton}
-            type='submit'
-          >
+          <button className={styles.submitButton} type='submit'>
             Submit
           </button>
         </form>
@@ -270,13 +269,8 @@ const Play = () => {
         setRefreshLeaderboard={setRefreshLeaderboard}
       />
       {gameStarted && (
-        <div
-          className={styles.gameStatus}
-        >
-          <GameTimer
-            startTime={gameStartTime}
-            totalTime={gameTotalTime}
-          />
+        <div className={styles.gameStatus}>
+          <GameTimer startTime={gameStartTime} totalTime={gameTotalTime} />
           <SearchList items={starsFoundDictionary} />
         </div>
       )}

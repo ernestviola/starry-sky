@@ -3,7 +3,7 @@
   top: 50%;
   left: 50%;
   z-index: 1;
-  width: min(32rem, calc(100vw - 2rem));
+  width: min(36rem, calc(100vw - 2rem));
   max-height: calc(100svh - 2rem);
   margin: 0;
   padding: var(--space-5);
@@ -28,12 +28,12 @@
 .leaderboard > h1 {
   margin-bottom: var(--space-4);
   text-align: center;
-  font-size: 1.8rem;
+  font-size: 2.2rem;
 }
 
 .rankings {
   display: grid;
-  grid-template-columns: 3rem 1fr 5.6rem;
+  grid-template-columns: 3.6rem 1fr 7.2rem;
   gap: var(--space-2) var(--space-3);
 }
 
@@ -49,7 +49,7 @@
   padding-bottom: var(--space-2);
   border-bottom: var(--border-width) solid var(--color-border);
   color: var(--color-text-subtle);
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   text-transform: uppercase;
 }
 
@@ -66,7 +66,8 @@
 
 .row {
   color: var(--color-text-body);
-  font-size: 1.2rem;
+  font-size: 1.5rem;
+  line-height: 1.4;
 }
 
 .row span:last-child {
@@ -88,7 +89,7 @@
   border-top: var(--border-width) solid var(--color-border);
   color: var(--color-text-subtle);
   font-family: var(--font-data);
-  font-size: 1.2rem;
+  font-size: 1.4rem;
 }
 
 .pager button,
