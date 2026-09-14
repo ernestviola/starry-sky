@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=Space+Grotesk:wght@500;700&family=Space+Mono:wght@400;700&family=Archivo:wght@600;800&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: oklch(0.16 0.005 260); }
+  a { color: inherit; text-decoration: none; }
+</style>
+</helmet>
+
+<section style="padding:40px; display:flex; flex-direction:column; gap:16px;">
+  <div style="color: oklch(0.6 0.01 260); font-family: Inter, sans-serif; font-size: 13px; letter-spacing: 0.02em;">Turn 2 — Arcade Orbit system applied to your real star viz: hover overlay (Explore) &amp; leaderboard (Play)</div>
+
+  <div style="display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start;">
+
+    <!-- 2a: hover overlay -->
+    <div id="2a" style="position:relative;">
+      <div style="color:#e8e6df; font-family: monospace; font-size:12px; margin-bottom:8px;">#2a — Star hover overlay (Explore)</div>
+      <div style="width:640px; height:362px; border-radius:10px; overflow:hidden; position:relative; background: #000 url('assets/explore-bg.png') center/cover;">
+        <div style="position:absolute; left:63.2%; top:40.5%; width:34px; height:34px; margin-left:-17px; margin-top:-17px; border-radius:50%; border:1.5px solid oklch(0.75 0.19 300 / 0.9); box-shadow: 0 0 14px 2px oklch(0.75 0.19 300 / 0.5);"></div>
+        <div style="position:absolute; top:16px; right:16px; background: oklch(0.16 0.02 280 / 0.82); backdrop-filter: blur(6px); border:1px solid oklch(0.75 0.19 300 / 0.6); border-radius:10px; padding:14px 18px; min-width:180px; font-family: Inter, sans-serif;">
+          <div style="font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:15px; color: oklch(0.95 0.015 80); margin-bottom:6px;">Asuusiha</div>
+          <div style="display:flex; flex-direction:column; gap:3px; font-family:'Space Mono', monospace; font-size:12px; color: oklch(0.78 0.02 280);">
+            <span>HIP&nbsp;79992</span>
+            <span>Mag&nbsp;3.91</span>
+          </div>
+          <div style="margin-top:8px; padding-top:8px; border-top:1px solid oklch(0.35 0.02 280); font-size:11px; color: oklch(0.75 0.19 300); font-family:'Space Mono', monospace;">Tap to add to search</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2b: leaderboard -->
+    <div id="2b" style="position:relative;">
+      <div style="color:#e8e6df; font-family: monospace; font-size:12px; margin-bottom:8px;">#2b — Leaderboard (Play)</div>
+      <div style="width:640px; height:362px; border-radius:10px; overflow:hidden; position:relative; background: #000 url('assets/leaderboard-bg.png') center/cover;">
+        <div style="position:absolute; inset:0; background: oklch(0.08 0.01 280 / 1);"></div>
+        <div style="position:absolute; top:16px; right:16px; background: oklch(0.16 0.02 280 / 0.9); backdrop-filter: blur(6px); border:1px solid oklch(0.75 0.19 300 / 0.6); border-radius:10px; padding:10px 16px; font-family:'Space Mono', monospace; font-size:12px; color: oklch(0.8 0.02 280);">
+          <div>Time: 18.15s</div>
+          <div style="font-family:'Space Grotesk', sans-serif; font-weight:700; color: oklch(0.95 0.015 80); margin-top:4px;">Stars to find!</div>
+          <div style="text-decoration:line-through; opacity:0.5; margin-top:2px;">Polaris</div>
+          <div style="text-decoration:line-through; opacity:0.5;">Sirius</div>
+        </div>
+        <div style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:320px; background: oklch(0.13 0.015 280 / 1); backdrop-filter: blur(8px); border:1px solid oklch(0.75 0.19 300 / 0.7); border-radius:12px; padding:18px 20px; font-family: Inter, sans-serif; box-shadow: 0 0 30px 6px oklch(0.1 0.01 280 / 1), 0 0 24px oklch(0.75 0.19 300 / 0.15);">
+          <div style="font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:18px; color: oklch(0.96 0.01 260); text-align:center; margin-bottom:12px;">Leaderboard</div>
+          <div style="display:grid; grid-template-columns: 28px 1fr 56px; gap:6px 10px; font-size:12px; color: oklch(0.78 0.02 280);">
+            <div style="font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:11px; color: oklch(0.6 0.02 280); border-bottom:1px solid oklch(0.32 0.02 280); padding-bottom:6px; margin-bottom:2px;">#</div>
+            <div style="font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:11px; color: oklch(0.6 0.02 280); border-bottom:1px solid oklch(0.32 0.02 280); padding-bottom:6px; margin-bottom:2px;">Name</div>
+            <div style="font-family:'Space Mono', monospace; font-weight:700; font-size:11px; color: oklch(0.6 0.02 280); border-bottom:1px solid oklch(0.32 0.02 280); padding-bottom:6px; margin-bottom:2px; text-align:right;">Time</div>
+
+            <div>24</div><div>Dumb error</div><div style="font-family:'Space Mono', monospace; text-align:right;">14.29s</div>
+            <div>25</div><div>Laputa</div><div style="font-family:'Space Mono', monospace; text-align:right;">14.33s</div>
+            <div style="color: oklch(0.75 0.19 300); font-weight:700;">26</div><div style="color: oklch(0.75 0.19 300); font-weight:700;">Bob</div><div style="font-family:'Space Mono', monospace; text-align:right; color: oklch(0.75 0.19 300); font-weight:700;">18.15s</div>
+            <div>27</div><div>Ernest</div><div style="font-family:'Space Mono', monospace; text-align:right;">20.67s</div>
+            <div>28</div><div>Done</div><div style="font-family:'Space Mono', monospace; text-align:right;">148.09s</div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding-top:10px; border-top:1px solid oklch(0.32 0.02 280); font-size:12px;">
+            <span style="color: oklch(0.6 0.02 280); font-family: monospace;">Page 3</span>
+            <span style="display:inline-flex; align-items:center; gap:6px; color: oklch(0.75 0.19 300); font-family:'Space Grotesk', sans-serif; font-weight:700; cursor:pointer;">Retry ↻</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="color: oklch(0.6 0.01 260); font-family: Inter, sans-serif; font-size: 13px; letter-spacing: 0.02em; margin-top:24px;">Turn 1 — color &amp; type pairings for the star-finding game (Home hero)</div>
+
+  <div style="display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start;">
+
+    <!-- 1a: Charted Sky -->
+    <div id="1a" style="position:relative;">
+      <div style="color:#e8e6df; font-family: monospace; font-size:12px; margin-bottom:8px;">#1a — Charted Sky</div>
+      <div style="width:400px; height:600px; border-radius:14px; overflow:hidden; position:relative; background: oklch(0.15 0.02 258);">
+        <svg viewBox="0 0 440 620" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;"><line x1="43.9" y1="338.5" x2="401.2" y2="82.9" stroke="#5b6a8a" stroke-width="0.6" opacity="0.5"/><line x1="119" y1="311.2" x2="175.8" y2="344.3" stroke="#5b6a8a" stroke-width="0.6" opacity="0.5"/><line x1="415" y1="156.2" x2="141.3" y2="292.8" stroke="#5b6a8a" stroke-width="0.6" opacity="0.5"/><line x1="43.5" y1="116.4" x2="286.8" y2="403.5" stroke="#5b6a8a" stroke-width="0.6" opacity="0.5"/><line x1="321.8" y1="302.4" x2="275.9" y2="592.3" stroke="#5b6a8a" stroke-width="0.6" opacity="0.5"/><line x1="37.3" y1="618.5" x2="359.3" y2="579.8" stroke="#5b6a8a" stroke-width="0.6" opacity="0.5"/><line x1="168.8" y1="473.6" x2="57.1" y2="134.9" stroke="#5b6a8a" stroke-width="0.6" opacity="0.5"/><line x1="395.9" y1="287.5" x2="339.2" y2="408.1" stroke="#5b6a8a" stroke-width="0.6" opacity="0.5"/><line x1="138.6" y1="57" x2="381.7" y2="565.3" stroke="#5b6a8a" stroke-width="0.6" opacity="0.5"/><circle cx="225.1" cy="328.6" r="1.29" fill="#fff" opacity="0.9"/><circle cx="236.7" cy="49.6" r="1.21" fill="#fff" opacity="0.64"/><circle cx="211.2" cy="523" r="1.12" fill="#fff" opacity="0.79"/><circle cx="70.8" cy="110.7" r="0.74" fill="#fff" opacity="0.6"/><circle cx="256.3" cy="79" r="1.26" fill="#fff" opacity="0.62"/><circle cx="371.5" cy="499.3" r="1.04" fill="#fff" opacity="0.76"/><circle cx="110.7" cy="34.9" r="2.09" fill="#fff" opacity="0.54"/><circle cx="64.5" cy="461" r="0.92" fill="#fff" opacity="0.72"/><circle cx="372" cy="88.8" r="2.03" fill="#fff" opacity="0.6"/><circle cx="11.2" cy="47.6" r="1.42" fill="#fff" opacity="0.69"/><circle cx="119" cy="311.2" r="0.64" fill="#fff" opacity="0.77"/><circle cx="19.8" cy="275.6" r="1.87" fill="#fff" opacity="0.63"/><circle cx="205.1" cy="218.8" r="0.58" fill="#fff" opacity="0.62"/><circle cx="334.2" cy="186.2" r="0.92" fill="#fff" opacity="0.9"/><circle cx="70.5" cy="73.5" r="1.36" fill="#fff" opacity="0.43"/><circle cx="162.4" cy="234.1" r="2.26" fill="#fff" opacity="0.76"/><circle cx="180.8" cy="569.6" r="1.06" fill="#fff" opacity="0.55"/><circle cx="226.4" cy="5.3" r="1.08" fill="#fff" opacity="0.62"/><circle cx="54.3" cy="49.5" r="1.39" fill="#fff" opacity="0.68"/><circle cx="45.5" cy="347" r="1.71" fill="#fff" opacity="0.97"/><circle cx="263.2" cy="374.3" r="1.11" fill="#fff" opacity="0.41"/><circle cx="286.8" cy="403.5" r="2.06" fill="#fff" opacity="0.44"/><circle cx="60.5" cy="401.1" r="1.23" fill="#fff" opacity="0.95"/><circle cx="165.7" cy="471.6" r="0.6" fill="#fff" opacity="0.54"/><circle cx="292.2" cy="305.3" r="0.81" fill="#fff" opacity="0.82"/><circle cx="138.6" cy="57" r="0.96" fill="#fff" opacity="0.47"/><circle cx="359.3" cy="579.8" r="0.51" fill="#fff" opacity="0.63"/><circle cx="374.2" cy="352.9" r="1.47" fill="#fff" opacity="0.35"/><circle cx="218.3" cy="304.5" r="0.79" fill="#fff" opacity="0.39"/><circle cx="37.3" cy="618.5" r="1.45" fill="#fff" opacity="0.89"/><circle cx="404.2" cy="609.1" r="0.52" fill="#fff" opacity="0.74"/><circle cx="173.8" cy="258.7" r="0.56" fill="#fff" opacity="0.39"/><circle cx="203.5" cy="167.7" r="1.17" fill="#fff" opacity="0.62"/><circle cx="148.8" cy="365" r="1.3" fill="#fff" opacity="0.54"/><circle cx="196.1" cy="152" r="0.98" fill="#fff" opacity="0.72"/><circle cx="283.1" cy="1.7" r="0.55" fill="#fff" opacity="0.88"/><circle cx="59.7" cy="506.5" r="0.77" fill="#fff" opacity="0.89"/><circle cx="325.1" cy="503.7" r="0.52" fill="#fff" opacity="0.83"/><circle cx="94.9" cy="70" r="0.57" fill="#fff" opacity="0.92"/><circle cx="281.2" cy="446.8" r="1.46" fill="#fff" opacity="0.81"/><circle cx="168.8" cy="473.6" r="0.6" fill="#fff" opacity="0.44"/><circle cx="275.2" cy="5.2" r="1.7" fill="#fff" opacity="0.91"/><circle cx="228.7" cy="543.2" r="0.57" fill="#fff" opacity="0.85"/><circle cx="111.2" cy="609.3" r="0.77" fill="#fff" opacity="0.66"/><circle cx="407.9" cy="614.1" r="0.9" fill="#fff" opacity="0.63"/><circle cx="43.5" cy="116.4" r="0.52" fill="#fff" opacity="0.96"/><circle cx="242.1" cy="354.2" r="0.98" fill="#fff" opacity="0.4"/><circle cx="367.9" cy="168.3" r="0.56" fill="#fff" opacity="0.6"/><circle cx="61.7" cy="230.7" r="0.76" fill="#fff" opacity="0.73"/><circle cx="202.8" cy="615.7" r="0.94" fill="#fff" opacity="0.7"/><circle cx="113.8" cy="312.4" r="1.13" fill="#fff" opacity="0.66"/><circle cx="179" cy="79" r="0.83" fill="#fff" opacity="0.36"/><circle cx="40.6" cy="459.6" r="0.57" fill="#fff" opacity="0.63"/><circle cx="344.5" cy="372.6" r="1.4" fill="#fff" opacity="0.6"/><circle cx="333.4" cy="571.8" r="1.01" fill="#fff" opacity="0.41"/><circle cx="57.7" cy="324.2" r="0.65" fill="#fff" opacity="0.95"/><circle cx="401.2" cy="82.9" r="1.26" fill="#fff" opacity="0.81"/><circle cx="250.9" cy="485.9" r="1.44" fill="#fff" opacity="0.5"/><circle cx="141" cy="443.2" r="0.58" fill="#fff" opacity="0.82"/><circle cx="53.9" cy="265.4" r="1.22" fill="#fff" opacity="0.97"/><circle cx="326.1" cy="75.9" r="0.54" fill="#fff" opacity="0.36"/><circle cx="415" cy="156.2" r="0.92" fill="#fff" opacity="0.56"/><circle cx="315" cy="468.1" r="1.81" fill="#fff" opacity="0.71"/><circle cx="355.6" cy="339.8" r="0.75" fill="#fff" opacity="0.93"/><circle cx="43.9" cy="338.5" r="1.15" fill="#fff" opacity="0.69"/><circle cx="83.6" cy="415.4" r="0.68" fill="#fff" opacity="0.41"/><circle cx="390.2" cy="247.6" r="0.62" fill="#fff" opacity="0.64"/><circle cx="88.1" cy="39.6" r="0.55" fill="#fff" opacity="0.94"/><circle cx="184" cy="561.4" r="0.76" fill="#fff" opacity="0.75"/><circle cx="3" cy="228.9" r="1.46" fill="#fff" opacity="0.81"/><circle cx="275.9" cy="592.3" r="0.73" fill="#fff" opacity="0.41"/><circle cx="57.1" cy="134.9" r="0.79" fill="#fff" opacity="0.43"/></svg>
+        <div style="position:relative; z-index:1; height:100%; display:flex; flex-direction:column; padding:28px; box-sizing:border-box; font-family: Inter, sans-serif;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="color: oklch(0.96 0.01 260); font-size:13px; letter-spacing:0.08em; font-weight:500;">STARFINDER</div>
+            <div style="display:flex; gap:16px; font-size:13px; color: oklch(0.75 0.02 260);">
+              <span>Explore</span><span>Play</span><span>About</span>
+            </div>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:14px;">
+            <div style="font-family: Lora, serif; font-weight:600; font-size:44px; line-height:1.08; color: oklch(0.97 0.008 260);">Find your<br>stars.</div>
+            <div style="font-size:15px; line-height:1.5; color: oklch(0.78 0.015 260); max-width:300px;">Search a live sky of 120,000 stars and race the clock to trace real constellations.</div>
+            <div style="margin-top:6px;">
+              <span style="display:inline-block; background: oklch(0.75 0.12 200); color: oklch(0.15 0.02 200); font-family: Inter, sans-serif; font-weight:500; font-size:14px; padding:10px 22px; border-radius:100px;">Play now</span>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; font-family: 'IBM Plex Mono', monospace; font-size:12px; color: oklch(0.7 0.1 200); border-top:1px solid oklch(0.3 0.02 260); padding-top:14px;">
+            <span>00:42.318</span>
+            <span>3,204 / 120,000 charted</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <span style="width:16px; height:16px; border-radius:3px; background: oklch(0.15 0.02 258); border:1px solid #444;"></span>
+        <span style="width:16px; height:16px; border-radius:3px; background: oklch(0.97 0.008 260); border:1px solid #444;"></span>
+        <span style="width:16px; height:16px; border-radius:3px; background: oklch(0.75 0.12 200);"></span>
+        <span style="color:#9a968a; font-family: monospace; font-size:11px; margin-left:6px;">Lora / Inter / IBM Plex Mono</span>
+      </div>
+    </div>
+
+    <!-- 1b: Arcade Orbit -->
+    <div id="1b" style="position:relative;">
+      <div style="color:#e8e6df; font-family: monospace; font-size:12px; margin-bottom:8px;">#1b — Arcade Orbit</div>
+      <div style="width:400px; height:600px; border-radius:14px; overflow:hidden; position:relative; background: oklch(0.16 0.02 280) url('assets/explore-bg.png') center/cover;">
+        <div style="position:absolute; inset:0; background: linear-gradient(180deg, rgba(20,14,40,0.15), rgba(15,10,30,0.55));"></div>
+        <div style="position:relative; z-index:1; height:100%; display:flex; flex-direction:column; padding:28px; box-sizing:border-box; font-family: Inter, sans-serif;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="color: oklch(0.95 0.015 80); font-size:13px; letter-spacing:0.08em; font-weight:700; font-family: 'Space Grotesk', sans-serif;">STARFINDER</div>
+            <div style="display:flex; gap:16px; font-size:13px; color: oklch(0.8 0.02 280);">
+              <span>Explore</span><span>Play</span><span>About</span>
+            </div>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:14px;">
+            <div style="font-family: 'Space Grotesk', sans-serif; font-weight:700; font-size:46px; line-height:1.05; color: oklch(0.95 0.015 80);">Find your<br>stars.</div>
+            <div style="font-size:15px; line-height:1.5; color: oklch(0.78 0.02 280); max-width:300px;">Search a live sky of 120,000 stars and race the clock to trace real constellations.</div>
+            <div style="margin-top:6px;">
+              <span style="display:inline-block; background: oklch(0.75 0.19 300); color: oklch(0.15 0.02 300); font-family: 'Space Grotesk', sans-serif; font-weight:700; font-size:14px; padding:10px 22px; border-radius:8px;">Play now</span>
+            </div>
+          </div>
+          <div style="font-family: 'Space Mono', monospace; font-size:12px; color: oklch(0.75 0.19 300); border-top:1px solid oklch(0.3 0.02 280); padding-top:14px;">
+            Rank: 26th of 118,204 players
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <span style="width:16px; height:16px; border-radius:3px; background: oklch(0.16 0.02 280); border:1px solid #444;"></span>
+        <span style="width:16px; height:16px; border-radius:3px; background: oklch(0.95 0.015 80); border:1px solid #444;"></span>
+        <span style="width:16px; height:16px; border-radius:3px; background: oklch(0.75 0.19 300);"></span>
+        <span style="width:16px; height:16px; border-radius:3px; background: oklch(0.8 0.19 130);"></span>
+        <span style="color:#9a968a; font-family: monospace; font-size:11px; margin-left:6px;">Space Grotesk / Inter / Space Mono</span>
+      </div>
+    </div>
+
+    <!-- 1c: Field Notes -->
+    <div id="1c" style="position:relative;">
+      <div style="color:#e8e6df; font-family: monospace; font-size:12px; margin-bottom:8px;">#1c — Field Notes</div>
+      <div style="width:400px; height:600px; border-radius:14px; overflow:hidden; position:relative; background: oklch(0.14 0.01 240);">
+        <svg viewBox="0 0 440 620" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;"><line x1="401" y1="377.6" x2="290.6" y2="57.2" stroke="#6a6458" stroke-width="0.6" opacity="0.5"/><line x1="111.4" y1="302.8" x2="301.7" y2="390.7" stroke="#6a6458" stroke-width="0.6" opacity="0.5"/><line x1="93.9" y1="69.8" x2="114" y2="130.3" stroke="#6a6458" stroke-width="0.6" opacity="0.5"/><line x1="290.6" y1="57.2" x2="252.2" y2="114.5" stroke="#6a6458" stroke-width="0.6" opacity="0.5"/><line x1="197.4" y1="558" x2="384.4" y2="246.9" stroke="#6a6458" stroke-width="0.6" opacity="0.5"/><line x1="61.5" y1="323.7" x2="101.8" y2="385.9" stroke="#6a6458" stroke-width="0.6" opacity="0.5"/><line x1="326.9" y1="224.9" x2="92.6" y2="105.3" stroke="#6a6458" stroke-width="0.6" opacity="0.5"/><line x1="92.6" y1="105.3" x2="276.5" y2="353.4" stroke="#6a6458" stroke-width="0.6" opacity="0.5"/><line x1="403.9" y1="563" x2="412.2" y2="374.4" stroke="#6a6458" stroke-width="0.6" opacity="0.5"/><circle cx="242.3" cy="458.5" r="0.52" fill="#fff" opacity="0.64"/><circle cx="360.3" cy="165" r="1.53" fill="#fff" opacity="0.98"/><circle cx="141.9" cy="501.2" r="0.91" fill="#fff" opacity="0.91"/><circle cx="276.5" cy="353.4" r="0.52" fill="#fff" opacity="0.53"/><circle cx="368.8" cy="143.2" r="1.4" fill="#fff" opacity="0.71"/><circle cx="273.5" cy="516.1" r="1.12" fill="#fff" opacity="0.79"/><circle cx="386" cy="433.2" r="1.2" fill="#fff" opacity="0.9"/><circle cx="240.7" cy="354.2" r="0.62" fill="#fff" opacity="0.5"/><circle cx="227.9" cy="520.7" r="0.81" fill="#fff" opacity="0.93"/><circle cx="401" cy="377.6" r="1.26" fill="#fff" opacity="0.53"/><circle cx="37.8" cy="231.2" r="0.6" fill="#fff" opacity="0.67"/><circle cx="121.3" cy="261.7" r="1.79" fill="#fff" opacity="0.92"/><circle cx="330" cy="481.8" r="2.32" fill="#fff" opacity="0.39"/><circle cx="246.8" cy="453.8" r="2.41" fill="#fff" opacity="0.4"/><circle cx="21.5" cy="12.4" r="1.97" fill="#fff" opacity="0.8"/><circle cx="326.9" cy="224.9" r="2.25" fill="#fff" opacity="0.99"/><circle cx="92.9" cy="295.7" r="0.57" fill="#fff" opacity="0.66"/><circle cx="370.1" cy="235.6" r="1.47" fill="#fff" opacity="0.36"/><circle cx="182.2" cy="304.7" r="0.56" fill="#fff" opacity="0.85"/><circle cx="419.4" cy="591.2" r="0.64" fill="#fff" opacity="0.9"/><circle cx="368.4" cy="130" r="1.92" fill="#fff" opacity="0.76"/><circle cx="366.1" cy="39.8" r="0.73" fill="#fff" opacity="0.36"/><circle cx="83.4" cy="588" r="0.83" fill="#fff" opacity="0.45"/><circle cx="148.3" cy="505.4" r="0.61" fill="#fff" opacity="0.64"/><circle cx="324.3" cy="541.4" r="1.29" fill="#fff" opacity="0.55"/><circle cx="301.7" cy="390.7" r="0.88" fill="#fff" opacity="0.6"/><circle cx="114" cy="130.3" r="2" fill="#fff" opacity="0.51"/><circle cx="25.5" cy="256.5" r="1.36" fill="#fff" opacity="0.56"/><circle cx="33.3" cy="355.3" r="0.84" fill="#fff" opacity="0.9"/><circle cx="166.9" cy="18.9" r="1.59" fill="#fff" opacity="0.98"/><circle cx="82.9" cy="53.5" r="0.84" fill="#fff" opacity="0.99"/><circle cx="2.2" cy="349.4" r="0.66" fill="#fff" opacity="0.61"/><circle cx="252.2" cy="114.5" r="0.95" fill="#fff" opacity="0.83"/><circle cx="351.5" cy="186" r="0.77" fill="#fff" opacity="0.46"/><circle cx="272.4" cy="217.7" r="2.01" fill="#fff" opacity="0.36"/><circle cx="46.1" cy="560.7" r="0.95" fill="#fff" opacity="0.36"/><circle cx="259.6" cy="224.8" r="1.03" fill="#fff" opacity="0.88"/><circle cx="217.3" cy="87.8" r="0.72" fill="#fff" opacity="0.68"/><circle cx="245.7" cy="438.6" r="1.21" fill="#fff" opacity="0.85"/><circle cx="100.3" cy="282.2" r="0.8" fill="#fff" opacity="0.92"/><circle cx="178.1" cy="514.6" r="0.82" fill="#fff" opacity="0.8"/><circle cx="43.8" cy="309.7" r="0.91" fill="#fff" opacity="0.94"/><circle cx="70.9" cy="154.8" r="0.83" fill="#fff" opacity="0.82"/><circle cx="231.3" cy="447.5" r="1.18" fill="#fff" opacity="0.74"/><circle cx="197.5" cy="199.4" r="0.76" fill="#fff" opacity="0.51"/><circle cx="160.7" cy="458.6" r="0.57" fill="#fff" opacity="0.69"/><circle cx="372.7" cy="148.1" r="0.76" fill="#fff" opacity="0.4"/><circle cx="262.8" cy="404.9" r="0.63" fill="#fff" opacity="0.85"/><circle cx="180.7" cy="557.9" r="1.33" fill="#fff" opacity="0.45"/><circle cx="225.1" cy="411.6" r="1.67" fill="#fff" opacity="0.98"/><circle cx="307.5" cy="462.4" r="0.51" fill="#fff" opacity="0.96"/><circle cx="61.5" cy="323.7" r="0.52" fill="#fff" opacity="0.79"/><circle cx="287" cy="457.3" r="1.19" fill="#fff" opacity="0.65"/><circle cx="208.6" cy="566.9" r="0.83" fill="#fff" opacity="0.85"/><circle cx="267.2" cy="581.6" r="0.6" fill="#fff" opacity="0.74"/><circle cx="420.5" cy="480.9" r="0.78" fill="#fff" opacity="0.97"/><circle cx="282.4" cy="289.9" r="2.41" fill="#fff" opacity="0.55"/><circle cx="418.5" cy="225.2" r="0.78" fill="#fff" opacity="0.52"/><circle cx="104.8" cy="170" r="0.64" fill="#fff" opacity="0.73"/><circle cx="119.3" cy="384.4" r="1.75" fill="#fff" opacity="0.73"/><circle cx="135.7" cy="592.4" r="0.54" fill="#fff" opacity="0.69"/><circle cx="156.6" cy="468.6" r="0.9" fill="#fff" opacity="0.84"/><circle cx="391.2" cy="252.9" r="0.65" fill="#fff" opacity="0.42"/><circle cx="350.2" cy="142.8" r="1.33" fill="#fff" opacity="0.41"/><circle cx="111.4" cy="302.8" r="1.34" fill="#fff" opacity="0.75"/><circle cx="182.7" cy="35.4" r="0.95" fill="#fff" opacity="0.92"/><circle cx="378.5" cy="208.5" r="1.34" fill="#fff" opacity="0.6"/><circle cx="307.3" cy="427.4" r="0.6" fill="#fff" opacity="0.36"/><circle cx="83.9" cy="305.3" r="1.46" fill="#fff" opacity="0.41"/><circle cx="412.2" cy="374.4" r="1.26" fill="#fff" opacity="0.59"/><circle cx="303" cy="619.6" r="2.42" fill="#fff" opacity="0.8"/><circle cx="190.8" cy="460.1" r="1.34" fill="#fff" opacity="0.65"/><circle cx="312.1" cy="458.1" r="0.72" fill="#fff" opacity="0.64"/><circle cx="120.3" cy="454.8" r="0.83" fill="#fff" opacity="0.58"/><circle cx="374.5" cy="448.3" r="0.92" fill="#fff" opacity="0.87"/><circle cx="312.4" cy="547.7" r="1.52" fill="#fff" opacity="0.77"/><circle cx="93.2" cy="307.6" r="1.49" fill="#fff" opacity="0.59"/><circle cx="376.1" cy="480.3" r="0.54" fill="#fff" opacity="0.76"/><circle cx="201.8" cy="526.3" r="0.53" fill="#fff" opacity="0.97"/><circle cx="226.7" cy="89.9" r="1.2" fill="#fff" opacity="0.47"/><circle cx="178.6" cy="581.7" r="0.71" fill="#fff" opacity="0.37"/><circle cx="123.9" cy="186.8" r="0.7" fill="#fff" opacity="0.76"/><circle cx="271.9" cy="517.9" r="0.85" fill="#fff" opacity="0.5"/><circle cx="323.7" cy="374.6" r="1.09" fill="#fff" opacity="0.97"/><circle cx="14" cy="52.3" r="1.15" fill="#fff" opacity="0.4"/><circle cx="397.4" cy="223.9" r="1.5" fill="#fff" opacity="0.51"/><circle cx="265.7" cy="150.2" r="1.12" fill="#fff" opacity="0.96"/><circle cx="43" cy="397.4" r="1.43" fill="#fff" opacity="0.44"/><circle cx="26.4" cy="229.5" r="1.06" fill="#fff" opacity="0.84"/><circle cx="170.8" cy="261.6" r="2.3" fill="#fff" opacity="0.95"/><circle cx="123.8" cy="202.4" r="1.2" fill="#fff" opacity="0.58"/><circle cx="109" cy="516.9" r="1.5" fill="#fff" opacity="0.99"/><circle cx="403.9" cy="563" r="1.43" fill="#fff" opacity="0.48"/><circle cx="147" cy="81.8" r="1.33" fill="#fff" opacity="0.92"/><circle cx="19.8" cy="110.9" r="0.96" fill="#fff" opacity="0.85"/><circle cx="202.2" cy="77.4" r="0.8" fill="#fff" opacity="0.74"/><circle cx="353.5" cy="327.7" r="0.74" fill="#fff" opacity="0.96"/><circle cx="93" cy="129.5" r="0.83" fill="#fff" opacity="0.37"/><circle cx="115.1" cy="450.4" r="1.65" fill="#fff" opacity="0.42"/><circle cx="92.6" cy="105.3" r="0.58" fill="#fff" opacity="0.84"/><circle cx="335" cy="210.9" r="0.96" fill="#fff" opacity="0.5"/><circle cx="384.4" cy="246.9" r="0.78" fill="#fff" opacity="0.81"/><circle cx="101.8" cy="385.9" r="1.03" fill="#fff" opacity="0.98"/><circle cx="212.2" cy="317.2" r="2.28" fill="#fff" opacity="0.43"/><circle cx="93.9" cy="69.8" r="0.52" fill="#fff" opacity="0.6"/><circle cx="379.4" cy="423" r="0.62" fill="#fff" opacity="0.5"/><circle cx="251" cy="444.1" r="1.79" fill="#fff" opacity="0.47"/><circle cx="88.2" cy="259.8" r="0.52" fill="#fff" opacity="0.54"/><circle cx="341.7" cy="327.3" r="0.69" fill="#fff" opacity="0.61"/><circle cx="156.2" cy="73" r="0.8" fill="#fff" opacity="0.64"/><circle cx="256.1" cy="304.1" r="1.19" fill="#fff" opacity="0.98"/><circle cx="290.6" cy="57.2" r="1.87" fill="#fff" opacity="0.99"/><circle cx="128.9" cy="23" r="1.04" fill="#fff" opacity="0.71"/><circle cx="197.4" cy="558" r="2.19" fill="#fff" opacity="0.7"/></svg>
+        <div style="position:relative; z-index:1; height:100%; display:flex; flex-direction:column; padding:28px; box-sizing:border-box; font-family: Inter, sans-serif;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="color: oklch(0.96 0.008 60); font-size:12px; letter-spacing:0.1em; font-weight:600; font-family: Archivo, sans-serif;">STARFINDER</div>
+            <div style="display:flex; gap:16px; font-size:13px; color: oklch(0.62 0.01 240);">
+              <span>Explore</span><span>Play</span><span>About</span>
+            </div>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:14px;">
+            <div style="font-family: Archivo, sans-serif; font-weight:800; font-size:44px; line-height:1.05; letter-spacing:-0.01em; color: oklch(0.96 0.008 60);">FIND YOUR<br>STARS.</div>
+            <div style="font-size:15px; line-height:1.5; color: oklch(0.62 0.01 240); max-width:300px;">Search a live sky of 120,000 stars and race the clock to trace real constellations.</div>
+            <div style="margin-top:6px;">
+              <span style="display:inline-block; background: oklch(0.78 0.15 70); color: oklch(0.16 0.02 70); font-family: Archivo, sans-serif; font-weight:600; font-size:13px; letter-spacing:0.03em; padding:10px 22px; border-radius:3px;">PLAY NOW</span>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; font-family: 'IBM Plex Mono', monospace; font-size:12px; color: oklch(0.78 0.15 70); border-top:1px solid oklch(0.28 0.01 240); padding-top:14px;">
+            <span>00:42.318</span>
+            <span>3,204 / 120,000 charted</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <span style="width:16px; height:16px; border-radius:3px; background: oklch(0.14 0.01 240); border:1px solid #444;"></span>
+        <span style="width:16px; height:16px; border-radius:3px; background: oklch(0.96 0.008 60); border:1px solid #444;"></span>
+        <span style="width:16px; height:16px; border-radius:3px; background: oklch(0.78 0.15 70);"></span>
+        <span style="color:#9a968a; font-family: monospace; font-size:11px; margin-left:6px;">Archivo / Inter / IBM Plex Mono</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+</x-dc>
+</body>
+</html>
