@@ -22,7 +22,7 @@ html {
 body {
   min-width: 320px;
   background: var(--color-background);
-  color: var(--color-text-primary);
+  color: var(--color-text-body);
   font-family: var(--font-body);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -70,6 +70,7 @@ h5,
 h6 {
   font-family: var(--font-heading);
   text-wrap: balance;
+  color: var(--color-text-primary);
 }
 
 a {

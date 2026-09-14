@@ -1,0 +1,46 @@
+.home {
+  position: relative;
+}
+
+.starMap {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero {
+  top: clamp(2rem, 16svh, 16rem);
+  position: relative;
+  z-index: 1;
+
+  width: min(40rem, 40vw);
+  margin-inline: 0;
+  margin-left: var(--page-gutter);
+
+  min-height: clamp(28rem, 55svh, 48rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.hero > h1 {
+  font-size: 4.2rem;
+}
+.hero > p {
+  font-size: 1.6rem;
+  color: var();
+}
+
+.hero > button {
+  cursor: pointer;
+  align-self: flex-start;
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 600;
+  border-radius: var(--radius-button);
+  border: none;
+  color: var(--color-background);
+  background-color: var(--color-accent);
+  padding: var(--space-3) var(--space-4);
+}

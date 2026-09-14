@@ -2,7 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import './index.css';
-import Home from './routes/Home.jsx';
+import Home from './routes/Home/Home.jsx';
 import Explore from './routes/Explore.jsx';
 import Play from './routes/Play.jsx';
 import About from './routes/About.jsx';

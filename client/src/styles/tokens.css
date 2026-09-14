@@ -10,9 +10,9 @@
   --color-border: #31323d;
 
   /* Typography */
-  --font-heading: "Space Grotesk", sans-serif;
+  --font-heading: 'Space Grotesk', sans-serif;
   --font-body: Inter, sans-serif;
-  --font-data: "Space Mono", monospace;
+  --font-data: 'Space Mono', monospace;
 
   /* Shape and spacing */
   --border-width: 1px;
@@ -26,4 +26,5 @@
   --space-6: 2.4rem;
   --space-7: 2.8rem;
   --space-8: 3.2rem;
+  --page-gutter: clamp(2rem, 20vw, 14rem);
 }
