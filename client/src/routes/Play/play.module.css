@@ -3,6 +3,7 @@
 }
 
 .dialog {
+  pointer-events: auto;
   position: fixed;
   top: 50%;
   left: 50%;
@@ -79,6 +80,7 @@
 }
 
 .gameStatus {
+  pointer-events: auto;
   position: absolute;
   top: clamp(5rem, 10svh, 8rem);
   right: 0;

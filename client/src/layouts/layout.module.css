@@ -11,4 +11,9 @@
 .overlay {
   position: relative;
   z-index: 1;
+  pointer-events: none;
+}
+
+.interactive {
+  pointer-events: auto;
 }

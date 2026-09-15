@@ -21,7 +21,9 @@ const Layout = () => {
         </div>
       )}
       <Navbar />
-      <main className={styles.overlay}>
+      <main
+        className={`${styles.overlay} ${!showStarMap ? styles.interactive : ''}`}
+      >
         <Outlet />
       </main>
     </div>

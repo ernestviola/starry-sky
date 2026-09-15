@@ -52,6 +52,7 @@
 }
 
 .heroActions a {
+  pointer-events: auto;
   display: inline-flex;
   flex: 0 0 auto;
   white-space: nowrap;
