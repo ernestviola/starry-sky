@@ -6,6 +6,11 @@
   font-size: 4.2rem;
 }
 
+.about h2 {
+  font-size: 3.2rem;
+}
+
 .about p {
+  margin-top: var(--space-3);
   font-size: 1.6rem;
 }
