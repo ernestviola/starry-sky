@@ -8,9 +8,7 @@
   "main": "app.js",
   "scripts": {
     "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles",
-    "dev": "node --watch app.js",
-    "build:star-data": "node utils/buildStaticStarData.js",
-    "build:constellation-data": "node utils/buildStaticConstellationData.js"
+    "dev": "node --watch app.js"
   },
   "dependencies": {
     "@hscmap/healpix": "^1.4.12",
