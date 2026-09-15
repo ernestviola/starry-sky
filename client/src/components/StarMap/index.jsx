@@ -185,6 +185,7 @@ const StarMap = ({
   const knownStarIdsRef = useRef(new Set());
 
   const orbitControlRef = useRef();
+  const pendingFrameIdsRef = useRef(new Set());
 
   useEffect(() => {
     const milliSecInADay = 1000 * 60 * 60 * 24;
@@ -216,8 +217,18 @@ const StarMap = ({
 
     setViewedFrames(frameIds);
 
-    const requestedFrames = frameIds.difference(receivedHealpixIds);
+    const requestedFrames = new Set(
+      [...frameIds].filter(
+        (frameId) =>
+          !receivedHealpixIds.has(frameId) &&
+          !pendingFrameIdsRef.current.has(frameId),
+      ),
+    );
     if (requestedFrames.size === 0) return;
+
+    for (const frameId of requestedFrames) {
+      pendingFrameIdsRef.current.add(frameId);
+    }
 
     const fetchStarFrame = async () => {
       try {
@@ -234,9 +245,7 @@ const StarMap = ({
 
         const data = await response.json();
 
-        setReceivedHealpixIds(
-          (prev) => new Set([...prev, ...requestedFrames]),
-        );
+        setReceivedHealpixIds((prev) => new Set([...prev, ...requestedFrames]));
 
         const newStars = data.stars.filter((star) => {
           if (knownStarIdsRef.current.has(star.id)) return false;
@@ -304,8 +313,17 @@ const StarMap = ({
       }
     };
 
-    fetchStarFrame();
-    fetchConstellationFrame();
+    const loadFrames = async () => {
+      try {
+        await Promise.all([fetchStarFrame(), fetchConstellationFrame()]);
+      } finally {
+        for (const frameId of requestedFrames) {
+          pendingFrameIdsRef.current.delete(frameId);
+        }
+      }
+    };
+
+    loadFrames();
   }, [ra, dec, radius]);
 
   const consumePendingStars = useCallback((count) => {
