@@ -3,6 +3,7 @@ import StarMapModel from '../components/StarMapModel/StarMapModel.jsx';
 const About = () => {
   return (
     <div>
+      <title>About | Starry Sky</title>
       <h1>About the constellation map</h1>
       <p>
         This project was kind of hard. I've always wanted to be able to simulate

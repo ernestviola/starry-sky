@@ -10,16 +10,45 @@ const Navbar = () => {
       <nav>
         <ul>
           <li>
-            <NavLink to='/'>Home</NavLink>
+            <NavLink
+              to='/'
+              end
+              className={({ isActive }) =>
+                isActive ? styles.active : undefined
+              }
+            >
+              Home
+            </NavLink>
           </li>
           <li>
-            <NavLink to='/explore'>Explore</NavLink>
+            <NavLink
+              to='/explore'
+              className={({ isActive }) =>
+                isActive ? styles.active : undefined
+              }
+            >
+              Explore
+            </NavLink>
           </li>
           <li>
-            <NavLink to='/play'>Play</NavLink>
+            <NavLink
+              to='/play'
+              className={({ isActive }) =>
+                isActive ? styles.active : undefined
+              }
+            >
+              Play
+            </NavLink>
           </li>
           <li>
-            <NavLink to='/about'>About</NavLink>
+            <NavLink
+              to='/about'
+              className={({ isActive }) =>
+                isActive ? styles.active : undefined
+              }
+            >
+              About
+            </NavLink>
           </li>
         </ul>
       </nav>

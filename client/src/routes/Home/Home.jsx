@@ -8,6 +8,7 @@ const Home = () => {
   const [hoveredStarId, setHoveredStarId] = useState(null);
   return (
     <div className={styles.home}>
+      <title>Home | Starry Sky</title>
       <section className={styles.hero}>
         <h1>Know your sky?</h1>
         <div className={styles.heroActions}>

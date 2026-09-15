@@ -222,6 +222,7 @@ const Play = () => {
 
   return (
     <div style={{ position: 'relative' }}>
+      <title>Play | Starry Sky</title>
       <StarMap
         hoveredStarId={hoveredStarId}
         setHoveredStarId={setHoveredStarId}

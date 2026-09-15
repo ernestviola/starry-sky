@@ -7,6 +7,7 @@ const Explore = () => {
 
   return (
     <div style={{ position: 'relative' }}>
+      <title>Explore | Starry Sky</title>
       <StarMap
         hoveredStarId={hoveredStarId}
         setHoveredStarId={setHoveredStarId}
