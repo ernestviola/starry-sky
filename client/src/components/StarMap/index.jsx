@@ -1,5 +1,5 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Line, Html, Grid, OrbitControls } from '@react-three/drei';
+import { Line, Html, Grid, CameraControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { useRef, useState, useEffect } from 'react';
 
@@ -121,6 +121,31 @@ const CanvasClick = ({ handleClick }) => {
     canvas.addEventListener('click', handleClick);
     return () => canvas.removeEventListener('click', handleClick);
   }, [handleClick]);
+};
+
+const SmoothCameraTarget = ({ controlsRef, zenith }) => {
+  const { camera } = useThree();
+
+  useEffect(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+
+    const target = new THREE.Vector3(zenith[0], zenith[1], zenith[2])
+      .normalize()
+      .multiplyScalar(0.01);
+
+    controls.setLookAt(
+      camera.position.x,
+      camera.position.y,
+      camera.position.z,
+      target.x,
+      target.y,
+      target.z,
+      true,
+    );
+  }, [camera, controlsRef, zenith]);
+
+  return null;
 };
 
 const StarMap = ({ hoveredStarId, setHoveredStarId, handleClick }) => {
@@ -302,15 +327,15 @@ const StarMap = ({ hoveredStarId, setHoveredStarId, handleClick }) => {
       <Canvas camera={{ position: [0, 0, 0] }}>
         <color attach='background' args={['#000000']} />
         {/* <ModelGrid /> */}
-        <OrbitControls
+        <CameraControls
           ref={orbitControlRef}
-          rotateSpeed={0.3}
-          target={[zenith[0] * 0.01, zenith[1] * 0.01, zenith[2] * 0.01]} // just in front of camera, not at camera's exact position
+          smoothTime={0.5}
+          azimuthRotateSpeed={0.3}
+          polarRotateSpeed={0.3}
           minDistance={0.01}
-          maxDistance={0.01} // locks camera-to-target distance, so it can only rotate, never zoom/move
-          enablePan={false} // prevents dragging the target (and thus the "look point") away
-          enableZoom={false}
+          maxDistance={0.01}
         />
+        <SmoothCameraTarget controlsRef={orbitControlRef} zenith={zenith} />
         <ConstellationAnglesBasedOnCamera setDec={setDec} setRa={setRa} />
         <ZenithTargetDirection zenith={zenith} />
         <FovZoomControls />
