@@ -1,4 +1,4 @@
-import StarMapModel from '../components/StarMapModel/StarMapModel.jsx';
+import StarMapModel from '../../components/StarMapModel/StarMapModel.jsx';
 import styles from './about.module.css';
 
 const About = () => {

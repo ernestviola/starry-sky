@@ -5,7 +5,7 @@ import './index.css';
 import Home from './routes/Home/Home.jsx';
 import Explore from './routes/Explore.jsx';
 import Play from './routes/Play/Play.jsx';
-import About from './routes/About.jsx';
+import About from './routes/About/About.jsx';
 import Layout from './layouts/Layout.jsx';
 
 import { StarDataProvider } from './contexts/StarDataContext.jsx';
