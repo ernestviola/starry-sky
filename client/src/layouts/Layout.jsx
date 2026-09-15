@@ -17,6 +17,7 @@ const Layout = () => {
             hoveredStarId={hoveredStarId}
             setHoveredStarId={setHoveredStarId}
             handleClick={handleClick}
+            enableHover={pathname !== '/'}
           />
         </div>
       )}

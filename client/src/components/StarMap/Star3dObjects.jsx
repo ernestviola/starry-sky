@@ -43,6 +43,7 @@ const Star3dObjects = ({
   viewedFrames,
   hoveredStarId,
   setHoveredStarId = null,
+  enableHover = true,
 }) => {
   // currently processed star
   const nextIndexRef = useRef(0);
@@ -80,6 +81,16 @@ const Star3dObjects = ({
   useEffect(() => {
     raycasterRef.current.params.Points.threshold = 0.03;
   }, []);
+
+  useEffect(() => {
+    if (enableHover) return;
+
+    for (const attributes of visitedStarsRef.current.values()) {
+      sizeRef.current[attributes.index] = attributes.initial_size;
+    }
+    visitedStarsRef.current.clear();
+    if (sizeAttrRef.current) sizeAttrRef.current.needsUpdate = true;
+  }, [enableHover]);
 
   const starColor = (ci) => {
     if (ci === null || ci === undefined) {
@@ -302,7 +313,7 @@ const Star3dObjects = ({
   };
 
   useFrame(() => {
-    const starId = detectHoveredStar();
+    const starId = enableHover ? detectHoveredStar() : null;
 
     if (indicatorRingMeshRef.current) {
       indicatorRingMeshRef.current.scale.set(
@@ -316,14 +327,16 @@ const Star3dObjects = ({
 
   return (
     <>
-      <mesh ref={indicatorRingMeshRef} renderOrder={2}>
-        <ringGeometry args={[0.028, 0.03, 30]} />
-        <meshBasicMaterial
-          color='#fff'
-          side={THREE.DoubleSide}
-          depthTest={false}
-        />
-      </mesh>
+      {enableHover && (
+        <mesh ref={indicatorRingMeshRef} renderOrder={2}>
+          <ringGeometry args={[0.028, 0.03, 30]} />
+          <meshBasicMaterial
+            color='#fff'
+            side={THREE.DoubleSide}
+            depthTest={false}
+          />
+        </mesh>
+      )}
 
       <points renderOrder={1}>
         <bufferGeometry ref={geometryRef}>

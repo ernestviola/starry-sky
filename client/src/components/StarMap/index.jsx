@@ -148,7 +148,12 @@ const SmoothCameraTarget = ({ controlsRef, zenith }) => {
   return null;
 };
 
-const StarMap = ({ hoveredStarId, setHoveredStarId, handleClick }) => {
+const StarMap = ({
+  hoveredStarId,
+  setHoveredStarId,
+  handleClick,
+  enableHover = true,
+}) => {
   const {
     starsDictionary,
     setStarsDictionary,
@@ -345,6 +350,7 @@ const StarMap = ({ hoveredStarId, setHoveredStarId, handleClick }) => {
           viewedFrames={viewedFrames}
           hoveredStarId={hoveredStarId}
           setHoveredStarId={setHoveredStarId}
+          enableHover={enableHover}
         />
         <ConstellationLines
           constellationLinesDictionary={constellationLinesDictionary}
