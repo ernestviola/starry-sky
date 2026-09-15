@@ -10,11 +10,16 @@ const StarDetails = ({ hoveredStarId }) => {
   const { starsDictionary } = useStarData();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [displayedStarId, setDisplayedStarId] = useState(null);
+  const [isPointerOverMap, setIsPointerOverMap] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const cardRef = useRef(null);
 
   useEffect(() => {
     const handlePointerMove = (event) => {
+      const isOverMap =
+        event.target instanceof Element && event.target.closest('canvas');
+      setIsPointerOverMap(Boolean(isOverMap));
+
       const offset = 16;
       const edgeBuffer = 200;
       const width = cardRef.current?.offsetWidth ?? 180;
@@ -47,7 +52,7 @@ const StarDetails = ({ hoveredStarId }) => {
   }, []);
 
   useEffect(() => {
-    if (hoveredStarId) {
+    if (hoveredStarId && isPointerOverMap) {
       setDisplayedStarId(hoveredStarId);
       setIsExiting(false);
       return;
@@ -58,7 +63,7 @@ const StarDetails = ({ hoveredStarId }) => {
     setIsExiting(true);
     const timeout = setTimeout(() => setDisplayedStarId(null), 180);
     return () => clearTimeout(timeout);
-  }, [hoveredStarId, displayedStarId]);
+  }, [hoveredStarId, isPointerOverMap, displayedStarId]);
 
   if (!displayedStarId) return null;
 
