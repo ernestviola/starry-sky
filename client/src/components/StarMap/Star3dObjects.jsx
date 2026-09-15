@@ -44,6 +44,8 @@ const Star3dObjects = ({
   hoveredStarId,
   setHoveredStarId = null,
   enableHover = true,
+  pendingStars = [],
+  consumePendingStars = null,
 }) => {
   // currently processed star
   const nextIndexRef = useRef(0);
@@ -76,6 +78,7 @@ const Star3dObjects = ({
   const raycastPointsRef = useRef(); // points object passed to the raycaster
 
   const indicatorRingMeshRef = useRef();
+  const starBufferInitializedRef = useRef(false);
 
   // initialize raycaster threshold
   useEffect(() => {
@@ -140,8 +143,12 @@ const Star3dObjects = ({
     const sizes = sizeRef.current;
 
     let changed = false;
+    const starsToProcess = starBufferInitializedRef.current
+      ? pendingStars
+      : [...Object.values(starsDictionary), ...pendingStars];
+    starBufferInitializedRef.current = true;
 
-    for (const star of Object.values(starsDictionary)) {
+    for (const star of starsToProcess) {
       if (idToIndex.has(star.id)) continue;
 
       const index = nextIndexRef.current;
@@ -186,7 +193,11 @@ const Star3dObjects = ({
       geometryRef.current.setDrawRange(0, nextIndexRef.current);
       geometryRef.current.computeBoundingSphere();
     }
-  }, [starsDictionary]);
+
+    if (pendingStars.length > 0) {
+      consumePendingStars?.(pendingStars.length);
+    }
+  }, [starsDictionary, pendingStars, consumePendingStars]);
 
   useEffect(() => {
     if (raycastPointsRef.current) {

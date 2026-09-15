@@ -1,7 +1,7 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Line, Html, Grid, CameraControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 
 import { ang2vec, query_disc_inclusive_ring } from '@hscmap/healpix';
 import { nside } from './config.js';
@@ -181,6 +181,8 @@ const StarMap = ({
 
   const [viewedFrames, setViewedFrames] = useState(new Set());
   const [zenith, setZenith] = useState([0, 0, 0.1]);
+  const [pendingStars, setPendingStars] = useState([]);
+  const knownStarIdsRef = useRef(new Set());
 
   const orbitControlRef = useRef();
 
@@ -232,24 +234,24 @@ const StarMap = ({
 
         const data = await response.json();
 
-        setReceivedHealpixIds((prev) => new Set([...prev, ...data.frameIds]));
+        setReceivedHealpixIds(
+          (prev) => new Set([...prev, ...requestedFrames]),
+        );
 
-        setStarsDictionary((prev) => {
-          let hasNew = false;
-          for (const star of data.stars) {
-            if (!prev[star.id]) {
-              hasNew = true;
-              break;
-            }
-          }
-
-          if (!hasNew) return prev;
-          const next = { ...prev };
-          for (const star of data.stars) {
-            next[star.id] = star;
-          }
-          return next;
+        const newStars = data.stars.filter((star) => {
+          if (knownStarIdsRef.current.has(star.id)) return false;
+          knownStarIdsRef.current.add(star.id);
+          return true;
         });
+
+        if (newStars.length > 0) {
+          setPendingStars((prev) => [...prev, ...newStars]);
+          setStarsDictionary((prev) => {
+            const next = { ...prev };
+            for (const star of newStars) next[star.id] = star;
+            return next;
+          });
+        }
       } catch (error) {
         console.log(error);
       }
@@ -306,6 +308,10 @@ const StarMap = ({
     fetchConstellationFrame();
   }, [ra, dec, radius]);
 
+  const consumePendingStars = useCallback((count) => {
+    setPendingStars((prev) => prev.slice(count));
+  }, []);
+
   const getUserGeolocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
@@ -351,6 +357,8 @@ const StarMap = ({
           hoveredStarId={hoveredStarId}
           setHoveredStarId={setHoveredStarId}
           enableHover={enableHover}
+          pendingStars={pendingStars}
+          consumePendingStars={consumePendingStars}
         />
         <ConstellationLines
           constellationLinesDictionary={constellationLinesDictionary}
