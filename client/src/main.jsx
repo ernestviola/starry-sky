@@ -9,6 +9,7 @@ import About from './routes/About.jsx';
 import Layout from './layouts/Layout.jsx';
 
 import { StarDataProvider } from './contexts/StarDataContext.jsx';
+import { StarMapProvider } from './contexts/StarMapContext.jsx';
 
 const router = createBrowserRouter([
   {
@@ -25,7 +26,9 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <StarDataProvider>
-      <RouterProvider router={router} />
+      <StarMapProvider>
+        <RouterProvider router={router} />
+      </StarMapProvider>
     </StarDataProvider>
   </StrictMode>,
 );

@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
-import StarMap from '../../components/StarMap/index.jsx';
 import { jwtDecode } from 'jwt-decode';
+import { useStarMap } from '../../contexts/StarMapContext.jsx';
 import GameTimer from '../../components/GameTimer/GameTimer.jsx';
 import Leaderboard from '../../components/Leaderboard/Leaderboard.jsx';
 import SearchList from '../../components/SearchList/SearchList.jsx';
@@ -9,7 +9,7 @@ import styles from './play.module.css';
 
 const Play = () => {
   const [loading, setLoading] = useState(false);
-  const [hoveredStarId, setHoveredStarId] = useState(null);
+  const { hoveredStarId, registerClickHandler } = useStarMap();
   const [gameStartTime, setGameStartTime] = useState(null);
   const [gameTotalTime, setGameTotalTime] = useState(null);
   const [gameStarted, setGameStarted] = useState(false);
@@ -119,6 +119,10 @@ const Play = () => {
   };
 
   useEffect(() => {
+    return registerClickHandler(handleStarClick);
+  }, [registerClickHandler, handleStarClick]);
+
+  useEffect(() => {
     async function handleStarsFound() {
       if (checkAllStarsFound() && gameStarted) {
         const url = new URL(`${import.meta.env.VITE_STAR_API}api/game/submit`);
@@ -218,11 +222,6 @@ const Play = () => {
   return (
     <div className={styles.play}>
       <title>Play | Starry Sky</title>
-      <StarMap
-        hoveredStarId={hoveredStarId}
-        setHoveredStarId={setHoveredStarId}
-        handleClick={handleStarClick}
-      />
 
       <dialog
         ref={dialogGameStartRef}

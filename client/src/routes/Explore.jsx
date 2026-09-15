@@ -1,17 +1,12 @@
-import { useState } from 'react';
-import StarMap from '../components/StarMap/index.jsx';
+import { useStarMap } from '../contexts/StarMapContext.jsx';
 import StarDetails from '../components/StarDetails/index.jsx';
 
 const Explore = () => {
-  const [hoveredStarId, setHoveredStarId] = useState(null);
+  const { hoveredStarId } = useStarMap();
 
   return (
     <div style={{ position: 'relative' }}>
       <title>Explore | Starry Sky</title>
-      <StarMap
-        hoveredStarId={hoveredStarId}
-        setHoveredStarId={setHoveredStarId}
-      />
       <StarDetails hoveredStarId={hoveredStarId} />
     </div>
   );
