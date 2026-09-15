@@ -67,13 +67,12 @@ Should be able to test the API and maybe the database
 
 ## Next Steps
 
-- Add a navbar
-- Build a homepage with a hero. Explaining the app with links to explore and play
-- Fix the UI
-  - find a font i want to use
-  - decide on colors (black, purple, and white)
-  - decide on how to style containers and floating elements
-- Write the about page and style
+- Maybe write the star data to a json file split between healpix ids so we can efficiently load them?
+- Constellations into its own json file
+- Favicon for the page
+- Button interactivity
+- Slide in page transitions
+- About page copy
 - Cloudbuild file
 - Docker containers for client and server
 - Setup database
