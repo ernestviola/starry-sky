@@ -4,6 +4,7 @@ import { jwtDecode } from 'jwt-decode';
 import GameTimer from '../../components/GameTimer/GameTimer.jsx';
 import Leaderboard from '../../components/Leaderboard/Leaderboard.jsx';
 import SearchList from '../../components/SearchList/SearchList.jsx';
+import HowToPlay from '../../components/HowToPlay/HowToPlay.jsx';
 import styles from './play.module.css';
 
 const Play = () => {
@@ -25,6 +26,7 @@ const Play = () => {
   const dialogGameStartRef = useRef();
   const dialogSubmitScoreRef = useRef();
   const dialogLeaderboardRef = useRef();
+  const dialogHowToPlayRef = useRef();
 
   useEffect(() => {
     const preventEscape = (event) => {
@@ -232,7 +234,23 @@ const Play = () => {
           <button className={styles.submitButton} onClick={handleStartGame}>
             Start
           </button>
+          <button
+            className={styles.secondaryButton}
+            onClick={() => dialogHowToPlayRef.current?.show()}
+          >
+            How to play
+          </button>
         </div>
+      </dialog>
+
+      <dialog
+        ref={dialogHowToPlayRef}
+        className={styles.dialog}
+        onCancel={(e) => e.preventDefault()}
+      >
+        <HowToPlay
+          onClose={() => dialogHowToPlayRef.current?.close()}
+        />
       </dialog>
 
       <dialog

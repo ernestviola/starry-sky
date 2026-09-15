@@ -1,0 +1,40 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  text-align: left;
+}
+
+.content h1 {
+  font-family: var(--font-heading);
+  font-size: 2.4rem;
+  text-align: center;
+}
+
+.content img {
+  width: 100%;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-button);
+}
+
+.content ol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-left: 2.4rem;
+  color: var(--color-text-body);
+  font-size: 1.5rem;
+}
+
+.closeButton {
+  align-self: center;
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  border-radius: var(--radius-button);
+  background: var(--color-accent);
+  color: var(--color-background);
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 600;
+  cursor: pointer;
+}

@@ -68,6 +68,16 @@
   cursor: pointer;
 }
 
+.secondaryButton {
+  align-self: center;
+  border: 0;
+  background: transparent;
+  color: var(--color-accent);
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
 .gameStatus {
   position: absolute;
   top: clamp(5rem, 10svh, 8rem);
