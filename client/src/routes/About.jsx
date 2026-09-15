@@ -1,8 +1,9 @@
 import StarMapModel from '../components/StarMapModel/StarMapModel.jsx';
+import styles from './about.module.css';
 
 const About = () => {
   return (
-    <div>
+    <div className={styles.about}>
       <title>About | Starry Sky</title>
       <h1>About the constellation map</h1>
       <p>
