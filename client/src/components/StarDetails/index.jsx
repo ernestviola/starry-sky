@@ -9,6 +9,8 @@ const StarDetails = ({ hoveredStarId }) => {
   // if the screen is too small then we put the info on the top right
   const { starsDictionary } = useStarData();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [displayedStarId, setDisplayedStarId] = useState(null);
+  const [isExiting, setIsExiting] = useState(false);
   const cardRef = useRef(null);
 
   useEffect(() => {
@@ -43,18 +45,35 @@ const StarDetails = ({ hoveredStarId }) => {
       window.removeEventListener('pointermove', handlePointerMove);
     };
   }, []);
-  if (!hoveredStarId) return null;
 
-  const starData = starsDictionary[hoveredStarId];
+  useEffect(() => {
+    if (hoveredStarId) {
+      setDisplayedStarId(hoveredStarId);
+      setIsExiting(false);
+      return;
+    }
+
+    if (!displayedStarId) return;
+
+    setIsExiting(true);
+    const timeout = setTimeout(() => setDisplayedStarId(null), 180);
+    return () => clearTimeout(timeout);
+  }, [hoveredStarId, displayedStarId]);
+
+  if (!displayedStarId) return null;
+
+  const starData = starsDictionary[displayedStarId];
   if (!starData) return null;
 
   return (
     <div
       ref={cardRef}
-      className={styles.container}
+      className={`${styles.container} ${
+        isExiting ? styles.fadeOut : styles.fadeIn
+      }`}
       style={{
-        left: mousePosition.x + 16,
-        top: mousePosition.y + 16,
+        left: mousePosition.x,
+        top: mousePosition.y,
       }}
     >
       <p>HIP: {starData.hip}</p>
