@@ -1,0 +1,6 @@
+.timer {
+  color: var(--color-accent);
+  font-family: var(--font-data);
+  font-size: 1.6rem;
+  text-align: right;
+}

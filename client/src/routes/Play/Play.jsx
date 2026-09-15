@@ -1,9 +1,10 @@
 import { useRef, useState, useEffect } from 'react';
-import StarMap from '../components/StarMap/index.jsx';
+import StarMap from '../../components/StarMap/index.jsx';
 import { jwtDecode } from 'jwt-decode';
-import GameTimer from '../components/GameTimer/GameTimer.jsx';
-import Leaderboard from '../components/Leaderboard/Leaderboard.jsx';
-import SearchList from '../components/SearchList/SearchList.jsx';
+import GameTimer from '../../components/GameTimer/GameTimer.jsx';
+import Leaderboard from '../../components/Leaderboard/Leaderboard.jsx';
+import SearchList from '../../components/SearchList/SearchList.jsx';
+import styles from './play.module.css';
 
 const Play = () => {
   const [loading, setLoading] = useState(false);
@@ -45,16 +46,8 @@ const Play = () => {
     };
   }, []);
 
-  const dialogStyle = {
-    minWidth: '400px',
-    textAlign: 'center',
-    backgroundColor: 'black',
-    color: 'white',
-    zIndex: 1,
-  };
-
   useEffect(() => {
-    dialogGameStartRef.current.showModal();
+    dialogGameStartRef.current.show();
     // dialogLeaderboardRef.current.showModal();
   }, []);
 
@@ -139,7 +132,7 @@ const Play = () => {
 
         setGameTotalTime(decoded.totalTime);
         setGameFinishedToken(data.token);
-        dialogSubmitScoreRef.current.showModal();
+        dialogSubmitScoreRef.current.show();
       }
     }
 
@@ -211,7 +204,7 @@ const Play = () => {
 
         // close the dialog
         dialogSubmitScoreRef.current.close();
-        dialogLeaderboardRef.current.showModal();
+        dialogLeaderboardRef.current.show();
         setRefreshLeaderboard(true);
         // show the leaderboard modal
       }
@@ -221,7 +214,7 @@ const Play = () => {
   };
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div className={styles.play}>
       <title>Play | Starry Sky</title>
       <StarMap
         hoveredStarId={hoveredStarId}
@@ -231,7 +224,7 @@ const Play = () => {
 
       <dialog
         ref={dialogGameStartRef}
-        style={dialogStyle}
+        className={styles.dialog}
         onCancel={(e) => e.preventDefault()}
       >
         <h1>Use the map to find Sirius and Polaris and submit your score</h1>
@@ -240,29 +233,29 @@ const Play = () => {
 
       <dialog
         ref={dialogSubmitScoreRef}
-        style={{ ...dialogStyle }}
+        className={styles.dialog}
         onCancel={(e) => e.preventDefault()}
       >
         <form
           action=''
-          style={{ display: 'flex', flexDirection: 'column', gap: '1em' }}
+          className={styles.scoreForm}
           onSubmit={handleSubmitName}
         >
           <h1>Submit Time!</h1>
-          <p style={{ fontSize: '2.4em' }}>
+          <p className={styles.score}>
             {(gameTotalTime / 1000).toFixed(2)}s
           </p>
-          <label htmlFor='name' style={{ fontSize: '1.6em' }}>
+          <label className={styles.nameLabel} htmlFor='name'>
             <input
               type='text'
               id='name'
               placeholder='Name'
-              style={{ padding: '4px 8px', outline: 'none' }}
+              className={styles.nameInput}
               onChange={(e) => setName(e.target.value)}
             />
           </label>
           <button
-            style={{ fontSize: '1.6em', width: '100px', margin: 'auto' }}
+            className={styles.submitButton}
             type='submit'
           >
             Submit
@@ -278,27 +271,11 @@ const Play = () => {
       />
       {gameStarted && (
         <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            backgroundColor: 'black',
-            color: 'white',
-            padding: '2em',
-            margin: '1em',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '.5em',
-            border: '2px solid purple',
-          }}
+          className={styles.gameStatus}
         >
           <GameTimer
             startTime={gameStartTime}
             totalTime={gameTotalTime}
-            style={{
-              fontSize: '1.6em',
-              textAlign: 'right',
-            }}
           />
           <SearchList items={starsFoundDictionary} />
         </div>

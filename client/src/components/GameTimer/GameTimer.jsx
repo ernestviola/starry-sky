@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import styles from './gameTimer.module.css';
 
-const GameTimer = ({ startTime, totalTime, style }) => {
+const GameTimer = ({ startTime, totalTime }) => {
   const [currentTime, setCurrentTime] = useState(null);
   useEffect(() => {
     const currentInterval = setInterval(() => {
@@ -16,7 +17,7 @@ const GameTimer = ({ startTime, totalTime, style }) => {
 
   if (totalTime) {
     return (
-      <div role='timer' style={style}>
+      <div role='timer' className={styles.timer}>
         Time: {(totalTime / 1000).toFixed(2)}s
       </div>
     );
@@ -24,7 +25,7 @@ const GameTimer = ({ startTime, totalTime, style }) => {
 
   if (startTime) {
     return (
-      <div role='timer' style={style}>
+      <div role='timer' className={styles.timer}>
         Time: {currentTime}
       </div>
     );
