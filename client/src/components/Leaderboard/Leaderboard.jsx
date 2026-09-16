@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import styles from './leaderboard.module.css';
-import { BiLeftArrow, BiRefresh, BiRightArrow } from 'react-icons/bi';
+import {
+  BiLeftArrow,
+  BiRefresh,
+  BiRightArrow,
+  BiSolidLeftArrow,
+  BiSolidRightArrow,
+} from 'react-icons/bi';
 
 const Leaderboard = ({
   ref,
@@ -108,21 +114,25 @@ const Leaderboard = ({
       </div>
       <div className={styles.pager}>
         <button
+          aria-label='Previous page'
           disabled={globalLeaderboardData.page === 1}
           onClick={() => {
             loadGlobal(globalLeaderboardData.page - 1, null);
           }}
         >
-          <BiLeftArrow />{' '}
+          <BiLeftArrow className={styles.outlineIcon} />
+          <BiSolidLeftArrow className={styles.filledIcon} />
         </button>
         <div>{globalLeaderboardData.page}</div>
         <button
+          aria-label='Next page'
           disabled={!globalLeaderboardData.hasNext}
           onClick={() => {
             loadGlobal(globalLeaderboardData.page + 1, null);
           }}
         >
-          <BiRightArrow />
+          <BiRightArrow className={styles.outlineIcon} />
+          <BiSolidRightArrow className={styles.filledIcon} />
         </button>
       </div>
 

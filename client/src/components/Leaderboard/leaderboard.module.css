@@ -108,6 +108,18 @@
   opacity: 0.5;
 }
 
+.filledIcon {
+  display: none;
+}
+
+.pager button:hover:not(:disabled) .outlineIcon {
+  display: none;
+}
+
+.pager button:hover:not(:disabled) .filledIcon {
+  display: block;
+}
+
 .retry {
   display: flex;
   align-items: center;
@@ -120,4 +132,9 @@
 
 .icon {
   font-size: 2.5rem !important;
+  transition: transform 300ms ease;
+}
+
+.retry:hover .icon {
+  transform: rotate(180deg);
 }
