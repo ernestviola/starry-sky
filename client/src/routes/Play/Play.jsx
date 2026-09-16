@@ -7,6 +7,7 @@ import SearchList from '../../components/SearchList/SearchList.jsx';
 import HowToPlay from '../../components/PlayRoute/HowToPlay/HowToPlay.jsx';
 import styles from './play.module.css';
 import GameStart from '../../components/PlayRoute/GameStart/GameStart.jsx';
+import SubmitScore from '../../components/PlayRoute/SubmitScore/SubmitScore.jsx';
 
 const Play = () => {
   const [loading, setLoading] = useState(false);
@@ -236,33 +237,12 @@ const Play = () => {
       >
         <HowToPlay onClose={() => dialogHowToPlayRef.current?.close()} />
       </dialog>
+      <SubmitScore
+        dialogSubmitScoreRef={dialogSubmitScoreRef}
+        handleSubmitName={handleSubmitName}
+        gameTotalTime={gameTotalTime}
+      />
 
-      <dialog
-        ref={dialogSubmitScoreRef}
-        className={styles.dialog}
-        onCancel={(e) => e.preventDefault()}
-      >
-        <form
-          action=''
-          className={styles.scoreForm}
-          onSubmit={handleSubmitName}
-        >
-          <h1>Submit Time!</h1>
-          <p className={styles.score}>{(gameTotalTime / 1000).toFixed(2)}s</p>
-          <label className={styles.nameLabel} htmlFor='name'>
-            <input
-              type='text'
-              id='name'
-              placeholder='Name'
-              className={styles.nameInput}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </label>
-          <button className={styles.submitButton} type='submit'>
-            Submit
-          </button>
-        </form>
-      </dialog>
       <Leaderboard
         ref={dialogLeaderboardRef}
         leaderboardId={leaderboardId}
