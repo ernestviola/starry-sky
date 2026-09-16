@@ -18,12 +18,14 @@
   border-radius: var(--radius-card);
   background: var(--color-panel);
   color: var(--color-text-primary);
-  text-align: center;
 }
 
 .dialog h1 {
-  font-family: var(--font-heading);
   font-size: 2.4rem;
+}
+
+.dialog p {
+  font-size: 1.6rem;
 }
 
 .dialog button {
@@ -34,6 +36,7 @@
 .scoreForm {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: var(--space-3);
 }
 
@@ -77,6 +80,10 @@
   font-family: var(--font-heading);
   font-size: 1.4rem;
   cursor: pointer;
+}
+
+.secondaryButton:hover {
+  text-decoration: underline;
 }
 
 .gameStatus {

@@ -229,7 +229,10 @@ const Play = () => {
         onCancel={(e) => e.preventDefault()}
       >
         <div className={styles.startGame}>
-          <h1>Use the map to find Sirius and Polaris and submit your score</h1>
+          <h1>Find The Stars!</h1>
+          <p>
+            Use the map to search for Sirius and Polaris and get a final time.
+          </p>
           <button className={styles.submitButton} onClick={handleStartGame}>
             Start
           </button>
@@ -247,9 +250,7 @@ const Play = () => {
         className={styles.dialog}
         onCancel={(e) => e.preventDefault()}
       >
-        <HowToPlay
-          onClose={() => dialogHowToPlayRef.current?.close()}
-        />
+        <HowToPlay onClose={() => dialogHowToPlayRef.current?.close()} />
       </dialog>
 
       <dialog
