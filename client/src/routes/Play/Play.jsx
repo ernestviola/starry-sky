@@ -1,11 +1,12 @@
 import { useRef, useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { useStarMap } from '../../contexts/StarMapContext.jsx';
-import GameTimer from '../../components/GameTimer/GameTimer.jsx';
-import Leaderboard from '../../components/Leaderboard/Leaderboard.jsx';
+import GameTimer from '../../components/PlayRoute/GameTimer/GameTimer.jsx';
+import Leaderboard from '../../components/PlayRoute/Leaderboard/Leaderboard.jsx';
 import SearchList from '../../components/SearchList/SearchList.jsx';
-import HowToPlay from '../../components/HowToPlay/HowToPlay.jsx';
+import HowToPlay from '../../components/PlayRoute/HowToPlay/HowToPlay.jsx';
 import styles from './play.module.css';
+import GameStart from '../../components/PlayRoute/GameStart/GameStart.jsx';
 
 const Play = () => {
   const [loading, setLoading] = useState(false);
@@ -223,27 +224,10 @@ const Play = () => {
     <div className={styles.play}>
       <title>Play | Starry Sky</title>
 
-      <dialog
-        ref={dialogGameStartRef}
-        className={styles.dialog}
-        onCancel={(e) => e.preventDefault()}
-      >
-        <div className={styles.startGame}>
-          <h1>Find The Stars!</h1>
-          <p>
-            Use the map to search for Sirius and Polaris and get a final time.
-          </p>
-          <button className={styles.submitButton} onClick={handleStartGame}>
-            Start
-          </button>
-          <button
-            className={styles.secondaryButton}
-            onClick={() => dialogHowToPlayRef.current?.show()}
-          >
-            How to play
-          </button>
-        </div>
-      </dialog>
+      <GameStart
+        dialogGameStartRef={dialogGameStartRef}
+        handleStartGame={handleStartGame}
+      />
 
       <dialog
         ref={dialogHowToPlayRef}

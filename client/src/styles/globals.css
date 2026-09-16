@@ -95,6 +95,14 @@ a {
     animation: page-enter 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
+  ::view-transition-old(game-status) {
+    animation: game-status-exit 300ms ease-out both;
+  }
+
+  ::view-transition-new(game-status) {
+    animation: none;
+  }
+
   ::view-transition-old(star-map),
   ::view-transition-new(star-map),
   ::view-transition-old(navbar),
@@ -118,6 +126,18 @@ a {
     to {
       opacity: 1;
       transform: translateX(0);
+    }
+  }
+
+  @keyframes game-status-exit {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    to {
+      opacity: 0;
+      transform: translateX(4rem);
     }
   }
 }

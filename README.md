@@ -76,6 +76,18 @@ Should be able to test the API and maybe the database
 - Cloudbuild file
 - Docker containers for client and server
 - Setup database
+- query_disc: radius must < PI/2
+  Error: query_disc: radius must < PI/2
+  at query_disc_inclusive_nest (http://localhost:5173/node_modules/.vite/deps/@hscmap_healpix.js?v=42cdb7bf:173:28)
+  at query_disc_inclusive_ring (http://localhost:5173/node_modules/.vite/deps/@hscmap_healpix.js?v=42cdb7bf:213:10)
+  at http://localhost:5173/src/components/StarMap/index.jsx:188:3
+  at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=42cdb7bf:12655:13)
+  at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=42cdb7bf:604:66)
+  at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=42cdb7bf:6370:153)
+  at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=42cdb7bf:6405:55)
+  at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=42cdb7bf:7371:22)
+  at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=42cdb7bf:7359:5)
+  at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=42cdb7bf:7425:14)
 
 # Sources
 
