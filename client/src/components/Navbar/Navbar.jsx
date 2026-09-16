@@ -4,7 +4,7 @@ import styles from './navbar.module.css';
 const Navbar = () => {
   return (
     <header className={styles.navbar}>
-      <NavLink className={styles.logo} to='/'>
+      <NavLink className={styles.logo} to='/' viewTransition>
         STARRY SKY
       </NavLink>
       <nav>
@@ -13,6 +13,7 @@ const Navbar = () => {
             <NavLink
               to='/'
               end
+              viewTransition
               className={({ isActive }) =>
                 isActive ? styles.active : undefined
               }
@@ -23,6 +24,7 @@ const Navbar = () => {
           <li>
             <NavLink
               to='/explore'
+              viewTransition
               className={({ isActive }) =>
                 isActive ? styles.active : undefined
               }
@@ -33,6 +35,7 @@ const Navbar = () => {
           <li>
             <NavLink
               to='/play'
+              viewTransition
               className={({ isActive }) =>
                 isActive ? styles.active : undefined
               }

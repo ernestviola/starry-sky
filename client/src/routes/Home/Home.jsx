@@ -9,7 +9,7 @@ const Home = () => {
         <h1>Know your sky?</h1>
         <div className={styles.heroActions}>
           <p>Compete against others and see who knows their sky the best!</p>
-          <NavLink to='/play'>Play now</NavLink>
+          <NavLink to='/play' viewTransition>Play now</NavLink>
         </div>
       </section>
     </div>
