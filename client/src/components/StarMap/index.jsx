@@ -261,8 +261,11 @@ const StarMap = ({
             return next;
           });
         }
+
+        return true;
       } catch (error) {
         console.log(error);
+        return false;
       }
     };
 
@@ -308,14 +311,18 @@ const StarMap = ({
           }
           return next;
         });
+
+        return true;
       } catch (error) {
         console.log(error);
+        return false;
       }
     };
 
     const loadFrames = async () => {
       try {
-        await Promise.all([fetchStarFrame(), fetchConstellationFrame()]);
+        const starsLoaded = await fetchStarFrame();
+        if (starsLoaded) await fetchConstellationFrame();
       } finally {
         for (const frameId of requestedFrames) {
           pendingFrameIdsRef.current.delete(frameId);
