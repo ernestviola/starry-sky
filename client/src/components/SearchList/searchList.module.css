@@ -1,9 +1,9 @@
 .searchList {
-  color: white;
+  color: var(--color-text-body);
   display: flex;
   flex-direction: column;
   list-style: none;
-  font-size: 1.6em;
+  font-size: 1.6rem;
   margin: 0;
   padding: 0;
 }

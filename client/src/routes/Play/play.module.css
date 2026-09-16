@@ -26,6 +26,7 @@
 
 .dialog p {
   font-size: 1.6rem;
+  color: var(--color-text-body);
 }
 
 .dialog button {
@@ -98,8 +99,9 @@
   padding: var(--space-5);
   border: var(--border-width) solid var(--color-accent);
   border-radius: var(--radius-card);
-  background: rgb(6 7 13 / 90%);
+  background: var(--color-panel);
   color: var(--color-text-primary);
+  font-size: 1.6rem;
   box-shadow:
     0 0 3rem rgb(0 0 0 / 100%),
     0 0 2.4rem rgb(194 141 255 / 15%);

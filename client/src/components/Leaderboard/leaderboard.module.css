@@ -12,10 +12,11 @@
   transform: translate(-50%, -50%);
 
   border: var(--border-width) solid var(--color-accent);
-  border-radius: 1.2rem;
-  background: rgb(6 7 13 / 90%);
+  border-radius: var(--radius-card);
+  background: var(--color-panel);
   color: var(--color-text-primary);
   font-family: var(--font-body);
+  font-size: 1.6rem;
   box-shadow:
     0 0 3rem rgb(0 0 0 / 100%),
     0 0 2.4rem rgb(194 141 255 / 15%);
@@ -29,12 +30,12 @@
 .leaderboard > h1 {
   margin-bottom: var(--space-4);
   text-align: center;
-  font-size: 2.2rem;
+  font-size: 2.4rem;
 }
 
 .rankings {
   display: grid;
-  grid-template-columns: 3.6rem 1fr 7.2rem;
+  grid-template-columns: 5rem 1fr 7.2rem;
   gap: var(--space-2) var(--space-3);
 }
 
@@ -50,7 +51,6 @@
   padding-bottom: var(--space-2);
   border-bottom: var(--border-width) solid var(--color-border);
   color: var(--color-text-subtle);
-  font-size: 1.3rem;
   text-transform: uppercase;
 }
 
@@ -58,6 +58,7 @@
   font: inherit;
   font-family: var(--font-heading);
   font-weight: 700;
+  font-size: 1.6rem;
 }
 
 .header h3:last-child,
@@ -67,7 +68,7 @@
 
 .row {
   color: var(--color-text-body);
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   line-height: 1.4;
 }
 
