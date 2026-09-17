@@ -1,7 +1,7 @@
 import shared from '../shared.module.css';
 import styles from './gameStart.module.css';
 
-const GameStart = ({ dialogGameStartRef, handleStartGame }) => {
+const GameStart = ({ dialogGameStartRef, onHowToPlay, handleStartGame }) => {
   return (
     <dialog
       ref={dialogGameStartRef}
@@ -18,7 +18,7 @@ const GameStart = ({ dialogGameStartRef, handleStartGame }) => {
         </button>
         <button
           className={styles.secondaryButton}
-          onClick={() => dialogHowToPlayRef.current?.show()}
+          onClick={onHowToPlay}
         >
           How to play
         </button>

@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
+import { useBlocker } from 'react-router';
 import { jwtDecode } from 'jwt-decode';
 import { useStarMap } from '../../contexts/StarMapContext.jsx';
 import GameTimer from '../../components/PlayRoute/GameTimer/GameTimer.jsx';
@@ -31,6 +32,19 @@ const Play = () => {
   const dialogLeaderboardRef = useRef();
   const dialogHowToPlayRef = useRef();
 
+  const blocker = useBlocker(({ currentLocation, nextLocation }) => {
+    const dialogIsOpen = [
+      dialogGameStartRef,
+      dialogSubmitScoreRef,
+      dialogLeaderboardRef,
+      dialogHowToPlayRef,
+    ].some((ref) => ref.current?.open);
+
+    return (
+      currentLocation.pathname !== nextLocation.pathname && dialogIsOpen
+    );
+  });
+
   useEffect(() => {
     const preventEscape = (event) => {
       if (
@@ -55,6 +69,23 @@ const Play = () => {
     dialogGameStartRef.current.show();
     // dialogLeaderboardRef.current.showModal();
   }, []);
+
+  useEffect(() => {
+    if (blocker.state !== 'blocked') return;
+
+    const openDialog = [
+      dialogGameStartRef,
+      dialogSubmitScoreRef,
+      dialogLeaderboardRef,
+      dialogHowToPlayRef,
+    ].find((ref) => ref.current?.open);
+
+    if (openDialog) {
+      closeDialog(openDialog, blocker.proceed);
+    } else {
+      blocker.proceed();
+    }
+  }, [blocker.state]);
 
   useEffect(() => {
     hoveredStarIdRef.current = hoveredStarId;
@@ -226,6 +257,12 @@ const Play = () => {
     }
   };
 
+  const handleHowToPlay = () => {
+    closeDialog(dialogGameStartRef, () => {
+      dialogHowToPlayRef.current.show();
+    });
+  };
+
   const closeDialog = (ref, onClosed) => {
     const dialog = ref.current;
 
@@ -248,16 +285,18 @@ const Play = () => {
 
       <GameStart
         dialogGameStartRef={dialogGameStartRef}
+        onHowToPlay={handleHowToPlay}
         handleStartGame={handleStartGame}
       />
 
-      <dialog
+      <HowToPlay
         ref={dialogHowToPlayRef}
-        className={styles.dialog}
-        onCancel={(e) => e.preventDefault()}
-      >
-        <HowToPlay onClose={() => dialogHowToPlayRef.current?.close()} />
-      </dialog>
+        onClose={() =>
+          closeDialog(dialogHowToPlayRef, () => {
+            dialogGameStartRef.current.show();
+          })
+        }
+      />
       <SubmitScore
         dialogSubmitScoreRef={dialogSubmitScoreRef}
         handleSubmitName={handleSubmitName}
