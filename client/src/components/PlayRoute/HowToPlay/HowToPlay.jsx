@@ -1,13 +1,9 @@
-import shared from '../shared.module.css';
+import Dialog from '../Dialog/Dialog.jsx';
 import styles from './howToPlay.module.css';
 
 const HowToPlay = ({ ref, onClose }) => {
   return (
-    <dialog
-      ref={ref}
-      className={shared.dialog}
-      onCancel={(e) => e.preventDefault()}
-    >
+    <Dialog ref={ref}>
       <section className={styles.content}>
         <h1>How to play</h1>
         <img src='/play-preview.png' alt='Preview of the Starry Sky game' />
@@ -20,7 +16,7 @@ const HowToPlay = ({ ref, onClose }) => {
           Close
         </button>
       </section>
-    </dialog>
+    </Dialog>
   );
 };
 

@@ -1,10 +1,20 @@
-import { NavLink } from 'react-router';
+import { NavLink, useLocation } from 'react-router';
 import styles from './navbar.module.css';
 
 const Navbar = () => {
+  const { pathname } = useLocation();
+  const preventCurrentNavigation = (path) => (event) => {
+    if (pathname === path) event.preventDefault();
+  };
+
   return (
     <header className={styles.navbar}>
-      <NavLink className={styles.logo} to='/' viewTransition>
+      <NavLink
+        className={styles.logo}
+        to='/'
+        viewTransition
+        onClick={preventCurrentNavigation('/')}
+      >
         STARRY SKY
       </NavLink>
       <nav>
@@ -14,6 +24,7 @@ const Navbar = () => {
               to='/'
               end
               viewTransition
+              onClick={preventCurrentNavigation('/')}
               className={({ isActive }) =>
                 isActive ? styles.active : undefined
               }
@@ -25,6 +36,7 @@ const Navbar = () => {
             <NavLink
               to='/explore'
               viewTransition
+              onClick={preventCurrentNavigation('/explore')}
               className={({ isActive }) =>
                 isActive ? styles.active : undefined
               }
@@ -36,6 +48,7 @@ const Navbar = () => {
             <NavLink
               to='/play'
               viewTransition
+              onClick={preventCurrentNavigation('/play')}
               className={({ isActive }) =>
                 isActive ? styles.active : undefined
               }
@@ -46,6 +59,8 @@ const Navbar = () => {
           <li>
             <NavLink
               to='/about'
+              viewTransition
+              onClick={preventCurrentNavigation('/about')}
               className={({ isActive }) =>
                 isActive ? styles.active : undefined
               }

@@ -1,5 +1,6 @@
-import shared from '../shared.module.css';
-import styles from './SubmitScore.module.css';
+import Dialog from '../Dialog/Dialog.jsx';
+import dialogStyles from '../Dialog/dialog.module.css';
+import styles from './submitScore.module.css';
 
 const SubmitScore = ({
   dialogSubmitScoreRef,
@@ -8,11 +9,7 @@ const SubmitScore = ({
   gameTotalTime,
 }) => {
   return (
-    <dialog
-      ref={dialogSubmitScoreRef}
-      className={shared.dialog}
-      onCancel={(e) => e.preventDefault()}
-    >
+    <Dialog ref={dialogSubmitScoreRef}>
       <form action='' className={styles.scoreForm} onSubmit={handleSubmitName}>
         <h1>Submit Time!</h1>
         <p className={styles.score}>{(gameTotalTime / 1000).toFixed(2)}s</p>
@@ -25,11 +22,11 @@ const SubmitScore = ({
             onChange={(e) => setName(e.target.value)}
           />
         </label>
-        <button className={shared.submitButton} type='submit'>
+        <button className={dialogStyles.submitButton} type='submit'>
           Submit
         </button>
       </form>
-    </dialog>
+    </Dialog>
   );
 };
 

@@ -1,29 +1,23 @@
-import shared from '../shared.module.css';
+import Dialog from '../Dialog/Dialog.jsx';
+import dialogStyles from '../Dialog/dialog.module.css';
 import styles from './gameStart.module.css';
 
 const GameStart = ({ dialogGameStartRef, onHowToPlay, handleStartGame }) => {
   return (
-    <dialog
-      ref={dialogGameStartRef}
-      className={`${shared.dialog} ${styles.gameStart}`}
-      onCancel={(e) => e.preventDefault()}
-    >
+    <Dialog ref={dialogGameStartRef} className={styles.gameStart}>
       <div className={styles.startGame}>
         <h1>Find The Stars!</h1>
         <p>
           Use the map to search for Sirius and Polaris and get a final time.
         </p>
-        <button className={shared.submitButton} onClick={handleStartGame}>
+        <button className={dialogStyles.submitButton} onClick={handleStartGame}>
           Start
         </button>
-        <button
-          className={styles.secondaryButton}
-          onClick={onHowToPlay}
-        >
+        <button className={styles.secondaryButton} onClick={onHowToPlay}>
           How to play
         </button>
       </div>
-    </dialog>
+    </Dialog>
   );
 };
 

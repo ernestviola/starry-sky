@@ -9,7 +9,7 @@ import HowToPlay from '../../components/PlayRoute/HowToPlay/HowToPlay.jsx';
 import styles from './play.module.css';
 import GameStart from '../../components/PlayRoute/GameStart/GameStart.jsx';
 import SubmitScore from '../../components/PlayRoute/SubmitScore/SubmitScore.jsx';
-import shared from '../../components/PlayRoute/shared.module.css';
+import dialogStyles from '../../components/PlayRoute/Dialog/dialog.module.css';
 
 const Play = () => {
   const [loading, setLoading] = useState(false);
@@ -266,13 +266,13 @@ const Play = () => {
   const closeDialog = (ref, onClosed) => {
     const dialog = ref.current;
 
-    dialog.classList.add(shared.closing);
+    dialog.classList.add(dialogStyles.closing);
 
     dialog.addEventListener(
       'animationend',
       () => {
         dialog.close();
-        dialog.classList.remove(shared.closing);
+        dialog.classList.remove(dialogStyles.closing);
         onClosed?.();
       },
       { once: true },

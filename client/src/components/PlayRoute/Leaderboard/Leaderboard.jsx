@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Dialog from '../Dialog/Dialog.jsx';
 import styles from './leaderboard.module.css';
 import {
   BiLeftArrow,
@@ -86,11 +87,7 @@ const Leaderboard = ({
   };
 
   return (
-    <dialog
-      ref={ref}
-      className={styles.leaderboard}
-      onCancel={(e) => e.preventDefault()}
-    >
+    <Dialog ref={ref} className={styles.leaderboard}>
       <h1>Leaderboard</h1>
       <div className={styles.rankings}>
         <div className={styles.header}>
@@ -139,7 +136,7 @@ const Leaderboard = ({
       <button className={styles.retry} title='retry' onClick={handleStartGame}>
         Retry <BiRefresh className={styles.icon} />
       </button>
-    </dialog>
+    </Dialog>
   );
 };
 

@@ -39,18 +39,6 @@ dialog[open].closing {
   animation: dialog-exit 300ms ease-in both;
 }
 
-@keyframes dialog-exit {
-  from {
-    opacity: 1;
-    transform: translate(-50%, -50%);
-  }
-
-  to {
-    opacity: 0;
-    transform: translate(-50%, -70%);
-  }
-}
-
 .submitButton {
   display: inline-flex;
   align-items: center;
@@ -60,7 +48,7 @@ dialog[open].closing {
   padding: var(--space-3) var(--space-4);
   border: none;
   border-radius: var(--radius-button);
-  background-color: var(--color-accent);
+  background: var(--color-accent);
   color: var(--color-background);
   font-family: var(--font-heading);
   font-size: 1.6rem;
@@ -77,5 +65,17 @@ dialog[open].closing {
   to {
     opacity: 1;
     transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes dialog-exit {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(-50%, -70%);
   }
 }
