@@ -91,7 +91,9 @@ const Play = () => {
 
       setStarsFoundDictionary(starsDictionary);
       closeDialog(dialogGameStartRef);
-      dialogLeaderboardRef.current.close();
+      if (dialogLeaderboardRef.current?.open) {
+        closeDialog(dialogLeaderboardRef);
+      }
       dialogSubmitScoreRef.current.close();
 
       setGameStarted(true);
@@ -213,9 +215,10 @@ const Play = () => {
 
         // close the dialog
 
-        closeDialog(dialogSubmitScoreRef);
-        dialogLeaderboardRef.current.show();
-        setRefreshLeaderboard(true);
+        closeDialog(dialogSubmitScoreRef, () => {
+          dialogLeaderboardRef.current.show();
+          setRefreshLeaderboard(true);
+        });
         // show the leaderboard modal
       }
     } catch (error) {
@@ -223,7 +226,7 @@ const Play = () => {
     }
   };
 
-  const closeDialog = (ref) => {
+  const closeDialog = (ref, onClosed) => {
     const dialog = ref.current;
 
     dialog.classList.add(shared.closing);
@@ -233,6 +236,7 @@ const Play = () => {
       () => {
         dialog.close();
         dialog.classList.remove(shared.closing);
+        onClosed?.();
       },
       { once: true },
     );

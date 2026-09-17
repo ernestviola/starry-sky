@@ -23,6 +23,22 @@
   backdrop-filter: blur(8px);
 }
 
+.leaderboard[open] {
+  animation: leaderboard-enter 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes leaderboard-enter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
 .leaderboard::backdrop {
   background: rgb(1 2 3 / 60%);
 }

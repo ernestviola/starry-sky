@@ -30,7 +30,8 @@
   cursor: pointer;
 }
 
-.closing {
+.closing,
+dialog[open].closing {
   animation: dialog-exit 300ms ease-in both;
 }
 
