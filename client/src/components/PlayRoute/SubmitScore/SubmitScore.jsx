@@ -4,6 +4,7 @@ import styles from './SubmitScore.module.css';
 const SubmitScore = ({
   dialogSubmitScoreRef,
   handleSubmitName,
+  setName,
   gameTotalTime,
 }) => {
   return (

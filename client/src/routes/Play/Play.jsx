@@ -8,6 +8,7 @@ import HowToPlay from '../../components/PlayRoute/HowToPlay/HowToPlay.jsx';
 import styles from './play.module.css';
 import GameStart from '../../components/PlayRoute/GameStart/GameStart.jsx';
 import SubmitScore from '../../components/PlayRoute/SubmitScore/SubmitScore.jsx';
+import shared from '../../components/PlayRoute/shared.module.css';
 
 const Play = () => {
   const [loading, setLoading] = useState(false);
@@ -89,7 +90,7 @@ const Play = () => {
       }
 
       setStarsFoundDictionary(starsDictionary);
-      dialogGameStartRef.current.close();
+      closeDialog(dialogGameStartRef);
       dialogLeaderboardRef.current.close();
       dialogSubmitScoreRef.current.close();
 
@@ -211,7 +212,8 @@ const Play = () => {
         setLeaderboardId(data.leaderboardId);
 
         // close the dialog
-        dialogSubmitScoreRef.current.close();
+
+        closeDialog(dialogSubmitScoreRef);
         dialogLeaderboardRef.current.show();
         setRefreshLeaderboard(true);
         // show the leaderboard modal
@@ -219,6 +221,21 @@ const Play = () => {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const closeDialog = (ref) => {
+    const dialog = ref.current;
+
+    dialog.classList.add(shared.closing);
+
+    dialog.addEventListener(
+      'animationend',
+      () => {
+        dialog.close();
+        dialog.classList.remove(shared.closing);
+      },
+      { once: true },
+    );
   };
 
   return (
@@ -240,6 +257,7 @@ const Play = () => {
       <SubmitScore
         dialogSubmitScoreRef={dialogSubmitScoreRef}
         handleSubmitName={handleSubmitName}
+        setName={setName}
         gameTotalTime={gameTotalTime}
       />
 

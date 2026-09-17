@@ -13,7 +13,7 @@ const GameStart = ({ dialogGameStartRef, handleStartGame }) => {
         <p>
           Use the map to search for Sirius and Polaris and get a final time.
         </p>
-        <button className={styles.submitButton} onClick={handleStartGame}>
+        <button className={shared.submitButton} onClick={handleStartGame}>
           Start
         </button>
         <button
