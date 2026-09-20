@@ -22,6 +22,7 @@ const Play = () => {
   const [name, setName] = useState('');
   const [leaderboardId, setLeaderboardId] = useState(null);
   const [refreshLeaderboard, setRefreshLeaderboard] = useState(false);
+  const [isGameStatusLeaving, setIsGameStatusLeaving] = useState(false);
 
   const [starsFoundDictionary, setStarsFoundDictionary] = useState({});
 
@@ -81,6 +82,7 @@ const Play = () => {
     ].find((ref) => ref.current?.open);
 
     if (openDialog) {
+      setIsGameStatusLeaving(true);
       closeDialog(openDialog, blocker.proceed);
     } else {
       blocker.proceed();
@@ -312,7 +314,11 @@ const Play = () => {
         setRefreshLeaderboard={setRefreshLeaderboard}
       />
       {gameStarted && (
-        <div className={styles.gameStatus}>
+        <div
+          className={`${styles.gameStatus} ${
+            isGameStatusLeaving ? styles.leaving : ''
+          }`}
+        >
           <GameTimer startTime={gameStartTime} totalTime={gameTotalTime} />
           <SearchList items={starsFoundDictionary} />
         </div>
