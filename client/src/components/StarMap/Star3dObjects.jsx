@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
+import StarPoints from './StarPoints.jsx';
 
 const MAX_STARS = 120000;
 const MAG_EXPONENT = 1.5;
@@ -35,40 +36,6 @@ const setStarColor = (ci, target) => {
 
   return target.copy(STAR_COLOR_STOPS.at(-1).color);
 };
-
-const starVertexShader = `
-  attribute float size;
-  attribute vec3 color;
-  attribute float fade;
-  varying vec3 vColor;
-  varying float vSize;
-  varying float vFade;
-
-  void main() {
-    vColor = color;
-    vSize = size;
-    vFade = fade;
-    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-    gl_PointSize = size;
-    gl_Position = projectionMatrix * mvPosition;
-  }
-`;
-
-const starFragmentShader = `
-  varying vec3 vColor;
-  varying float vSize;
-  varying float vFade;
-  uniform float globalOpacity;
-
-  void main() {
-    vec2 coord = gl_PointCoord - vec2(0.5);
-    float dist = length(coord);
-    if (dist > 0.5) discard;
-
-    float alpha = (1.0 - (dist / 0.5)) * globalOpacity * vFade;
-    gl_FragColor = vec4(vColor, alpha);
-  }
-`;
 
 const Star3dObjects = ({
   starsDictionary,
@@ -402,46 +369,20 @@ const Star3dObjects = ({
         </mesh>
       )}
 
-      <points renderOrder={1}>
-        <bufferGeometry ref={geometryRef}>
-          <bufferAttribute
-            ref={positionAttrRef}
-            attach='attributes-position'
-            count={MAX_STARS}
-            array={positionRef.current}
-            itemSize={3}
-          />
-          <bufferAttribute
-            ref={colorAttrRef}
-            attach='attributes-color'
-            count={MAX_STARS}
-            array={colorRef.current}
-            itemSize={3}
-          />
-          <bufferAttribute
-            ref={sizeAttrRef}
-            attach='attributes-size'
-            count={MAX_STARS}
-            array={sizeRef.current}
-            itemSize={1}
-          />
-          <bufferAttribute
-            ref={fadeAttrRef}
-            attach='attributes-fade'
-            count={MAX_STARS}
-            array={fadeRef.current}
-            itemSize={1}
-          />
-        </bufferGeometry>
-        <shaderMaterial
-          ref={starMaterialRef}
-          vertexShader={starVertexShader}
-          fragmentShader={starFragmentShader}
-          uniforms={uniforms}
-          depthTest={false}
-          transparent={true}
-        />
-      </points>
+      <StarPoints
+        positionRef={positionRef}
+        colorRef={colorRef}
+        sizeRef={sizeRef}
+        fadeRef={fadeRef}
+        geometryRef={geometryRef}
+        positionAttrRef={positionAttrRef}
+        colorAttrRef={colorAttrRef}
+        sizeAttrRef={sizeAttrRef}
+        fadeAttrRef={fadeAttrRef}
+        starMaterialRef={starMaterialRef}
+        uniforms={uniforms}
+        maxStars={MAX_STARS}
+      />
     </>
   );
 };
