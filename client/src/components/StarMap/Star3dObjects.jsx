@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 
 const MAX_STARS = 120000;
@@ -9,6 +9,8 @@ const MIN_MAG = -1.44;
 const MAX_MAG = 6;
 const SIZE_SCALE = 40;
 const RAYCAST_REBUILD_DELAY = 100;
+const STAR_FADE_DURATION = 0.4;
+const BATCH_FADE_DURATION = 0.4;
 const STAR_COLOR_STOPS = [
   { t: 0.0, color: new THREE.Color(0.6, 0.7, 1.0) },
   { t: 0.4, color: new THREE.Color(1.0, 1.0, 1.0) },
@@ -37,12 +39,15 @@ const setStarColor = (ci, target) => {
 const starVertexShader = `
   attribute float size;
   attribute vec3 color;
+  attribute float fade;
   varying vec3 vColor;
   varying float vSize;
+  varying float vFade;
 
   void main() {
     vColor = color;
     vSize = size;
+    vFade = fade;
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
     gl_PointSize = size;
     gl_Position = projectionMatrix * mvPosition;
@@ -52,13 +57,15 @@ const starVertexShader = `
 const starFragmentShader = `
   varying vec3 vColor;
   varying float vSize;
+  varying float vFade;
+  uniform float globalOpacity;
 
   void main() {
     vec2 coord = gl_PointCoord - vec2(0.5);
     float dist = length(coord);
     if (dist > 0.5) discard;
 
-    float alpha = 1.0 - (dist / 0.5);
+    float alpha = (1.0 - (dist / 0.5)) * globalOpacity * vFade;
     gl_FragColor = vec4(vColor, alpha);
   }
 `;
@@ -79,11 +86,13 @@ const Star3dObjects = ({
   const positionRef = useRef(new Float32Array(MAX_STARS * 3));
   const colorRef = useRef(new Float32Array(MAX_STARS * 3));
   const sizeRef = useRef(new Float32Array(MAX_STARS));
+  const fadeRef = useRef(new Float32Array(MAX_STARS));
 
   // star attribute references
   const positionAttrRef = useRef();
   const colorAttrRef = useRef();
   const sizeAttrRef = useRef();
+  const fadeAttrRef = useRef();
   const geometryRef = useRef();
 
   // ref tracking all prev hovered stars used for easing animation
@@ -103,7 +112,12 @@ const Star3dObjects = ({
   const raycastPointsRef = useRef(); // points object passed to the raycaster
 
   const indicatorRingMeshRef = useRef();
+  const starMaterialRef = useRef();
+  const shouldFadeInRef = useRef(false);
+  const initialStarsLoadedRef = useRef(false);
+  const fadingStarIndicesRef = useRef(new Set());
   const starBufferInitializedRef = useRef(false);
+  const uniforms = useMemo(() => ({ globalOpacity: { value: 0 } }), []);
 
   // initialize raycaster threshold
   useEffect(() => {
@@ -143,6 +157,7 @@ const Star3dObjects = ({
     const positions = positionRef.current;
     const colors = colorRef.current;
     const sizes = sizeRef.current;
+    const fades = fadeRef.current;
 
     let changed = false;
     const color = new THREE.Color();
@@ -178,6 +193,13 @@ const Star3dObjects = ({
         sizes[index] = shaped * SIZE_SCALE;
       }
 
+      if (initialStarsLoadedRef.current) {
+        fades[index] = 0;
+        fadingStarIndicesRef.current.add(index);
+      } else {
+        fades[index] = 1;
+      }
+
       idToIndex.set(star.id, index);
       nextIndexRef.current += 1;
       changed = true;
@@ -188,13 +210,20 @@ const Star3dObjects = ({
       positionAttrRef.current &&
       colorAttrRef.current &&
       sizeAttrRef.current &&
+      fadeAttrRef.current &&
       geometryRef.current
     ) {
       positionAttrRef.current.needsUpdate = true;
       colorAttrRef.current.needsUpdate = true;
       sizeAttrRef.current.needsUpdate = true;
+      fadeAttrRef.current.needsUpdate = true;
       geometryRef.current.setDrawRange(0, nextIndexRef.current);
       geometryRef.current.computeBoundingSphere();
+
+      if (!initialStarsLoadedRef.current) {
+        shouldFadeInRef.current = true;
+        initialStarsLoadedRef.current = true;
+      }
     }
 
     if (pendingStars.length > 0) {
@@ -330,8 +359,25 @@ const Star3dObjects = ({
     }
   };
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     const starId = enableHover ? detectHoveredStar() : null;
+
+    if (shouldFadeInRef.current && starMaterialRef.current) {
+      const opacity = starMaterialRef.current.uniforms.globalOpacity;
+      opacity.value = Math.min(opacity.value + delta / STAR_FADE_DURATION, 1);
+    }
+
+    const fadingStarIndices = fadingStarIndicesRef.current;
+    if (fadingStarIndices.size > 0 && fadeAttrRef.current) {
+      const fades = fadeRef.current;
+
+      for (const index of fadingStarIndices) {
+        fades[index] = Math.min(fades[index] + delta / BATCH_FADE_DURATION, 1);
+        if (fades[index] === 1) fadingStarIndices.delete(index);
+      }
+
+      fadeAttrRef.current.needsUpdate = true;
+    }
 
     if (indicatorRingMeshRef.current) {
       indicatorRingMeshRef.current.scale.set(
@@ -379,10 +425,19 @@ const Star3dObjects = ({
             array={sizeRef.current}
             itemSize={1}
           />
+          <bufferAttribute
+            ref={fadeAttrRef}
+            attach='attributes-fade'
+            count={MAX_STARS}
+            array={fadeRef.current}
+            itemSize={1}
+          />
         </bufferGeometry>
         <shaderMaterial
+          ref={starMaterialRef}
           vertexShader={starVertexShader}
           fragmentShader={starFragmentShader}
+          uniforms={uniforms}
           depthTest={false}
           transparent={true}
         />

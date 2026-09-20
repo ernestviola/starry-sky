@@ -360,7 +360,7 @@ const StarMap = ({
       className=''
       style={{ height: '100vh', width: '100vw', position: 'relative' }}
     >
-      <Canvas camera={{ position: [0, 0, 0] }}>
+      <Canvas camera={{ position: [0, 0, 0], fov: 50 }}>
         <color attach='background' args={['#000000']} />
         {/* <ModelGrid /> */}
         <CameraControls
