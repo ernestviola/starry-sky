@@ -8,6 +8,30 @@ const MAG_EXPONENT = 1.5;
 const MIN_MAG = -1.44;
 const MAX_MAG = 6;
 const SIZE_SCALE = 40;
+const STAR_COLOR_STOPS = [
+  { t: 0.0, color: new THREE.Color(0.6, 0.7, 1.0) },
+  { t: 0.4, color: new THREE.Color(1.0, 1.0, 1.0) },
+  { t: 0.6, color: new THREE.Color(1.0, 0.9, 0.7) },
+  { t: 1.0, color: new THREE.Color(1.0, 0.5, 0.3) },
+];
+
+const setStarColor = (ci, target) => {
+  if (ci === null || ci === undefined) return target.set('white');
+
+  const t = THREE.MathUtils.clamp((ci + 0.4) / 2.4, 0, 1);
+
+  for (let i = 0; i < STAR_COLOR_STOPS.length - 1; i++) {
+    const start = STAR_COLOR_STOPS[i];
+    const end = STAR_COLOR_STOPS[i + 1];
+
+    if (t >= start.t && t <= end.t) {
+      const amount = (t - start.t) / (end.t - start.t);
+      return target.copy(start.color).lerp(end.color, amount);
+    }
+  }
+
+  return target.copy(STAR_COLOR_STOPS.at(-1).color);
+};
 
 const starVertexShader = `
   attribute float size;
@@ -95,29 +119,6 @@ const Star3dObjects = ({
     if (sizeAttrRef.current) sizeAttrRef.current.needsUpdate = true;
   }, [enableHover]);
 
-  const starColor = (ci) => {
-    if (ci === null || ci === undefined) {
-      return new THREE.Color('white');
-    }
-
-    const t = THREE.MathUtils.clamp((ci + 0.4) / 2.4, 0, 1);
-
-    const stops = [
-      { t: 0.0, color: new THREE.Color(0.6, 0.7, 1.0) }, // hot blue
-      { t: 0.4, color: new THREE.Color(1.0, 1.0, 1.0) }, // white
-      { t: 0.6, color: new THREE.Color(1.0, 0.9, 0.7) }, // yellow-white (Sun-like)
-      { t: 1.0, color: new THREE.Color(1.0, 0.5, 0.3) }, // cool red
-    ];
-
-    for (let i = 0; i < stops.length - 1; i++) {
-      if (t >= stops[i].t && t <= stops[i + 1].t) {
-        const localT = (t - stops[i].t) / (stops[i + 1].t - stops[i].t);
-        return stops[i].color.clone().lerp(stops[i + 1].color, localT);
-      }
-    }
-    return stops[stops.length - 1].color;
-  };
-
   const starSize = (mag) => {
     // Values from sql max: 21, min: -26.7
 
@@ -143,6 +144,7 @@ const Star3dObjects = ({
     const sizes = sizeRef.current;
 
     let changed = false;
+    const color = new THREE.Color();
     const starsToProcess = starBufferInitializedRef.current
       ? pendingStars
       : [...Object.values(starsDictionary), ...pendingStars];
@@ -162,7 +164,7 @@ const Star3dObjects = ({
       positions[index * 3 + 1] = position.y;
       positions[index * 3 + 2] = position.z;
 
-      const color = starColor(star.ci);
+      setStarColor(star.ci, color);
       colors[index * 3] = color.r;
       colors[index * 3 + 1] = color.g;
       colors[index * 3 + 2] = color.b;
