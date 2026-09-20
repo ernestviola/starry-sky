@@ -9,7 +9,7 @@ import { nside } from './config.js';
 import Star3dObjects from './Star3dObjects.jsx';
 import ConstellationLines from './ConstellationLines.jsx';
 import useStarFrameLoader from './hooks/useStarFrameLoader.js';
-import { useStarData } from '../../contexts/StarDataContext.jsx';
+import useConstellationFrameLoader from './hooks/useConstellationFrameLoader.js';
 
 const ZenithTargetDirection = ({ zenith }) => {
   return (
@@ -155,12 +155,8 @@ const StarMap = ({
   handleClick,
   enableHover = true,
 }) => {
-  const {
-    constellationLinesDictionary,
-    setConstellationLinesDictionary,
-    receivedConstellationNames,
-    setReceivedConstellationNames,
-  } = useStarData();
+  const { constellationLinesDictionary, loadConstellationFrames } =
+    useConstellationFrameLoader();
   const {
     starsDictionary,
     receivedHealpixIds,
@@ -232,60 +228,10 @@ const StarMap = ({
       pendingFrameIdsRef.current.add(frameId);
     }
 
-    const fetchConstellationFrame = async () => {
-      try {
-        const url = new URL(
-          `${import.meta.env.VITE_STAR_API}api/constellations/frame`,
-        );
-        url.searchParams.append(
-          'frames',
-          Array.from(requestedFrames).join(','),
-        );
-        url.searchParams.append(
-          'receivedConstellationNames',
-          Array.from(receivedConstellationNames).join(','),
-        );
-
-        const response = await fetch(url.toString());
-
-        if (!response.ok) {
-          throw new Error('Problems fetching star data.');
-        }
-
-        const data = await response.json();
-
-        setReceivedConstellationNames(
-          (prev) => new Set([...prev, ...data.constellations]),
-        );
-
-        setConstellationLinesDictionary((prev) => {
-          let hasNew = false;
-          for (const line of data.constellationLines) {
-            if (!prev[line.id]) {
-              hasNew = true;
-              break;
-            }
-          }
-
-          if (!hasNew) return prev;
-          const next = { ...prev };
-          for (const line of data.constellationLines) {
-            next[line.id] = line;
-          }
-          return next;
-        });
-
-        return true;
-      } catch (error) {
-        console.log(error);
-        return false;
-      }
-    };
-
     const loadFrames = async () => {
       try {
         const starsLoaded = await loadStarFrames(requestedFrames);
-        if (starsLoaded) await fetchConstellationFrame();
+        if (starsLoaded) await loadConstellationFrames(requestedFrames);
       } finally {
         for (const frameId of requestedFrames) {
           pendingFrameIdsRef.current.delete(frameId);
@@ -299,8 +245,8 @@ const StarMap = ({
     dec,
     radius,
     receivedHealpixIds,
-    receivedConstellationNames,
     loadStarFrames,
+    loadConstellationFrames,
   ]);
 
   const getUserGeolocation = () => {
