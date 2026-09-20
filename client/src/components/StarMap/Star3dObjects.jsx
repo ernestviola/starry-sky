@@ -8,6 +8,7 @@ const MAG_EXPONENT = 1.5;
 const MIN_MAG = -1.44;
 const MAX_MAG = 6;
 const SIZE_SCALE = 40;
+const RAYCAST_REBUILD_DELAY = 100;
 const STAR_COLOR_STOPS = [
   { t: 0.0, color: new THREE.Color(0.6, 0.7, 1.0) },
   { t: 0.4, color: new THREE.Color(1.0, 1.0, 1.0) },
@@ -202,42 +203,46 @@ const Star3dObjects = ({
   }, [starsDictionary, pendingStars, consumePendingStars]);
 
   useEffect(() => {
-    if (raycastPointsRef.current) {
-      raycastPointsRef.current.geometry.dispose();
-    }
+    const timeout = setTimeout(() => {
+      if (raycastPointsRef.current) {
+        raycastPointsRef.current.geometry.dispose();
+      }
 
-    const buffer = new THREE.BufferGeometry();
-    const filteredStars = Object.values(starsDictionary).filter(
-      (star) =>
-        star.mag <= MAX_MAG &&
-        star.mag >= MIN_MAG &&
-        viewedFrames.has(star.healpixId),
-    );
-
-    // viewedPointsRef to get passed to the raycaster
-    // bufferGeometry for this new list of points
-
-    const positionArr = new Float32Array(filteredStars.length * 3);
-    const smallIndexToId = new Map();
-
-    // create float32buffer and add x,y,z positions
-    for (let i = 0; i < filteredStars.length; i++) {
-      const position = starPosition(
-        filteredStars[i].decrad,
-        filteredStars[i].rarad,
+      const buffer = new THREE.BufferGeometry();
+      const filteredStars = Object.values(starsDictionary).filter(
+        (star) =>
+          star.mag <= MAX_MAG &&
+          star.mag >= MIN_MAG &&
+          viewedFrames.has(star.healpixId),
       );
-      positionArr[i * 3] = position.x;
-      positionArr[i * 3 + 1] = position.y;
-      positionArr[i * 3 + 2] = position.z;
 
-      smallIndexToId.set(i, filteredStars[i].id);
-    }
+      // viewedPointsRef to get passed to the raycaster
+      // bufferGeometry for this new list of points
 
-    buffer.setAttribute('position', new THREE.BufferAttribute(positionArr, 3));
+      const positionArr = new Float32Array(filteredStars.length * 3);
+      const smallIndexToId = new Map();
 
-    const raycastPoints = new THREE.Points(buffer);
-    raycastPointsRef.current = raycastPoints;
-    raycastIndexToIdRef.current = smallIndexToId;
+      // create float32buffer and add x,y,z positions
+      for (let i = 0; i < filteredStars.length; i++) {
+        const position = starPosition(
+          filteredStars[i].decrad,
+          filteredStars[i].rarad,
+        );
+        positionArr[i * 3] = position.x;
+        positionArr[i * 3 + 1] = position.y;
+        positionArr[i * 3 + 2] = position.z;
+
+        smallIndexToId.set(i, filteredStars[i].id);
+      }
+
+      buffer.setAttribute('position', new THREE.BufferAttribute(positionArr, 3));
+
+      const raycastPoints = new THREE.Points(buffer);
+      raycastPointsRef.current = raycastPoints;
+      raycastIndexToIdRef.current = smallIndexToId;
+    }, RAYCAST_REBUILD_DELAY);
+
+    return () => clearTimeout(timeout);
   }, [starsDictionary, viewedFrames]);
 
   // returns null if hovering over empty space. returns the hovered star in all other cases
