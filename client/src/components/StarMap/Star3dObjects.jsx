@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import StarPoints from './StarPoints.jsx';
+import StarIndicator from './StarIndicator.jsx';
 import useStarHover from './hooks/useStarHover.js';
 import { getStarPosition } from './starPosition.js';
 
@@ -275,16 +276,7 @@ const Star3dObjects = ({
 
   return (
     <>
-      {enableHover && (
-        <mesh ref={indicatorRingMeshRef} renderOrder={2}>
-          <ringGeometry args={[0.028, 0.03, 30]} />
-          <meshBasicMaterial
-            color='#fff'
-            side={THREE.DoubleSide}
-            depthTest={false}
-          />
-        </mesh>
-      )}
+      {enableHover && <StarIndicator indicatorRef={indicatorRingMeshRef} />}
 
       <StarPoints
         positionRef={positionRef}
