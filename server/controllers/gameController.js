@@ -6,7 +6,15 @@ import { body, validationResult, matchedData } from 'express-validator';
 const gameController = {};
 
 const submitValidator = [
-  body('name').isString(),
+  body('name')
+    .isString()
+    .bail()
+    .trim()
+    .notEmpty()
+    .withMessage('name is required')
+    .bail()
+    .isLength({ max: 12 })
+    .withMessage('name must be at most 12 characters'),
   body('latitude').isNumeric().optional(),
   body('longitude').isNumeric().optional(),
 ];

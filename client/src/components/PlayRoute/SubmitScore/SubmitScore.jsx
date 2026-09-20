@@ -19,6 +19,8 @@ const SubmitScore = ({
             id='name'
             placeholder='Name'
             className={styles.nameInput}
+            maxLength={12}
+            required
             onChange={(e) => setName(e.target.value)}
           />
         </label>

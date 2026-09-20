@@ -56,4 +56,22 @@ describe('POST /api/game/submit/name', () => {
       },
     });
   });
+
+  test.each(['', '             ', 'a'.repeat(13)])(
+    'rejects an invalid name',
+    async (name) => {
+      const token = jwt.sign(
+        { totalTime: 1234 },
+        process.env.PASSPORT_JS_SECRET,
+      );
+
+      await request(app)
+        .post('/api/game/submit/name')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name })
+        .expect(400);
+
+      expect(prismaMock.leaderboard.create).not.toHaveBeenCalled();
+    },
+  );
 });
