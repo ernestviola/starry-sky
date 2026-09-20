@@ -3,13 +3,14 @@ import * as THREE from 'three';
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import StarPoints from './StarPoints.jsx';
+import useStarHover from './hooks/useStarHover.js';
+import { getStarPosition } from './starPosition.js';
 
 const MAX_STARS = 120000;
 const MAG_EXPONENT = 1.5;
 const MIN_MAG = -1.44;
 const MAX_MAG = 6;
 const SIZE_SCALE = 40;
-const RAYCAST_REBUILD_DELAY = 100;
 const STAR_FADE_DURATION = 0.4;
 const BATCH_FADE_DURATION = 0.4;
 const STAR_COLOR_STOPS = [
@@ -67,16 +68,8 @@ const Star3dObjects = ({
 
   // maps for quick lookup
   const idToIndexRef = useRef(new Map());
-  const raycastIndexToIdRef = useRef();
 
-  // most recent pointer location
-  const pointerXRef = useRef();
-  const pointerYRef = useRef();
-
-  // three js objects used for object detection
   const { pointer, camera } = useThree();
-  const raycasterRef = useRef(new THREE.Raycaster());
-  const raycastPointsRef = useRef(); // points object passed to the raycaster
 
   const indicatorRingMeshRef = useRef();
   const starMaterialRef = useRef();
@@ -85,11 +78,6 @@ const Star3dObjects = ({
   const fadingStarIndicesRef = useRef(new Set());
   const starBufferInitializedRef = useRef(false);
   const uniforms = useMemo(() => ({ globalOpacity: { value: 0 } }), []);
-
-  // initialize raycaster threshold
-  useEffect(() => {
-    raycasterRef.current.params.Points.threshold = 0.03;
-  }, []);
 
   useEffect(() => {
     if (enableHover) return;
@@ -111,12 +99,14 @@ const Star3dObjects = ({
     return Math.abs((mag - MAX_MAG - 1) / (MIN_MAG - MAX_MAG - 1));
   };
 
-  const starPosition = (decrad, rarad) => {
-    const x = Math.cos(decrad) * Math.sin(rarad);
-    const y = Math.sin(decrad);
-    const z = Math.cos(decrad) * Math.cos(rarad);
-    return { x, y, z };
-  };
+  const detectHoveredStar = useStarHover({
+    starsDictionary,
+    viewedFrames,
+    hoveredStarId,
+    setHoveredStarId,
+    pointer,
+    camera,
+  });
 
   // draw stars with position, color, and size
   useEffect(() => {
@@ -142,7 +132,7 @@ const Star3dObjects = ({
         continue;
       }
 
-      const position = starPosition(star.decrad, star.rarad);
+      const position = getStarPosition(star.decrad, star.rarad);
       positions[index * 3] = position.x;
       positions[index * 3 + 1] = position.y;
       positions[index * 3 + 2] = position.z;
@@ -197,94 +187,6 @@ const Star3dObjects = ({
       consumePendingStars?.(pendingStars.length);
     }
   }, [starsDictionary, pendingStars, consumePendingStars]);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (raycastPointsRef.current) {
-        raycastPointsRef.current.geometry.dispose();
-      }
-
-      const buffer = new THREE.BufferGeometry();
-      const filteredStars = Object.values(starsDictionary).filter(
-        (star) =>
-          star.mag <= MAX_MAG &&
-          star.mag >= MIN_MAG &&
-          viewedFrames.has(star.healpixId),
-      );
-
-      // viewedPointsRef to get passed to the raycaster
-      // bufferGeometry for this new list of points
-
-      const positionArr = new Float32Array(filteredStars.length * 3);
-      const smallIndexToId = new Map();
-
-      // create float32buffer and add x,y,z positions
-      for (let i = 0; i < filteredStars.length; i++) {
-        const position = starPosition(
-          filteredStars[i].decrad,
-          filteredStars[i].rarad,
-        );
-        positionArr[i * 3] = position.x;
-        positionArr[i * 3 + 1] = position.y;
-        positionArr[i * 3 + 2] = position.z;
-
-        smallIndexToId.set(i, filteredStars[i].id);
-      }
-
-      buffer.setAttribute('position', new THREE.BufferAttribute(positionArr, 3));
-
-      const raycastPoints = new THREE.Points(buffer);
-      raycastPointsRef.current = raycastPoints;
-      raycastIndexToIdRef.current = smallIndexToId;
-    }, RAYCAST_REBUILD_DELAY);
-
-    return () => clearTimeout(timeout);
-  }, [starsDictionary, viewedFrames]);
-
-  // returns null if hovering over empty space. returns the hovered star in all other cases
-  const detectHoveredStar = () => {
-    if (setHoveredStarId === null) return;
-    if (!raycastPointsRef.current) return; // there is no list of points to do raycasting on
-    if (pointer.x === pointerXRef.current && pointer.y === pointerYRef.current)
-      return hoveredStarId; // the mouse hasn't moved so we should keep the previous value of whatever we're looking at
-
-    pointerXRef.current = pointer.x;
-    pointerYRef.current = pointer.y;
-
-    const raycaster = raycasterRef.current; // raycaster object from THREE js
-    const raycastIndexToId = raycastIndexToIdRef.current; // map from the hidden raycast
-
-    raycaster.setFromCamera(pointer, camera);
-
-    const objects = raycaster.intersectObject(raycastPointsRef.current);
-
-    // no available objects to set star to so we're looking at empty space
-    if (objects.length === 0) {
-      setHoveredStarId(null);
-      indicatorRingMeshRef.current.position.set(0, 0, 0);
-      return null;
-    }
-
-    const closest = objects.reduce((best, current) => {
-      return current.distanceToRay < best.distanceToRay ? current : best;
-    });
-
-    const objectIndex = closest.index;
-
-    const starId = raycastIndexToId.get(objectIndex);
-    setHoveredStarId(starId);
-    const positionsIndex = idToIndexRef.current.get(starId);
-    const positions = positionRef.current;
-
-    indicatorRingMeshRef.current.position.set(
-      positions[positionsIndex * 3],
-      positions[positionsIndex * 3 + 1],
-      positions[positionsIndex * 3 + 2],
-    );
-    indicatorRingMeshRef.current.lookAt(camera.position);
-
-    return starId;
-  };
 
   const visitedStarManager = (starId) => {
     const visitedStars = visitedStarsRef.current;
@@ -347,6 +249,21 @@ const Star3dObjects = ({
     }
 
     if (indicatorRingMeshRef.current) {
+      if (starId === null) {
+        indicatorRingMeshRef.current.position.set(0, 0, 0);
+      } else {
+        const index = idToIndexRef.current.get(starId);
+        if (index !== undefined) {
+          const positions = positionRef.current;
+          indicatorRingMeshRef.current.position.set(
+            positions[index * 3],
+            positions[index * 3 + 1],
+            positions[index * 3 + 2],
+          );
+          indicatorRingMeshRef.current.lookAt(camera.position);
+        }
+      }
+
       indicatorRingMeshRef.current.scale.set(
         camera.fov / 100,
         camera.fov / 100,
