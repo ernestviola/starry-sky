@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Grid, OrbitControls, Line, Html } from '@react-three/drei';
 import * as THREE from 'three';
@@ -269,7 +269,25 @@ const Controls = ({
     setXInput(starPos[0]);
     setYInput(starPos[1]);
     setZInput(starPos[2]);
-  }, [starPos]);
+  }, [starPos[0], starPos[1], starPos[2]]);
+
+  const applyCoordinates = () => {
+    const coordinates = [xInput, yInput, zInput].map(Number);
+
+    if (
+      [xInput, yInput, zInput].some((input) => input.trim() === '') ||
+      !coordinates.every(Number.isFinite) ||
+      coordinates.every((coordinate) => coordinate === 0)
+    ) {
+      setXInput(starPos[0]);
+      setYInput(starPos[1]);
+      setZInput(starPos[2]);
+      return;
+    }
+
+    reCalcParameters(...coordinates);
+  };
+
   return (
     <div className={styles.controllerParent}>
       {/* RA Height Control */}
@@ -306,11 +324,8 @@ const Controls = ({
             type='number'
             step={0.01}
             value={xInput}
-            onChange={(e) => {
-              setXInput(e.target.value);
-              const parsed = parseFloat(e.target.value);
-              reCalcParameters(parsed, starPos[1], starPos[2]);
-            }}
+            onChange={(e) => setXInput(e.target.value)}
+            onBlur={applyCoordinates}
           />
         </label>
         <label htmlFor=''>
@@ -319,11 +334,8 @@ const Controls = ({
             type='number'
             step={0.01}
             value={yInput}
-            onChange={(e) => {
-              setYInput(e.target.value);
-              const parsed = parseFloat(e.target.value);
-              reCalcParameters(starPos[0], parsed, starPos[2]);
-            }}
+            onChange={(e) => setYInput(e.target.value)}
+            onBlur={applyCoordinates}
           />
         </label>
         <label htmlFor=''>
@@ -332,11 +344,8 @@ const Controls = ({
             type='number'
             step={0.01}
             value={zInput}
-            onChange={(e) => {
-              setZInput(e.target.value);
-              const parsed = parseFloat(e.target.value);
-              reCalcParameters(starPos[0], starPos[1], parsed);
-            }}
+            onChange={(e) => setZInput(e.target.value)}
+            onBlur={applyCoordinates}
           />
         </label>
         <div>r1 = starRadius, r2 = cos()</div>
@@ -415,6 +424,7 @@ const StarMapModel = () => {
      * distance_to_star_xz_plane^2 + z^2 = distance_to_star = newStarRadius
      */
     const newStarRadius = Math.sqrt(x * x + y * y + z * z);
+    if (!Number.isFinite(newStarRadius) || newStarRadius === 0) return;
 
     /*
      * sin(dec) = y/r
