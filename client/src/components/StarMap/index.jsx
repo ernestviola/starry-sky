@@ -1,13 +1,14 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Line, Html, Grid, CameraControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 import { ang2vec, query_disc_inclusive_ring } from '@hscmap/healpix';
 import { nside } from './config.js';
 
 import Star3dObjects from './Star3dObjects.jsx';
 import ConstellationLines from './ConstellationLines.jsx';
+import useStarFrameLoader from './hooks/useStarFrameLoader.js';
 import { useStarData } from '../../contexts/StarDataContext.jsx';
 
 const ZenithTargetDirection = ({ zenith }) => {
@@ -155,15 +156,18 @@ const StarMap = ({
   enableHover = true,
 }) => {
   const {
-    starsDictionary,
-    setStarsDictionary,
-    receivedHealpixIds,
-    setReceivedHealpixIds,
     constellationLinesDictionary,
     setConstellationLinesDictionary,
     receivedConstellationNames,
     setReceivedConstellationNames,
   } = useStarData();
+  const {
+    starsDictionary,
+    receivedHealpixIds,
+    pendingStars,
+    loadStarFrames,
+    consumePendingStars,
+  } = useStarFrameLoader();
 
   // default geolocaiton NYC
   // nyc lat: 40.73061 long: -73.935242
@@ -181,8 +185,6 @@ const StarMap = ({
 
   const [viewedFrames, setViewedFrames] = useState(new Set());
   const [zenith, setZenith] = useState([0, 0, 0.1]);
-  const [pendingStars, setPendingStars] = useState([]);
-  const knownStarIdsRef = useRef(new Set());
 
   const orbitControlRef = useRef();
   const pendingFrameIdsRef = useRef(new Set());
@@ -229,45 +231,6 @@ const StarMap = ({
     for (const frameId of requestedFrames) {
       pendingFrameIdsRef.current.add(frameId);
     }
-
-    const fetchStarFrame = async () => {
-      try {
-        const url = new URL(`${import.meta.env.VITE_STAR_API}api/stars/frame`);
-        url.searchParams.append(
-          'frames',
-          Array.from(requestedFrames).join(','),
-        );
-        const response = await fetch(url.toString());
-
-        if (!response.ok) {
-          throw new Error('Problems fetching star data.');
-        }
-
-        const data = await response.json();
-
-        setReceivedHealpixIds((prev) => new Set([...prev, ...requestedFrames]));
-
-        const newStars = data.stars.filter((star) => {
-          if (knownStarIdsRef.current.has(star.id)) return false;
-          knownStarIdsRef.current.add(star.id);
-          return true;
-        });
-
-        if (newStars.length > 0) {
-          setPendingStars((prev) => [...prev, ...newStars]);
-          setStarsDictionary((prev) => {
-            const next = { ...prev };
-            for (const star of newStars) next[star.id] = star;
-            return next;
-          });
-        }
-
-        return true;
-      } catch (error) {
-        console.log(error);
-        return false;
-      }
-    };
 
     const fetchConstellationFrame = async () => {
       try {
@@ -321,7 +284,7 @@ const StarMap = ({
 
     const loadFrames = async () => {
       try {
-        const starsLoaded = await fetchStarFrame();
+        const starsLoaded = await loadStarFrames(requestedFrames);
         if (starsLoaded) await fetchConstellationFrame();
       } finally {
         for (const frameId of requestedFrames) {
@@ -331,11 +294,14 @@ const StarMap = ({
     };
 
     loadFrames();
-  }, [ra, dec, radius]);
-
-  const consumePendingStars = useCallback((count) => {
-    setPendingStars((prev) => prev.slice(count));
-  }, []);
+  }, [
+    ra,
+    dec,
+    radius,
+    receivedHealpixIds,
+    receivedConstellationNames,
+    loadStarFrames,
+  ]);
 
   const getUserGeolocation = () => {
     if (navigator.geolocation) {
