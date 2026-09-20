@@ -83,6 +83,8 @@ const FovZoomControls = () => {
   return null;
 };
 
+const MAX_QUERY_RADIUS = Math.PI / 2 - 0.001;
+
 const FrustumRadiusTracker = ({ setRadius }) => {
   const { camera, size } = useThree();
 
@@ -100,7 +102,10 @@ const FrustumRadiusTracker = ({ setRadius }) => {
 
     const bufferMargin = 0.3; // radians, adjust to taste
 
-    const newRadius = cornerRadius + bufferMargin;
+    const newRadius = Math.min(
+      cornerRadius + bufferMargin,
+      MAX_QUERY_RADIUS,
+    );
 
     const changed =
       radius.current === null ||
