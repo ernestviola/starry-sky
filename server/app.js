@@ -1,4 +1,5 @@
 import express from 'express';
+import compression from 'compression';
 import cors from 'cors';
 import starRouter from './routes/starRouter.js';
 import constellationRouter from './routes/constellationRouter.js';
@@ -14,6 +15,7 @@ const app = express();
 
 // MIDDLEWARE
 
+app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
