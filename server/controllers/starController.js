@@ -12,6 +12,35 @@ const frameQueryValidation = [
 
 const starController = {};
 
+const starSelect = {
+  id: true,
+  hip: true,
+  healpixId: true,
+  rarad: true,
+  decrad: true,
+  x: true,
+  y: true,
+  z: true,
+  ci: true,
+  mag: true,
+  proper: true,
+  con: true,
+};
+
+starController.getAll = async (req, res, next) => {
+  try {
+    const stars = await prisma.hygStar.findMany({ select: starSelect });
+
+    return res.status(200).json({
+      count: stars.length,
+      stars,
+      success: true,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // returns a list of stars based on a frame from lat,long
 starController.getFrame = [
   frameQueryValidation,
@@ -30,20 +59,7 @@ starController.getFrame = [
 
       const starFrame = await prisma.hygStar.findMany({
         where: { healpixId: { in: frames } },
-        select: {
-          id: true,
-          hip: true,
-          healpixId: true,
-          rarad: true,
-          decrad: true,
-          x: true,
-          y: true,
-          z: true,
-          ci: true,
-          mag: true,
-          proper: true,
-          con: true,
-        },
+        select: starSelect,
       });
 
       const frameIds = [...new Set(starFrame.map((star) => star.healpixId))];

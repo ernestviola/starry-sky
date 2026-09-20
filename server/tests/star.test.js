@@ -4,6 +4,21 @@ import app from '../app.js';
 describe('GET /api/stars success', () => {
   let response;
 
+  describe('all stars', () => {
+    test('returns the full star catalog', async () => {
+      const allStars = await request(app).get('/api/stars').expect(200);
+
+      expect(allStars.body).toEqual(
+        expect.objectContaining({
+          count: expect.any(Number),
+          stars: expect.any(Array),
+          success: true,
+        }),
+      );
+      expect(allStars.body.stars).toHaveLength(allStars.body.count);
+    });
+  });
+
   describe('success', () => {
     beforeAll(async () => {
       response = await request(app)
