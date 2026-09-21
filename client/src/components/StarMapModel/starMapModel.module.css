@@ -7,6 +7,10 @@
   align-items: start;
 }
 
+.stacked {
+  grid-template-columns: 1fr;
+}
+
 .canvas {
   width: 100%;
   aspect-ratio: 1;

@@ -309,6 +309,7 @@ const Controls = ({
   setRightAscensionAngle,
   step,
   setStep,
+  showNavigation,
 }) => {
   const degrees = (angle) => THREE.MathUtils.radToDeg(angle).toFixed(1);
   const horizontalRadius = starRadius * Math.cos(declinationAngle);
@@ -393,14 +394,16 @@ const Controls = ({
             <div className={styles.equation}>z = cos(Dec) cos(RA) = {starPos[2].toFixed(2)}</div>
           </>
         )}
-        <div className={styles.stepNavigation}>
-          <button disabled={step === 1} onClick={() => setStep(step - 1)}>
-            Previous
-          </button>
-          <button disabled={step === 5} onClick={() => setStep(step + 1)}>
-            Next
-          </button>
-        </div>
+        {showNavigation && (
+          <div className={styles.stepNavigation}>
+            <button disabled={step === 1} onClick={() => setStep(step - 1)}>
+              Previous
+            </button>
+            <button disabled={step === 5} onClick={() => setStep(step + 1)}>
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -436,12 +439,22 @@ const PointLabels = ({ starPos, showZ }) => (
   </>
 );
 
-const StarMapModel = () => {
+const StarMapModel = ({
+  step: controlledStep,
+  onStepChange,
+  showNavigation = true,
+  stacked = false,
+}) => {
   const gridSize = 4;
   const starRadius = 1;
   const [declinationAngle, setDeclinationAngle] = useState(Math.PI / 6);
   const [rightAscensionAngle, setRightAscensionAngle] = useState(Math.PI / 4);
-  const [step, setStep] = useState(1);
+  const [selectedStep, setSelectedStep] = useState(1);
+  const step = controlledStep ?? selectedStep;
+  const setStep = (nextStep) => {
+    if (controlledStep === undefined) setSelectedStep(nextStep);
+    onStepChange?.(nextStep);
+  };
 
   const starPos = [
     starRadius * Math.cos(declinationAngle) * Math.sin(rightAscensionAngle),
@@ -450,7 +463,7 @@ const StarMapModel = () => {
   ];
 
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} ${stacked ? styles.stacked : ''}`}>
       <Canvas camera={{ position: [1, 1.5, 3] }} className={styles.canvas}>
         <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} />
         <ModelGrid gridSize={gridSize} />
@@ -479,6 +492,7 @@ const StarMapModel = () => {
         setRightAscensionAngle={setRightAscensionAngle}
         step={step}
         setStep={setStep}
+        showNavigation={showNavigation}
       />
     </div>
   );

@@ -7,10 +7,93 @@
 }
 
 .about h2 {
+  margin-top: var(--space-8);
   font-size: 3.2rem;
 }
 
 .about p {
   margin-top: var(--space-3);
   font-size: 1.6rem;
+}
+
+.derivation {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(34rem, 48rem);
+  gap: var(--space-8);
+  margin-top: var(--space-6);
+}
+
+.storyStep {
+  display: flex;
+  min-height: 70vh;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.storyStep h3 {
+  color: var(--color-text-primary);
+  font-family: var(--font-heading);
+  font-size: 2.4rem;
+}
+
+.storyStep p {
+  max-width: 60ch;
+}
+
+.model {
+  position: sticky;
+  top: var(--space-6);
+  align-self: start;
+}
+
+.diagramFrame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  margin-top: var(--space-4);
+  overflow: hidden;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-panel);
+}
+
+.diagramFrame img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 56.25%;
+  height: auto;
+  transform: translate(-50%, -50%) rotate(-90deg);
+}
+
+.notebookDiagrams {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
+
+.notebookDiagrams figcaption {
+  margin-top: var(--space-2);
+  color: var(--color-text-subtle);
+  font-size: 1.3rem;
+}
+
+@media (max-width: 900px) {
+  .derivation {
+    grid-template-columns: 1fr;
+  }
+
+  .model {
+    position: static;
+    order: -1;
+  }
+
+  .storyStep {
+    min-height: auto;
+    padding: var(--space-7) 0;
+  }
+
+  .notebookDiagrams {
+    grid-template-columns: 1fr;
+  }
 }
