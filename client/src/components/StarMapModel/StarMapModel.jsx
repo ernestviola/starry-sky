@@ -94,7 +94,13 @@ const Declination = ({ starPos }) => {
   );
 };
 
-const AngleArcs = ({ starRadius, declinationAngle, rightAscensionAngle }) => {
+const AngleArcs = ({
+  starRadius,
+  declinationAngle,
+  rightAscensionAngle,
+  showRightAscension,
+  showDeclination,
+}) => {
   const horizontalRadius = starRadius * Math.cos(declinationAngle);
   const steps = 32;
   const pointAt = (angle, radius) => [
@@ -115,14 +121,22 @@ const AngleArcs = ({ starRadius, declinationAngle, rightAscensionAngle }) => {
 
   return (
     <>
-      <Line points={raPoints} color='deepskyblue' lineWidth={2} />
-      <Html position={raLabel}>
-        <div style={{ color: 'deepskyblue' }}>RA</div>
-      </Html>
-      <Line points={decPoints} color='orchid' lineWidth={2} />
-      <Html position={decLabel}>
-        <div style={{ color: 'orchid' }}>Dec</div>
-      </Html>
+      {showRightAscension && (
+        <>
+          <Line points={raPoints} color='deepskyblue' lineWidth={2} />
+          <Html position={raLabel}>
+            <div style={{ color: 'deepskyblue' }}>RA</div>
+          </Html>
+        </>
+      )}
+      {showDeclination && (
+        <>
+          <Line points={decPoints} color='orchid' lineWidth={2} />
+          <Html position={decLabel}>
+            <div style={{ color: 'orchid' }}>Dec</div>
+          </Html>
+        </>
+      )}
     </>
   );
 };
@@ -208,7 +222,7 @@ const Star = ({ starPos }) => {
   );
 };
 
-const Earth = () => {
+const CelestialSphere = () => {
   const radius = 1;
 
   return (
@@ -264,68 +278,86 @@ const Earth = () => {
 const Controls = ({
   starPos,
   starRadius,
-  setStarRadius,
   declinationAngle,
   setDeclinationAngle,
   rightAscensionAngle,
   setRightAscensionAngle,
+  step,
+  setStep,
 }) => {
   const degrees = (angle) => THREE.MathUtils.radToDeg(angle).toFixed(1);
+  const horizontalRadius = starRadius * Math.cos(declinationAngle);
+  const stage = [
+    '',
+    '1. Declination',
+    '2. Right ascension',
+    '3. Combined result',
+  ][step];
 
   return (
     <div className={styles.controllerParent}>
       <div className={styles.controlsContainer}>
-        <label>
-          Right ascension: {degrees(rightAscensionAngle)}°
-          <input
-            type='range'
-            min={0}
-            max={Math.PI * 2}
-            step={0.01}
-            value={rightAscensionAngle}
-            onChange={(e) => setRightAscensionAngle(Number(e.target.value))}
-          />
-        </label>
-        <label>
-          Declination: {degrees(declinationAngle)}°
-          <input
-            type='range'
-            min={-Math.PI / 2}
-            max={Math.PI / 2}
-            step={0.01}
-            value={declinationAngle}
-            onChange={(e) => setDeclinationAngle(Number(e.target.value))}
-          />
-        </label>
-        <label>
-          Star distance: {starRadius.toFixed(2)}
-          <input
-            type='range'
-            min={1}
-            max={5}
-            step={0.01}
-            value={starRadius}
-            onChange={(e) => setStarRadius(Number(e.target.value))}
-          />
-        </label>
+        <div>{stage}</div>
+        {step !== 1 && (
+          <label>
+            Right ascension: {degrees(rightAscensionAngle)}°
+            <input
+              type='range'
+              min={0}
+              max={Math.PI * 2}
+              step={0.01}
+              value={rightAscensionAngle}
+              onChange={(e) => setRightAscensionAngle(Number(e.target.value))}
+            />
+          </label>
+        )}
+        {step !== 2 && (
+          <label>
+            Declination: {degrees(declinationAngle)}°
+            <input
+              type='range'
+              min={-Math.PI / 2}
+              max={Math.PI / 2}
+              step={0.01}
+              value={declinationAngle}
+              onChange={(e) => setDeclinationAngle(Number(e.target.value))}
+            />
+          </label>
+        )}
+        {step === 1 && (
+          <>
+            <div>y = r sin(Dec) = {starPos[1].toFixed(2)}</div>
+            <div>horizontal radius = r cos(Dec) = {horizontalRadius.toFixed(2)}</div>
+          </>
+        )}
+        {step === 2 && (
+          <>
+            <div>horizontal radius (from step 1) = {horizontalRadius.toFixed(2)}</div>
+            <div>x = horizontal radius sin(RA) = {starPos[0].toFixed(2)}</div>
+            <div>z = horizontal radius cos(RA) = {starPos[2].toFixed(2)}</div>
+          </>
+        )}
+        {step === 3 && (
+          <>
+            <div>x = r cos(Dec) sin(RA) = {starPos[0].toFixed(2)}</div>
+            <div>y = r sin(Dec) = {starPos[1].toFixed(2)}</div>
+            <div>z = r cos(Dec) cos(RA) = {starPos[2].toFixed(2)}</div>
+          </>
+        )}
         <div>
-          x = {starRadius.toFixed(2)} cos({degrees(declinationAngle)}°) sin(
-          {degrees(rightAscensionAngle)}°) = {starPos[0].toFixed(2)}
-        </div>
-        <div>
-          y = {starRadius.toFixed(2)} sin({degrees(declinationAngle)}°) ={' '}
-          {starPos[1].toFixed(2)}
-        </div>
-        <div>
-          z = {starRadius.toFixed(2)} cos({degrees(declinationAngle)}°) cos(
-          {degrees(rightAscensionAngle)}°) = {starPos[2].toFixed(2)}
+          <button disabled={step === 1} onClick={() => setStep(step - 1)}>
+            Previous
+          </button>
+          <button disabled={step === 3} onClick={() => setStep(step + 1)}>
+            Next
+          </button>
         </div>
       </div>
     </div>
   );
 };
 
-const PointLabels = ({ starPos }) => (
+const PointLabels = ({ starPos, showZ }) => (
   <>
     <Html position={[0, 0, 0]}>
       <div style={{ color: 'white' }}>Origin</div>
@@ -334,13 +366,17 @@ const PointLabels = ({ starPos }) => (
       <sphereGeometry args={[0.02, 32, 32]} />
       <meshStandardMaterial color='black' />
     </mesh>
-    <Html position={[0, 0, starPos[2]]}>
-      <div style={{ color: 'white' }}>Z</div>
-    </Html>
-    <mesh position={[0, 0, starPos[2]]}>
-      <sphereGeometry args={[0.02, 32, 32]} />
-      <meshStandardMaterial color='black' />
-    </mesh>
+    {showZ && (
+      <>
+        <Html position={[0, 0, starPos[2]]}>
+          <div style={{ color: 'white' }}>Z</div>
+        </Html>
+        <mesh position={[0, 0, starPos[2]]}>
+          <sphereGeometry args={[0.02, 32, 32]} />
+          <meshStandardMaterial color='black' />
+        </mesh>
+      </>
+    )}
     <Html position={[starPos[0], 0, starPos[2]]}>
       <div style={{ color: 'white' }}>XZ projection</div>
     </Html>
@@ -353,9 +389,10 @@ const PointLabels = ({ starPos }) => (
 
 const StarMapModel = () => {
   const gridSize = 10;
-  const [starRadius, setStarRadius] = useState(3);
+  const starRadius = 1;
   const [declinationAngle, setDeclinationAngle] = useState(Math.PI / 6);
   const [rightAscensionAngle, setRightAscensionAngle] = useState(Math.PI / 4);
+  const [step, setStep] = useState(1);
 
   const starPos = [
     starRadius * Math.cos(declinationAngle) * Math.sin(rightAscensionAngle),
@@ -367,26 +404,29 @@ const StarMapModel = () => {
     <div className={styles.container}>
       <Canvas camera={{ position: [1, 3, 10] }} className={styles.canvas}>
         <ModelGrid gridSize={gridSize} />
-        <PointLabels starPos={starPos} />
-        <Declination starPos={starPos} />
-        <RightAscension starPos={starPos} />
+        <PointLabels starPos={starPos} showZ={step !== 1} />
+        {step !== 2 && <Declination starPos={starPos} />}
+        {step !== 1 && <RightAscension starPos={starPos} />}
         <AngleArcs
           starRadius={starRadius}
           declinationAngle={declinationAngle}
           rightAscensionAngle={rightAscensionAngle}
+          showRightAscension={step !== 1}
+          showDeclination={step !== 2}
         />
-        <Star starPos={starPos} />
-        <Earth />
+        {step !== 2 && <Star starPos={starPos} />}
+        <CelestialSphere />
         <OrbitControls />
       </Canvas>
       <Controls
         starPos={starPos}
         starRadius={starRadius}
-        setStarRadius={setStarRadius}
         declinationAngle={declinationAngle}
         setDeclinationAngle={setDeclinationAngle}
         rightAscensionAngle={rightAscensionAngle}
         setRightAscensionAngle={setRightAscensionAngle}
+        step={step}
+        setStep={setStep}
       />
     </div>
   );
