@@ -90,10 +90,6 @@
   color: var(--color-accent);
 }
 
-.starLabel {
-  border-color: var(--color-accent);
-}
-
 .stepTitle {
   color: var(--color-text-primary);
   font-family: var(--font-heading);

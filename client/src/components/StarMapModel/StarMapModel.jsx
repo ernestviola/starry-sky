@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { useRef, useState } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Grid, OrbitControls, Line, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import styles from './starMapModel.module.css';
@@ -141,6 +141,39 @@ const AngleArcs = ({
   );
 };
 
+const CameraRig = ({ step, rightAscensionAngle }) => {
+  const { camera } = useThree();
+  const lookAt = useRef(new THREE.Vector3());
+  const previousStep = useRef();
+  const moving = useRef(true);
+  const views = {
+    1: [-Math.cos(rightAscensionAngle) * 3, 0.6, Math.sin(rightAscensionAngle) * 3],
+    2: [0, 3, 0.01],
+    3: [1, 1.5, 3],
+  };
+  const position = new THREE.Vector3(...views[step]);
+
+  if (previousStep.current !== step) {
+    previousStep.current = step;
+    moving.current = true;
+  }
+
+  useFrame(() => {
+    if (!moving.current) return;
+
+    camera.position.lerp(position, 0.08);
+    camera.lookAt(lookAt.current);
+
+    if (camera.position.distanceTo(position) < 0.01) {
+      camera.position.copy(position);
+      camera.lookAt(lookAt.current);
+      moving.current = false;
+    }
+  });
+
+  return null;
+};
+
 const ModelGrid = ({ gridSize }) => {
   const lineSize = gridSize / 2;
   return (
@@ -214,7 +247,7 @@ const Star = ({ starPos }) => {
         />
       </mesh>
       <Html position={[starPos[0], starPos[1], starPos[2]]}>
-        <div className={`${styles.sceneLabel} ${styles.starLabel}`}>
+        <div className={styles.sceneLabel}>
           Star [{starPos.map((coordinate) => coordinate.toFixed(2)).join(', ')}]
         </div>
       </Html>
@@ -375,6 +408,7 @@ const StarMapModel = () => {
   return (
     <div className={styles.container}>
       <Canvas camera={{ position: [1, 1.5, 3] }} className={styles.canvas}>
+        <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} />
         <ModelGrid gridSize={gridSize} />
         <PointLabels starPos={starPos} showZ={step !== 1} />
         {step !== 2 && <Declination starPos={starPos} />}
@@ -388,7 +422,7 @@ const StarMapModel = () => {
         />
         {step !== 2 && <Star starPos={starPos} />}
         <CelestialSphere />
-        <OrbitControls />
+        <OrbitControls enabled={step === 3} />
       </Canvas>
       <Controls
         starPos={starPos}
