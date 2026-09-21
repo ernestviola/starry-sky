@@ -16,34 +16,69 @@
   font-size: 1.6rem;
 }
 
-.derivation {
+.inspiration,
+.earlyDrafts {
+  max-width: 70ch;
+}
+
+.walkthrough {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(34rem, 48rem);
-  gap: var(--space-8);
-  margin-top: var(--space-6);
+  width: 100vw;
+  margin-top: var(--space-8);
+  margin-left: calc(50% - 50vw);
+}
+
+.modelStage,
+.story {
+  grid-area: 1 / 1;
+}
+
+.modelStage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+}
+
+.story {
+  z-index: 1;
+  pointer-events: none;
 }
 
 .storyStep {
   display: flex;
-  min-height: 70vh;
-  flex-direction: column;
-  justify-content: center;
+  min-height: 100svh;
+  align-items: end;
+  padding: var(--space-8) var(--page-gutter);
+  opacity: 0.2;
+  transform: translateY(1.6rem);
+  transition: opacity 300ms ease, transform 300ms ease;
 }
 
-.storyStep h3 {
-  color: var(--color-text-primary);
-  font-family: var(--font-heading);
-  font-size: 2.4rem;
+.activeStep {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.storyStep p {
+.stepCard {
+  max-width: 52ch;
+  padding: var(--space-5);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: rgba(6, 7, 13, 0.9);
+  box-shadow: 0 0 2rem rgba(1, 2, 3, 0.7);
+}
+
+.stepCard h2 {
+  margin-top: 0;
+  font-size: 2.8rem;
+}
+
+.stepCard p {
   max-width: 60ch;
 }
 
-.model {
-  position: sticky;
-  top: var(--space-6);
-  align-self: start;
+.earlyDrafts {
+  margin-top: var(--space-8);
 }
 
 .diagramFrame {
@@ -78,19 +113,17 @@
   font-size: 1.3rem;
 }
 
-@media (max-width: 900px) {
-  .derivation {
-    grid-template-columns: 1fr;
-  }
-
-  .model {
-    position: static;
-    order: -1;
-  }
-
+@media (max-width: 700px) {
   .storyStep {
-    min-height: auto;
-    padding: var(--space-7) 0;
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .stepCard {
+    padding: var(--space-4);
+  }
+
+  .stepCard h2 {
+    font-size: 2.4rem;
   }
 
   .notebookDiagrams {

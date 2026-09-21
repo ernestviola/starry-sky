@@ -6,10 +6,10 @@ import styles from './about.module.css';
 
 const About = () => {
   const [step, setStep] = useState(1);
-  const derivation = useRef(null);
+  const walkthrough = useRef(null);
 
   useEffect(() => {
-    const sections = derivation.current.querySelectorAll('[data-derivation-step]');
+    const sections = walkthrough.current.querySelectorAll('[data-derivation-step]');
     const observer = new IntersectionObserver(
       (entries) => {
         const active = entries
@@ -25,92 +25,98 @@ const About = () => {
     return () => observer.disconnect();
   }, []);
 
+  const stepClass = (number) =>
+    `${styles.storyStep} ${step === number ? styles.activeStep : ''}`;
+
   return (
     <div className={styles.about}>
       <title>About | Starry Sky</title>
       <h1>About Starry Sky</h1>
       <p>A simulation and game centered around 120,000 stars in our night sky.</p>
 
-      <h2>Inspiration</h2>
-      <p>
-        This project was a remix of The Odin Project&apos;s{' '}
-        <a
-          href='https://www.theodinproject.com/lessons/nodejs-where-s-waldo-a-photo-tagging-app'
-          target='_blank'
-          rel='noreferrer'
-        >
-          Where&apos;s Waldo Project
-        </a>
-        . I wanted to make a star-searching game while learning Three.js.
-      </p>
+      <section className={styles.inspiration}>
+        <h2>Inspiration</h2>
+        <p>
+          I wanted to make people think more about their local constellations and stars. Light
+          pollution affects all of us: in cities, it is easy to forget how beautiful the night sky
+          can be. Humans once had a much closer relationship with the sky and the stories in its
+          constellations. This project is a small way to reconnect with that view.
+        </p>
+        <p>
+          The project began as a remix of The Odin Project&apos;s{' '}
+          <a
+            href='https://www.theodinproject.com/lessons/nodejs-where-s-waldo-a-photo-tagging-app'
+            target='_blank'
+            rel='noreferrer'
+          >
+            Where&apos;s Waldo Project
+          </a>
+          , combining a star-searching game with a chance to learn Three.js.
+        </p>
+      </section>
 
-      <h2>From the sky to the simulation</h2>
-      <p>
-        For hundreds of years, people have mapped stars against an imaginary sphere centered on
-        Earth: the celestial sphere. Astronomers describe a star&apos;s position with declination and
-        right ascension, similar to latitude and longitude. Declination measures its angle north or
-        south of the celestial equator. Right ascension measures eastward from the vernal equinox,
-        the direction of the Sun at the March equinox.
-      </p>
-      <p>
-        In this app, the viewer is at the origin and every star lies on a unit celestial sphere. In
-        Three.js, Y is vertical, so XZ is the horizontal plane. The walkthrough below derives the
-        X, Y, and Z coordinates from declination and right ascension.
-      </p>
-
-      <section className={styles.derivation} ref={derivation}>
+      <section className={styles.walkthrough} ref={walkthrough}>
+        <div className={styles.modelStage}>
+          <StarMapModel step={step} showControls={false} presentation />
+        </div>
         <div className={styles.story}>
-          <section data-derivation-step='1' className={styles.storyStep}>
-            <h3>1. Find Y with declination</h3>
-            <p>
-              We begin with a right triangle whose hypotenuse is the unit radius, r = 1. The
-              vertical side is Y: the star&apos;s distance above or below the XZ plane. That gives us
-              y = sin(Dec).
-            </p>
+          <section data-derivation-step='1' className={stepClass(1)}>
+            <div className={styles.stepCard}>
+              <h2>1. Find Y with declination</h2>
+              <p>
+                Astronomers map stars against an imaginary sphere centered on Earth: the celestial
+                sphere. In our simulation, the viewer is at the origin and every star lies on a
+                unit sphere, so r = 1. Three.js uses Y as vertical and XZ as the horizontal plane.
+              </p>
+              <p>
+                Declination measures the angle north or south of the celestial equator. Its right
+                triangle gives the vertical distance: y = sin(Dec).
+              </p>
+            </div>
           </section>
 
-          <section data-derivation-step='2' className={styles.storyStep}>
-            <h3>2. Find the horizontal radius</h3>
-            <p>
-              The other leg of the declination triangle is the distance from the origin to the
-              star&apos;s XZ projection. We call it h. Since r = 1, h = cos(Dec). This is the radius
-              used by the right-ascension triangle.
-            </p>
+          <section data-derivation-step='2' className={stepClass(2)}>
+            <div className={styles.stepCard}>
+              <h2>2. Find the horizontal radius</h2>
+              <p>
+                The other leg of the declination triangle is the distance from the origin to the
+                star&apos;s XZ projection. We call it h. Since r = 1, h = cos(Dec). This is the
+                radius used by the right-ascension triangle.
+              </p>
+            </div>
           </section>
 
-          <section data-derivation-step='3' className={styles.storyStep}>
-            <h3>3. Use right ascension to find X</h3>
-            <p>
-              Looking down on the XZ plane gives us a second right triangle with h as its
-              hypotenuse. Right ascension splits that radius into X and Z, beginning with
-              x = h sin(RA).
-            </p>
+          <section data-derivation-step='3' className={stepClass(3)}>
+            <div className={styles.stepCard}>
+              <h2>3. Use right ascension to find X</h2>
+              <p>
+                Looking down on the XZ plane gives us a second right triangle with h as its
+                hypotenuse. Right ascension measures eastward from the vernal equinox, the
+                direction of the Sun at the March equinox. It gives x = h sin(RA).
+              </p>
+            </div>
           </section>
 
-          <section data-derivation-step='4' className={styles.storyStep}>
-            <h3>4. Find Z</h3>
-            <p>
-              The adjacent side of the same triangle is z = h cos(RA). We now have all three
-              Cartesian coordinates for the star.
-            </p>
+          <section data-derivation-step='4' className={stepClass(4)}>
+            <div className={styles.stepCard}>
+              <h2>4. Find Z</h2>
+              <p>
+                The adjacent side of the same right-ascension triangle is z = h cos(RA). We now
+                have all three Cartesian coordinates for the star.
+              </p>
+            </div>
           </section>
 
-          <section data-derivation-step='5' className={styles.storyStep}>
-            <h3>5. Place the star</h3>
-            <p>
-              Substituting h = cos(Dec) gives the final unit-sphere coordinates. Repeating this
-              calculation for every catalog entry places the stars around the viewer.
-            </p>
+          <section data-derivation-step='5' className={stepClass(5)}>
+            <div className={styles.stepCard}>
+              <h2>5. Place the star</h2>
+              <p>
+                Substituting h = cos(Dec) gives the final unit-sphere coordinates. Repeating this
+                calculation for every catalog entry places the stars around the viewer.
+              </p>
+            </div>
           </section>
         </div>
-        <aside className={styles.model}>
-          <StarMapModel
-            step={step}
-            onStepChange={setStep}
-            showNavigation={false}
-            stacked
-          />
-        </aside>
       </section>
 
       <section className={styles.earlyDrafts}>

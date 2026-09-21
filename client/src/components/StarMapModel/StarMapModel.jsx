@@ -444,6 +444,8 @@ const StarMapModel = ({
   onStepChange,
   showNavigation = true,
   stacked = false,
+  showControls = true,
+  presentation = false,
 }) => {
   const gridSize = 4;
   const starRadius = 1;
@@ -463,7 +465,11 @@ const StarMapModel = ({
   ];
 
   return (
-    <div className={`${styles.container} ${stacked ? styles.stacked : ''}`}>
+    <div
+      className={`${styles.container} ${stacked ? styles.stacked : ''} ${
+        presentation ? styles.presentation : ''
+      }`}
+    >
       <Canvas camera={{ position: [1, 1.5, 3] }} className={styles.canvas}>
         <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} />
         <ModelGrid gridSize={gridSize} />
@@ -483,17 +489,19 @@ const StarMapModel = ({
         <CelestialSphere />
         <OrbitControls enabled={step === 5} />
       </Canvas>
-      <Controls
-        starPos={starPos}
-        starRadius={starRadius}
-        declinationAngle={declinationAngle}
-        setDeclinationAngle={setDeclinationAngle}
-        rightAscensionAngle={rightAscensionAngle}
-        setRightAscensionAngle={setRightAscensionAngle}
-        step={step}
-        setStep={setStep}
-        showNavigation={showNavigation}
-      />
+      {showControls && (
+        <Controls
+          starPos={starPos}
+          starRadius={starRadius}
+          declinationAngle={declinationAngle}
+          setDeclinationAngle={setDeclinationAngle}
+          rightAscensionAngle={rightAscensionAngle}
+          setRightAscensionAngle={setRightAscensionAngle}
+          step={step}
+          setStep={setStep}
+          showNavigation={showNavigation}
+        />
+      )}
     </div>
   );
 };
