@@ -4,41 +4,71 @@ import { Grid, OrbitControls, Line, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import styles from './starMapModel.module.css';
 
-const RightAscension = ({ starPos }) => (
-  <mesh>
-    <bufferGeometry key={starPos.join(',')}>
-      <bufferAttribute
-        attach='attributes-position'
-        count={3}
-        array={
-          new Float32Array([
-            0,
-            0,
-            0,
-            starPos[0],
-            0,
-            starPos[2],
-            0,
-            0,
-            starPos[2],
-          ])
-        }
-        itemSize={3}
-      />
-    </bufferGeometry>
-    <meshStandardMaterial
-      color='blue'
-      side={THREE.DoubleSide}
-      transparent
-      opacity={0.4}
-      depthWrite={false}
+const RightAscension = ({ starPos, showZ }) => (
+  <>
+    <Line points={[[0, 0, 0], [starPos[0], 0, starPos[2]]]} color='deepskyblue' />
+    <Line points={[[0, 0, 0], [0, 0, starPos[2]]]} color='deepskyblue' />
+    <Line
+      points={[[0, 0, starPos[2]], [starPos[0], 0, starPos[2]]]}
+      color='deepskyblue'
     />
-  </mesh>
+    <Html position={[starPos[0] / 2, 0, starPos[2] / 2]}>
+      <div className={styles.sceneLabel}>h</div>
+    </Html>
+    <Html position={[starPos[0] / 2, 0, starPos[2]]}>
+      <div className={styles.sceneLabel}>x</div>
+    </Html>
+    {showZ && (
+      <Html position={[0, 0, starPos[2] / 2]}>
+        <div className={styles.sceneLabel}>z</div>
+      </Html>
+    )}
+    <mesh>
+      <bufferGeometry key={starPos.join(',')}>
+        <bufferAttribute
+          attach='attributes-position'
+          count={3}
+          array={
+            new Float32Array([
+              0,
+              0,
+              0,
+              starPos[0],
+              0,
+              starPos[2],
+              0,
+              0,
+              starPos[2],
+            ])
+          }
+          itemSize={3}
+        />
+      </bufferGeometry>
+      <meshStandardMaterial
+        color='blue'
+        side={THREE.DoubleSide}
+        transparent
+        opacity={0.4}
+        depthWrite={false}
+      />
+    </mesh>
+  </>
 );
 
-const Declination = ({ starPos }) => {
+const Declination = ({ starPos, showHorizontalRadius }) => {
   return (
     <>
+      <Html position={[starPos[0] / 2, starPos[1] / 2, starPos[2] / 2]}>
+        <div className={styles.sceneLabel}>r = 1</div>
+      </Html>
+      <Html position={[starPos[0], starPos[1] / 2, starPos[2]]}>
+        <div className={styles.sceneLabel}>y</div>
+      </Html>
+      {showHorizontalRadius && (
+        <Html position={[starPos[0] / 2, 0, starPos[2] / 2]}>
+          <div className={styles.sceneLabel}>h</div>
+        </Html>
+      )}
       <Line
         points={[
           [0, 0, 0],
@@ -148,8 +178,10 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
   const moving = useRef(true);
   const views = {
     1: [-Math.cos(rightAscensionAngle) * 3, 0.6, Math.sin(rightAscensionAngle) * 3],
-    2: [0, 3, 0.01],
-    3: [1, 1.5, 3],
+    2: [-Math.cos(rightAscensionAngle) * 3, 0.6, Math.sin(rightAscensionAngle) * 3],
+    3: [0, 3, 0.01],
+    4: [0, 3, 0.01],
+    5: [1, 1.5, 3],
   };
   const position = new THREE.Vector3(...views[step]);
 
@@ -178,7 +210,7 @@ const ModelGrid = ({ gridSize }) => {
   const lineSize = gridSize / 2;
   return (
     <>
-      <color attach='background' args={['#323232']} />
+      <color attach='background' args={['#0b0c16']} />
       <Grid
         args={[gridSize, gridSize, gridSize]}
         side={THREE.DoubleSide}
@@ -282,16 +314,18 @@ const Controls = ({
   const horizontalRadius = starRadius * Math.cos(declinationAngle);
   const stage = [
     '',
-    '1. Declination',
-    '2. Right ascension',
-    '3. Combined result',
+    '1. Find y',
+    '2. Find the horizontal radius',
+    '3. Find x',
+    '4. Find z',
+    '5. Combine the coordinates',
   ][step];
 
   return (
     <div className={styles.controllerParent}>
       <div className={styles.controlsContainer}>
         <div className={styles.stepTitle}>{stage}</div>
-        {step !== 1 && (
+        {step >= 3 && (
           <label>
             Right ascension: {degrees(rightAscensionAngle)}°
             <input
@@ -304,7 +338,7 @@ const Controls = ({
             />
           </label>
         )}
-        {step !== 2 && (
+        {(step <= 2 || step === 5) && (
           <label>
             Declination: {degrees(declinationAngle)}°
             <input
@@ -319,41 +353,51 @@ const Controls = ({
         )}
         {step === 1 && (
           <>
-            <div className={styles.equation}>y = r sin(Dec) = {starPos[1].toFixed(2)}</div>
-            <div className={styles.equation}>
-              horizontal radius = r cos(Dec) = {horizontalRadius.toFixed(2)}
-            </div>
+            <div className={styles.equation}>Given: r = 1</div>
+            <div className={styles.equation}>sin(Dec) = y / r</div>
+            <div className={styles.equation}>sin(Dec) = y / 1</div>
+            <div className={styles.equation}>y = sin(Dec) = {starPos[1].toFixed(2)}</div>
           </>
         )}
         {step === 2 && (
           <>
+            <div className={styles.equation}>cos(Dec) = h / r</div>
+            <div className={styles.equation}>cos(Dec) = h / 1</div>
             <div className={styles.equation}>
-              horizontal radius (from step 1) = {horizontalRadius.toFixed(2)}
-            </div>
-            <div className={styles.equation}>
-              x = horizontal radius sin(RA) = {starPos[0].toFixed(2)}
-            </div>
-            <div className={styles.equation}>
-              z = horizontal radius cos(RA) = {starPos[2].toFixed(2)}
+              h = cos(Dec) = {horizontalRadius.toFixed(2)}
             </div>
           </>
         )}
         {step === 3 && (
           <>
+            <div className={styles.equation}>Given: h = {horizontalRadius.toFixed(2)}</div>
+            <div className={styles.equation}>sin(RA) = x / h</div>
             <div className={styles.equation}>
-              x = r cos(Dec) sin(RA) = {starPos[0].toFixed(2)}
+              x = h sin(RA) = {starPos[0].toFixed(2)}
             </div>
-            <div className={styles.equation}>y = r sin(Dec) = {starPos[1].toFixed(2)}</div>
+          </>
+        )}
+        {step === 4 && (
+          <>
+            <div className={styles.equation}>Given: h = {horizontalRadius.toFixed(2)}</div>
+            <div className={styles.equation}>cos(RA) = z / h</div>
             <div className={styles.equation}>
-              z = r cos(Dec) cos(RA) = {starPos[2].toFixed(2)}
+              z = h cos(RA) = {starPos[2].toFixed(2)}
             </div>
+          </>
+        )}
+        {step === 5 && (
+          <>
+            <div className={styles.equation}>x = cos(Dec) sin(RA) = {starPos[0].toFixed(2)}</div>
+            <div className={styles.equation}>y = sin(Dec) = {starPos[1].toFixed(2)}</div>
+            <div className={styles.equation}>z = cos(Dec) cos(RA) = {starPos[2].toFixed(2)}</div>
           </>
         )}
         <div className={styles.stepNavigation}>
           <button disabled={step === 1} onClick={() => setStep(step - 1)}>
             Previous
           </button>
-          <button disabled={step === 3} onClick={() => setStep(step + 1)}>
+          <button disabled={step === 5} onClick={() => setStep(step + 1)}>
             Next
           </button>
         </div>
@@ -410,19 +454,21 @@ const StarMapModel = () => {
       <Canvas camera={{ position: [1, 1.5, 3] }} className={styles.canvas}>
         <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} />
         <ModelGrid gridSize={gridSize} />
-        <PointLabels starPos={starPos} showZ={step !== 1} />
-        {step !== 2 && <Declination starPos={starPos} />}
-        {step !== 1 && <RightAscension starPos={starPos} />}
+        <PointLabels starPos={starPos} showZ={step >= 3} />
+        {(step <= 2 || step === 5) && (
+          <Declination starPos={starPos} showHorizontalRadius={step >= 2} />
+        )}
+        {step >= 3 && <RightAscension starPos={starPos} showZ={step >= 4} />}
         <AngleArcs
           starRadius={starRadius}
           declinationAngle={declinationAngle}
           rightAscensionAngle={rightAscensionAngle}
-          showRightAscension={step !== 1}
-          showDeclination={step !== 2}
+          showRightAscension={step >= 3}
+          showDeclination={step <= 2 || step === 5}
         />
-        {step !== 2 && <Star starPos={starPos} />}
+        {(step <= 2 || step === 5) && <Star starPos={starPos} />}
         <CelestialSphere />
-        <OrbitControls enabled={step === 3} />
+        <OrbitControls enabled={step === 5} />
       </Canvas>
       <Controls
         starPos={starPos}
