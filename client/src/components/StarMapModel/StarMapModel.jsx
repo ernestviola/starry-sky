@@ -1,64 +1,40 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Grid, OrbitControls, Line, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import styles from './starMapModel.module.css';
 
-/**
- * ability to scale the star inward towards the earth
- * limit the height of the right ascension to where the star and the sphere meet
- * highlight the edge of the sphere where the right ascension and the sphere form a cross section
- * label the radius of the circle that is formed by the right ascension as the height of the right ascension moves up and down
- */
-
-// right acension
-/**
- * a^2 + b^2 = c^2
- * r = sqrt(8)
- *
- *
- */
-const RightAscension = ({ RAHeight, starPos }) => {
-  /**
-   * add angle label
-   * highlight the portion of the right acension that overlaps with
-   */
-  const x = starPos[0];
-  const y = starPos[2];
-
-  return (
-    <>
-      <mesh position={[0, RAHeight, 0]}>
-        <bufferGeometry key={starPos.join(',')}>
-          <bufferAttribute
-            attach='attributes-position'
-            count={3}
-            array={
-              new Float32Array([
-                0,
-                0,
-                0,
-                starPos[0],
-                0,
-                starPos[2],
-                0,
-                0,
-                starPos[2],
-              ])
-            }
-            itemSize={3}
-          />
-        </bufferGeometry>
-        <meshStandardMaterial
-          color='blue'
-          side={THREE.DoubleSide}
-          transparent
-          opacity={0.4}
-        />
-      </mesh>
-    </>
-  );
-};
+const RightAscension = ({ starPos }) => (
+  <mesh>
+    <bufferGeometry key={starPos.join(',')}>
+      <bufferAttribute
+        attach='attributes-position'
+        count={3}
+        array={
+          new Float32Array([
+            0,
+            0,
+            0,
+            starPos[0],
+            0,
+            starPos[2],
+            0,
+            0,
+            starPos[2],
+          ])
+        }
+        itemSize={3}
+      />
+    </bufferGeometry>
+    <meshStandardMaterial
+      color='blue'
+      side={THREE.DoubleSide}
+      transparent
+      opacity={0.4}
+      depthWrite={false}
+    />
+  </mesh>
+);
 
 const Declination = ({ starPos }) => {
   return (
@@ -114,6 +90,39 @@ const Declination = ({ starPos }) => {
           depthWrite={false}
         />
       </mesh>
+    </>
+  );
+};
+
+const AngleArcs = ({ starRadius, declinationAngle, rightAscensionAngle }) => {
+  const horizontalRadius = starRadius * Math.cos(declinationAngle);
+  const steps = 32;
+  const pointAt = (angle, radius) => [
+    radius * Math.sin(rightAscensionAngle),
+    starRadius * Math.sin(angle),
+    radius * Math.cos(rightAscensionAngle),
+  ];
+  const raPoints = Array.from({ length: steps + 1 }, (_, index) => {
+    const angle = (rightAscensionAngle * index) / steps;
+    return [horizontalRadius * Math.sin(angle), 0, horizontalRadius * Math.cos(angle)];
+  });
+  const decPoints = Array.from({ length: steps + 1 }, (_, index) => {
+    const angle = (declinationAngle * index) / steps;
+    return pointAt(angle, starRadius * Math.cos(angle));
+  });
+  const raLabel = raPoints[Math.floor(steps / 2)];
+  const decLabel = decPoints[Math.floor(steps / 2)];
+
+  return (
+    <>
+      <Line points={raPoints} color='deepskyblue' lineWidth={2} />
+      <Html position={raLabel}>
+        <div style={{ color: 'deepskyblue' }}>RA</div>
+      </Html>
+      <Line points={decPoints} color='orchid' lineWidth={2} />
+      <Html position={decLabel}>
+        <div style={{ color: 'orchid' }}>Dec</div>
+      </Html>
     </>
   );
 };
@@ -192,7 +201,7 @@ const Star = ({ starPos }) => {
       </mesh>
       <Html position={[starPos[0], starPos[1], starPos[2]]}>
         <div style={{ color: 'white' }}>
-          Star [{starPos[0]},{starPos[1]},{starPos[2]}]
+          Star [{starPos.map((coordinate) => coordinate.toFixed(2)).join(', ')}]
         </div>
       </Html>
     </>
@@ -254,211 +263,130 @@ const Earth = () => {
 
 const Controls = ({
   starPos,
-  reCalcParameters,
-  RAHeight,
-  setRAHeight,
   starRadius,
   setStarRadius,
+  declinationAngle,
+  setDeclinationAngle,
+  rightAscensionAngle,
+  setRightAscensionAngle,
 }) => {
-  const [xInput, setXInput] = useState(String(starPos[0]));
-  const [yInput, setYInput] = useState(String(starPos[1]));
-  const [zInput, setZInput] = useState(String(starPos[2]));
-  const [showControls, setShowControls] = useState(false);
-
-  useEffect(() => {
-    setXInput(starPos[0]);
-    setYInput(starPos[1]);
-    setZInput(starPos[2]);
-  }, [starPos[0], starPos[1], starPos[2]]);
-
-  const applyCoordinates = () => {
-    const coordinates = [xInput, yInput, zInput].map(Number);
-
-    if (
-      [xInput, yInput, zInput].some((input) => input.trim() === '') ||
-      !coordinates.every(Number.isFinite) ||
-      coordinates.every((coordinate) => coordinate === 0)
-    ) {
-      setXInput(starPos[0]);
-      setYInput(starPos[1]);
-      setZInput(starPos[2]);
-      return;
-    }
-
-    reCalcParameters(...coordinates);
-  };
+  const degrees = (angle) => THREE.MathUtils.radToDeg(angle).toFixed(1);
 
   return (
     <div className={styles.controllerParent}>
-      {/* RA Height Control */}
       <div className={styles.controlsContainer}>
-        <label htmlFor=''>
-          RA Height: {RAHeight}
+        <label>
+          Right ascension: {degrees(rightAscensionAngle)}°
           <input
             type='range'
-            min={-Math.min(Math.abs(starPos[1]), 1)}
-            max={Math.min(1, Math.abs(starPos[1]))}
+            min={0}
+            max={Math.PI * 2}
             step={0.01}
-            value={RAHeight}
-            onChange={(e) => setRAHeight(parseFloat(e.target.value))}
+            value={rightAscensionAngle}
+            onChange={(e) => setRightAscensionAngle(Number(e.target.value))}
           />
         </label>
-
-        {/* Star Distance Control */}
-        <label htmlFor=''>
-          Star Distance: {starRadius.toFixed(2)}
+        <label>
+          Declination: {degrees(declinationAngle)}°
+          <input
+            type='range'
+            min={-Math.PI / 2}
+            max={Math.PI / 2}
+            step={0.01}
+            value={declinationAngle}
+            onChange={(e) => setDeclinationAngle(Number(e.target.value))}
+          />
+        </label>
+        <label>
+          Star distance: {starRadius.toFixed(2)}
           <input
             type='range'
             min={1}
             max={5}
             step={0.01}
             value={starRadius}
-            onChange={(e) => setStarRadius(parseFloat(e.target.value))}
+            onChange={(e) => setStarRadius(Number(e.target.value))}
           />
         </label>
-
-        {/* Star X,Y,Z */}
-        <label htmlFor=''>
-          X:{' '}
-          <input
-            type='number'
-            step={0.01}
-            value={xInput}
-            onChange={(e) => setXInput(e.target.value)}
-            onBlur={applyCoordinates}
-          />
-        </label>
-        <label htmlFor=''>
-          Y:{' '}
-          <input
-            type='number'
-            step={0.01}
-            value={yInput}
-            onChange={(e) => setYInput(e.target.value)}
-            onBlur={applyCoordinates}
-          />
-        </label>
-        <label htmlFor=''>
-          Z:{' '}
-          <input
-            type='number'
-            step={0.01}
-            value={zInput}
-            onChange={(e) => setZInput(e.target.value)}
-            onBlur={applyCoordinates}
-          />
-        </label>
-        <div>r1 = starRadius, r2 = cos()</div>
+        <div>
+          x = {starRadius.toFixed(2)} cos({degrees(declinationAngle)}°) sin(
+          {degrees(rightAscensionAngle)}°) = {starPos[0].toFixed(2)}
+        </div>
+        <div>
+          y = {starRadius.toFixed(2)} sin({degrees(declinationAngle)}°) ={' '}
+          {starPos[1].toFixed(2)}
+        </div>
+        <div>
+          z = {starRadius.toFixed(2)} cos({degrees(declinationAngle)}°) cos(
+          {degrees(rightAscensionAngle)}°) = {starPos[2].toFixed(2)}
+        </div>
       </div>
     </div>
   );
 };
 
-const PointLabels = ({ starPos, RAHeight }) => {
-  // origin
-  // RA Z
-  // RA XZ
-
-  return (
-    <>
-      {/* origin */}
-      <Html position={[0, 0, 0]}>
-        <div style={{ color: 'white' }}>A</div>
-      </Html>
-      <mesh position={[0, 0, 0]}>
-        <sphereGeometry args={[0.02, 32, 32]} />
-        <meshStandardMaterial color='black' />
-      </mesh>
-      {/* RA Z */}
-      <Html position={[0, 0, starPos[2]]}>
-        <div style={{ color: 'white' }}>B</div>
-      </Html>
-      <mesh position={[0, 0, starPos[2]]}>
-        <sphereGeometry args={[0.02, 32, 32]} />
-        <meshStandardMaterial color='black' />
-      </mesh>
-      {/* RA XZ */}
-      <Html position={[starPos[0], 0, starPos[2]]}>
-        <div style={{ color: 'white' }}>C</div>
-      </Html>
-      <mesh position={[starPos[0], 0, starPos[2]]}>
-        <sphereGeometry args={[0.02, 32, 32]} />
-        <meshStandardMaterial color='black' />
-      </mesh>
-    </>
-  );
-};
+const PointLabels = ({ starPos }) => (
+  <>
+    <Html position={[0, 0, 0]}>
+      <div style={{ color: 'white' }}>Origin</div>
+    </Html>
+    <mesh position={[0, 0, 0]}>
+      <sphereGeometry args={[0.02, 32, 32]} />
+      <meshStandardMaterial color='black' />
+    </mesh>
+    <Html position={[0, 0, starPos[2]]}>
+      <div style={{ color: 'white' }}>Z</div>
+    </Html>
+    <mesh position={[0, 0, starPos[2]]}>
+      <sphereGeometry args={[0.02, 32, 32]} />
+      <meshStandardMaterial color='black' />
+    </mesh>
+    <Html position={[starPos[0], 0, starPos[2]]}>
+      <div style={{ color: 'white' }}>XZ projection</div>
+    </Html>
+    <mesh position={[starPos[0], 0, starPos[2]]}>
+      <sphereGeometry args={[0.02, 32, 32]} />
+      <meshStandardMaterial color='black' />
+    </mesh>
+  </>
+);
 
 const StarMapModel = () => {
-  const [gridSize, setGridSize] = useState(10);
+  const gridSize = 10;
   const [starRadius, setStarRadius] = useState(3);
   const [declinationAngle, setDeclinationAngle] = useState(Math.PI / 6);
   const [rightAscensionAngle, setRightAscensionAngle] = useState(Math.PI / 4);
 
-  const [RAHeight, setRAHeight] = useState(0);
-
   const starPos = [
-    (
-      starRadius *
-      Math.cos(declinationAngle) *
-      Math.sin(rightAscensionAngle)
-    ).toFixed(2),
-    (starRadius * Math.sin(declinationAngle)).toFixed(2),
-    (
-      starRadius *
-      Math.cos(declinationAngle) *
-      Math.cos(rightAscensionAngle)
-    ).toFixed(2),
+    starRadius * Math.cos(declinationAngle) * Math.sin(rightAscensionAngle),
+    starRadius * Math.sin(declinationAngle),
+    starRadius * Math.cos(declinationAngle) * Math.cos(rightAscensionAngle),
   ];
-
-  useEffect(() => {
-    const currentHeight = RAHeight;
-    console.log(currentHeight);
-
-    setRAHeight(Math.min(currentHeight, starPos[1]));
-  }, [starRadius]);
-
-  const reCalcParameters = (x, y, z) => {
-    /*
-     * x^2 + y^2 = distance_to_star_xz_plane^2
-     * distance_to_star_xz_plane^2 + z^2 = distance_to_star = newStarRadius
-     */
-    const newStarRadius = Math.sqrt(x * x + y * y + z * z);
-    if (!Number.isFinite(newStarRadius) || newStarRadius === 0) return;
-
-    /*
-     * sin(dec) = y/r
-     * given y and r, asin(y/r) = dec
-     */
-    const newDeclinationAngle = Math.asin(y / newStarRadius);
-    const newRightAscensionAngle = Math.atan2(x, z);
-
-    /*
-     *
-     */
-    setDeclinationAngle(newDeclinationAngle);
-    setRightAscensionAngle(newRightAscensionAngle);
-    setStarRadius(newStarRadius);
-  };
 
   return (
     <div className={styles.container}>
       <Canvas camera={{ position: [1, 3, 10] }} className={styles.canvas}>
         <ModelGrid gridSize={gridSize} />
-        <PointLabels starPos={starPos} RAHeight={RAHeight} />
+        <PointLabels starPos={starPos} />
         <Declination starPos={starPos} />
-        <RightAscension starPos={starPos} RAHeight={RAHeight} />
+        <RightAscension starPos={starPos} />
+        <AngleArcs
+          starRadius={starRadius}
+          declinationAngle={declinationAngle}
+          rightAscensionAngle={rightAscensionAngle}
+        />
         <Star starPos={starPos} />
         <Earth />
         <OrbitControls />
       </Canvas>
       <Controls
         starPos={starPos}
-        RAHeight={RAHeight}
-        setRAHeight={setRAHeight}
         starRadius={starRadius}
         setStarRadius={setStarRadius}
-        reCalcParameters={reCalcParameters}
+        declinationAngle={declinationAngle}
+        setDeclinationAngle={setDeclinationAngle}
+        rightAscensionAngle={rightAscensionAngle}
+        setRightAscensionAngle={setRightAscensionAngle}
       />
     </div>
   );
