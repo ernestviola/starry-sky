@@ -125,7 +125,7 @@ const AngleArcs = ({
         <>
           <Line points={raPoints} color='deepskyblue' lineWidth={2} />
           <Html position={raLabel}>
-            <div style={{ color: 'deepskyblue' }}>RA</div>
+            <div className={`${styles.sceneLabel} ${styles.arcLabel}`}>RA</div>
           </Html>
         </>
       )}
@@ -133,7 +133,7 @@ const AngleArcs = ({
         <>
           <Line points={decPoints} color='orchid' lineWidth={2} />
           <Html position={decLabel}>
-            <div style={{ color: 'orchid' }}>Dec</div>
+            <div className={`${styles.sceneLabel} ${styles.arcLabel}`}>Dec</div>
           </Html>
         </>
       )}
@@ -155,10 +155,10 @@ const ModelGrid = ({ gridSize }) => {
       <directionalLight position={[5, 5, -5]} intensity={1} />
       {/* x axis */}
       <Html position={[lineSize + 0.1, 0, 0]}>
-        <div style={{ color: 'white' }}>+X</div>
+        <div className={styles.axisLabel}>+X</div>
       </Html>
       <Html position={[-(lineSize + 0.1), 0, 0]}>
-        <div style={{ color: 'white' }}>-X</div>
+        <div className={styles.axisLabel}>-X</div>
       </Html>
       <Line
         points={[
@@ -169,10 +169,10 @@ const ModelGrid = ({ gridSize }) => {
       />
       {/* y axis */}
       <Html position={[0, -(lineSize + 0.1), 0]}>
-        <div style={{ color: 'white' }}>-Y</div>
+        <div className={styles.axisLabel}>-Y</div>
       </Html>
       <Html position={[0, lineSize + 0.5, 0]}>
-        <div style={{ color: 'white' }}>+Y</div>
+        <div className={styles.axisLabel}>+Y</div>
       </Html>
       <Line
         points={[
@@ -184,10 +184,10 @@ const ModelGrid = ({ gridSize }) => {
 
       {/* z axis */}
       <Html position={[0, 0, -(lineSize + 0.1)]}>
-        <div style={{ color: 'white' }}>-Z</div>
+        <div className={styles.axisLabel}>-Z</div>
       </Html>
       <Html position={[0, 0, lineSize + 0.1]}>
-        <div style={{ color: 'white' }}>+Z</div>
+        <div className={styles.axisLabel}>+Z</div>
       </Html>
       <Line
         points={[
@@ -214,7 +214,7 @@ const Star = ({ starPos }) => {
         />
       </mesh>
       <Html position={[starPos[0], starPos[1], starPos[2]]}>
-        <div style={{ color: 'white' }}>
+        <div className={`${styles.sceneLabel} ${styles.starLabel}`}>
           Star [{starPos.map((coordinate) => coordinate.toFixed(2)).join(', ')}]
         </div>
       </Html>
@@ -222,58 +222,18 @@ const Star = ({ starPos }) => {
   );
 };
 
-const CelestialSphere = () => {
-  const radius = 1;
-
-  return (
-    <>
-      <mesh position={[0, 0, 0]}>
-        <sphereGeometry
-          args={[radius, 32, 32, Math.PI, Math.PI * 1.5, 0, Math.PI / 2]}
-        />
-        <meshStandardMaterial color='white' side={THREE.DoubleSide} />
-      </mesh>
-      <mesh position={[0, 0, 0]}>
-        <sphereGeometry
-          args={[
-            radius,
-            32,
-            32,
-            Math.PI,
-            2 * Math.PI,
-            Math.PI / 2,
-            Math.PI / 2,
-          ]}
-        />
-        <meshStandardMaterial color='white' side={THREE.DoubleSide} />
-      </mesh>
-      {/* Caps */}
-      {/* back wall */}
-      <mesh position={[0, 0, 0]}>
-        <circleGeometry args={[1, 32, 0, Math.PI / 2]} />
-        <meshStandardMaterial color='white' side={THREE.DoubleSide} />
-      </mesh>
-      {/* left wall */}
-      <mesh position={[0, 0, 0]} rotation={[0, Math.PI * 1.5, 0]}>
-        <circleGeometry args={[1, 32, 0, Math.PI / 2]} />
-        <meshStandardMaterial color='white' side={THREE.DoubleSide} />
-      </mesh>
-
-      <mesh position={[0, 0, 0]}>
-        <sphereGeometry
-          args={[1, 32, 32, Math.PI * 0.5, Math.PI * 0.5, 0, 0.5 * Math.PI]}
-        />
-        <meshStandardMaterial
-          color='white'
-          side={THREE.DoubleSide}
-          transparent
-          opacity={0.4}
-          depthWrite={false}
-        />
-      </mesh>
-    </>
-  );
-};
+const CelestialSphere = () => (
+  <mesh>
+    <sphereGeometry args={[1, 32, 16]} />
+    <meshBasicMaterial
+      color='white'
+      wireframe
+      transparent
+      opacity={0.25}
+      depthWrite={false}
+    />
+  </mesh>
+);
 
 const Controls = ({
   starPos,
@@ -297,7 +257,7 @@ const Controls = ({
   return (
     <div className={styles.controllerParent}>
       <div className={styles.controlsContainer}>
-        <div>{stage}</div>
+        <div className={styles.stepTitle}>{stage}</div>
         {step !== 1 && (
           <label>
             Right ascension: {degrees(rightAscensionAngle)}°
@@ -326,25 +286,37 @@ const Controls = ({
         )}
         {step === 1 && (
           <>
-            <div>y = r sin(Dec) = {starPos[1].toFixed(2)}</div>
-            <div>horizontal radius = r cos(Dec) = {horizontalRadius.toFixed(2)}</div>
+            <div className={styles.equation}>y = r sin(Dec) = {starPos[1].toFixed(2)}</div>
+            <div className={styles.equation}>
+              horizontal radius = r cos(Dec) = {horizontalRadius.toFixed(2)}
+            </div>
           </>
         )}
         {step === 2 && (
           <>
-            <div>horizontal radius (from step 1) = {horizontalRadius.toFixed(2)}</div>
-            <div>x = horizontal radius sin(RA) = {starPos[0].toFixed(2)}</div>
-            <div>z = horizontal radius cos(RA) = {starPos[2].toFixed(2)}</div>
+            <div className={styles.equation}>
+              horizontal radius (from step 1) = {horizontalRadius.toFixed(2)}
+            </div>
+            <div className={styles.equation}>
+              x = horizontal radius sin(RA) = {starPos[0].toFixed(2)}
+            </div>
+            <div className={styles.equation}>
+              z = horizontal radius cos(RA) = {starPos[2].toFixed(2)}
+            </div>
           </>
         )}
         {step === 3 && (
           <>
-            <div>x = r cos(Dec) sin(RA) = {starPos[0].toFixed(2)}</div>
-            <div>y = r sin(Dec) = {starPos[1].toFixed(2)}</div>
-            <div>z = r cos(Dec) cos(RA) = {starPos[2].toFixed(2)}</div>
+            <div className={styles.equation}>
+              x = r cos(Dec) sin(RA) = {starPos[0].toFixed(2)}
+            </div>
+            <div className={styles.equation}>y = r sin(Dec) = {starPos[1].toFixed(2)}</div>
+            <div className={styles.equation}>
+              z = r cos(Dec) cos(RA) = {starPos[2].toFixed(2)}
+            </div>
           </>
         )}
-        <div>
+        <div className={styles.stepNavigation}>
           <button disabled={step === 1} onClick={() => setStep(step - 1)}>
             Previous
           </button>
@@ -360,7 +332,7 @@ const Controls = ({
 const PointLabels = ({ starPos, showZ }) => (
   <>
     <Html position={[0, 0, 0]}>
-      <div style={{ color: 'white' }}>Origin</div>
+      <div className={styles.sceneLabel}>Origin</div>
     </Html>
     <mesh position={[0, 0, 0]}>
       <sphereGeometry args={[0.02, 32, 32]} />
@@ -369,7 +341,7 @@ const PointLabels = ({ starPos, showZ }) => (
     {showZ && (
       <>
         <Html position={[0, 0, starPos[2]]}>
-          <div style={{ color: 'white' }}>Z</div>
+          <div className={styles.sceneLabel}>Z</div>
         </Html>
         <mesh position={[0, 0, starPos[2]]}>
           <sphereGeometry args={[0.02, 32, 32]} />
@@ -378,7 +350,7 @@ const PointLabels = ({ starPos, showZ }) => (
       </>
     )}
     <Html position={[starPos[0], 0, starPos[2]]}>
-      <div style={{ color: 'white' }}>XZ projection</div>
+      <div className={styles.sceneLabel}>XZ projection</div>
     </Html>
     <mesh position={[starPos[0], 0, starPos[2]]}>
       <sphereGeometry args={[0.02, 32, 32]} />
@@ -388,7 +360,7 @@ const PointLabels = ({ starPos, showZ }) => (
 );
 
 const StarMapModel = () => {
-  const gridSize = 10;
+  const gridSize = 4;
   const starRadius = 1;
   const [declinationAngle, setDeclinationAngle] = useState(Math.PI / 6);
   const [rightAscensionAngle, setRightAscensionAngle] = useState(Math.PI / 4);
@@ -402,7 +374,7 @@ const StarMapModel = () => {
 
   return (
     <div className={styles.container}>
-      <Canvas camera={{ position: [1, 3, 10] }} className={styles.canvas}>
+      <Canvas camera={{ position: [1, 1.5, 3] }} className={styles.canvas}>
         <ModelGrid gridSize={gridSize} />
         <PointLabels starPos={starPos} showZ={step !== 1} />
         {step !== 2 && <Declination starPos={starPos} />}
