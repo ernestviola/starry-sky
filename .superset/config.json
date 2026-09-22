@@ -1,0 +1,11 @@
+{
+  "setup": [
+    "pnpm --dir client install --frozen-lockfile",
+    "pnpm --dir server install --frozen-lockfile",
+    "pnpm --dir server exec prisma generate"
+  ],
+  "teardown": [],
+  "run": [
+    "./.superset/run.sh"
+  ]
+}
