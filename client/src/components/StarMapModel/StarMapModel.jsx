@@ -194,7 +194,8 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
   const { camera } = useThree();
   const transition = useRef({
     key: '',
-    start: new THREE.Vector3(),
+    start: new THREE.Spherical(),
+    target: new THREE.Spherical(),
     elapsed: 0,
   });
   const views = {
@@ -215,13 +216,14 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
   };
   const position = new THREE.Vector3(...views[step]);
   const duration =
-    { 0: 1.2, 1: 0.8, 2: 0.8, 3: 1.6, 4: 0.8, 5: 1.2 }[step] ?? 1.2;
+    { 0: 1.2, 1: 0.8, 2: 0.8, 3: 1.2, 4: 0.8, 5: 1 }[step] ?? 1.2;
   const viewKey = String(step);
 
   if (transition.current.key !== viewKey) {
     transition.current = {
       key: viewKey,
-      start: camera.position.clone(),
+      start: new THREE.Spherical().setFromVector3(camera.position),
+      target: new THREE.Spherical().setFromVector3(position),
       elapsed: 0,
     };
   }
@@ -238,7 +240,14 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
       0,
       1,
     );
-    camera.position.lerpVectors(transition.current.start, position, progress);
+    const { start, target } = transition.current;
+    camera.position.setFromSpherical(
+      new THREE.Spherical(
+        THREE.MathUtils.lerp(start.radius, target.radius, progress),
+        THREE.MathUtils.lerp(start.phi, target.phi, progress),
+        THREE.MathUtils.lerp(start.theta, target.theta, progress),
+      ),
+    );
     camera.lookAt(0, 0, 0);
   });
 
@@ -349,6 +358,8 @@ const Controls = ({
   step,
   setStep,
   showNavigation,
+  showSphere,
+  setShowSphere,
 }) => {
   const degrees = (angle) => THREE.MathUtils.radToDeg(angle).toFixed(1);
   const horizontalRadius = starRadius * Math.cos(declinationAngle);
@@ -364,9 +375,15 @@ const Controls = ({
   return (
     <div className={styles.controllerParent}>
       <div className={styles.controlsContainer}>
-        <div className={styles.stepTitle}>
-          DOM step: {step} · {stage}
-        </div>
+        <div className={styles.stepTitle}>{stage}</div>
+        <label className={styles.toggle}>
+          <input
+            type='checkbox'
+            checked={showSphere}
+            onChange={(event) => setShowSphere(event.target.checked)}
+          />
+          Show sphere wireframe
+        </label>
         {(step === 0 || step >= 3) && (
           <label>
             Right ascension: {degrees(rightAscensionAngle)}°
@@ -462,12 +479,6 @@ const Controls = ({
   );
 };
 
-const StepIndicator = ({ step }) => (
-  <Html position={[0, 1.3, 0]} center>
-    <div className={styles.stepIndicator}>Map step: {step}</div>
-  </Html>
-);
-
 const PointLabels = ({ starPos, showZ }) => (
   <>
     <Html position={[0, 0, 0]}>
@@ -510,6 +521,7 @@ const StarMapModel = ({
   const starRadius = 1;
   const [declinationAngle, setDeclinationAngle] = useState(Math.PI / 6);
   const [rightAscensionAngle, setRightAscensionAngle] = useState(Math.PI / 4);
+  const [showSphere, setShowSphere] = useState(true);
   const [selectedStep, setSelectedStep] = useState(1);
   const step = controlledStep ?? selectedStep;
   const setStep = (nextStep) => {
@@ -534,7 +546,6 @@ const StarMapModel = ({
         className={styles.canvas}
       >
         <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} />
-        <StepIndicator step={step} />
         <ModelGrid gridSize={gridSize} />
         <PointLabels starPos={starPos} showZ={step === 0 || step >= 3} />
         {(step === 0 || step <= 2 || step === 5) && (
@@ -554,7 +565,7 @@ const StarMapModel = ({
           showDeclination={step === 0 || step <= 2 || step === 5}
         />
         {(step === 0 || step <= 2 || step === 5) && <Star starPos={starPos} />}
-        <CelestialSphere />
+        {showSphere && <CelestialSphere />}
         <OrbitControls enabled={step === 0 || step === 5} enableZoom={false} />
       </Canvas>
       {showControls && (
@@ -568,6 +579,8 @@ const StarMapModel = ({
           step={step}
           setStep={setStep}
           showNavigation={showNavigation}
+          showSphere={showSphere}
+          setShowSphere={setShowSphere}
         />
       )}
     </div>
