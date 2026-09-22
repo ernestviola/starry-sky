@@ -78,7 +78,7 @@ const About = () => {
 
           <section data-derivation-step='1' className={stepClass(1)}>
             <div className={styles.stepCard}>
-              <h2>1. Find Y with declination</h2>
+              <h2>1. Find y with declination</h2>
               <p>
                 Astronomers map stars against an imaginary sphere centered on Earth: the celestial
                 sphere. In our simulation, the viewer is at the origin and every star lies on a
@@ -93,7 +93,7 @@ const About = () => {
 
           <section data-derivation-step='2' className={stepClass(2)}>
             <div className={styles.stepCard}>
-              <h2>2. Find the horizontal radius</h2>
+              <h2>2. Find the horizontal radius, h</h2>
               <p>
                 The other leg of the declination triangle is the distance from the origin to the
                 star&apos;s XZ projection. We call it h. Since r = 1, h = cos(Dec). This is the
@@ -104,7 +104,7 @@ const About = () => {
 
           <section data-derivation-step='3' className={stepClass(3)}>
             <div className={styles.stepCard}>
-              <h2>3. Use right ascension to find X</h2>
+              <h2>3. Use right ascension to find x</h2>
               <p>
                 Looking down on the XZ plane gives us a second right triangle with h as its
                 hypotenuse. Right ascension measures eastward from the vernal equinox, the
@@ -115,7 +115,7 @@ const About = () => {
 
           <section data-derivation-step='4' className={stepClass(4)}>
             <div className={styles.stepCard}>
-              <h2>4. Find Z</h2>
+              <h2>4. Find z</h2>
               <p>
                 The adjacent side of the same right-ascension triangle is z = h cos(RA). We now
                 have all three Cartesian coordinates for the star.

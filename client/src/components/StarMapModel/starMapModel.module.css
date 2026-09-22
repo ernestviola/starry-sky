@@ -136,6 +136,12 @@
   color: var(--color-accent);
 }
 
+.highlightLabel {
+  border-color: gold;
+  color: gold;
+  box-shadow: 0 0 1rem rgba(255, 215, 0, 0.5);
+}
+
 .stepTitle {
   color: var(--color-text-primary);
   font-family: var(--font-heading);
