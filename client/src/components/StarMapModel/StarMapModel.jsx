@@ -183,6 +183,7 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
     5: [1, 1.5, 3],
   };
   const position = new THREE.Vector3(...views[step]);
+  const duration = { 0: 0, 1: 0.8, 2: 0.8, 3: 1.6, 4: 0.8, 5: 1.2 }[step] ?? 1.2;
   const viewKey = String(step);
 
   if (transition.current.key !== viewKey) {
@@ -190,10 +191,10 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
   }
 
   useFrame((_, delta) => {
-    if (transition.current.elapsed >= 1.2) return;
+    if (transition.current.elapsed >= duration) return;
 
-    transition.current.elapsed = Math.min(transition.current.elapsed + delta, 1.2);
-    const progress = THREE.MathUtils.smoothstep(transition.current.elapsed / 1.2, 0, 1);
+    transition.current.elapsed = Math.min(transition.current.elapsed + delta, duration);
+    const progress = THREE.MathUtils.smoothstep(transition.current.elapsed / duration, 0, 1);
     camera.position.lerpVectors(transition.current.start, position, progress);
     camera.lookAt(0, 0, 0);
   });
