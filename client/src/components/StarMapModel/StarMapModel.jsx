@@ -374,17 +374,10 @@ const Controls = ({
   ][step];
 
   return (
-    <div className={styles.controllerParent}>
-      <div className={styles.controlsContainer}>
-        <div className={styles.stepTitle}>{stage}</div>
-        <label className={styles.toggle}>
-          <input
-            type='checkbox'
-            checked={showSphere}
-            onChange={(event) => setShowSphere(event.target.checked)}
-          />
-          Show sphere wireframe
-        </label>
+    <>
+      <div className={styles.controllerParent}>
+        <div className={styles.controlsContainer}>
+          <div className={styles.stepTitle}>{stage}</div>
         {(step === 0 || step >= 3) && (
           <label>
             Right ascension: {degrees(rightAscensionAngle)}°
@@ -465,22 +458,35 @@ const Controls = ({
             </div>
           </>
         )}
-        {showNavigation && (
-          <div className={styles.stepNavigation}>
-            <button disabled={step === 1} onClick={() => setStep(step - 1)}>
-              Previous
-            </button>
-            <button disabled={step === 5} onClick={() => setStep(step + 1)}>
-              Next
-            </button>
+          {showNavigation && (
+            <div className={styles.stepNavigation}>
+              <button disabled={step === 1} onClick={() => setStep(step - 1)}>
+                Previous
+              </button>
+              <button disabled={step === 5} onClick={() => setStep(step + 1)}>
+                Next
+              </button>
+            </div>
+          )}
+        </div>
+        <div className={styles.wireframeParent}>
+          <div className={styles.controlsContainer}>
+            <label className={styles.toggle}>
+              <input
+                type='checkbox'
+                checked={showSphere}
+                onChange={(event) => setShowSphere(event.target.checked)}
+              />
+              Show sphere wireframe
+            </label>
           </div>
-        )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
-const PointLabels = ({ starPos, showZ }) => (
+const PointLabels = ({ starPos }) => (
   <>
     <Html position={[0, 0, 0]}>
       <div className={styles.sceneLabel}>Origin</div>
@@ -489,17 +495,6 @@ const PointLabels = ({ starPos, showZ }) => (
       <sphereGeometry args={[0.02, 32, 32]} />
       <meshStandardMaterial color='black' />
     </mesh>
-    {showZ && (
-      <>
-        <Html position={[0, 0, starPos[2]]}>
-          <div className={styles.sceneLabel}>Z</div>
-        </Html>
-        <mesh position={[0, 0, starPos[2]]}>
-          <sphereGeometry args={[0.02, 32, 32]} />
-          <meshStandardMaterial color='black' />
-        </mesh>
-      </>
-    )}
     <Html position={[starPos[0], 0, starPos[2]]}>
       <div className={styles.sceneLabel}>XZ projection</div>
     </Html>
@@ -540,7 +535,6 @@ const StarMapModel = ({
     2: { declination: 'h', arc: 'dec' },
     3: { rightAscension: 'x', arc: 'ra' },
     4: { rightAscension: 'z', arc: 'ra' },
-    5: { declination: 'all', rightAscension: 'all', arc: 'all' },
   };
   const highlight = highlights[step] ?? {};
 
@@ -556,7 +550,7 @@ const StarMapModel = ({
       >
         <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} />
         <ModelGrid gridSize={gridSize} />
-        <PointLabels starPos={starPos} showZ={step === 0 || step >= 3} />
+        <PointLabels starPos={starPos} />
         {(step === 0 || step <= 2 || step === 5) && (
           <Declination
             starPos={starPos}

@@ -6,18 +6,20 @@ import styles from './about.module.css';
 
 const About = () => {
   const [step, setStep] = useState(0);
+  const [showModelControls, setShowModelControls] = useState(true);
   const walkthrough = useRef(null);
 
   useEffect(() => {
     const sections = [...walkthrough.current.querySelectorAll('[data-derivation-step]')];
 
     const updateStep = () => {
-      const viewportCenter = window.innerHeight / 2;
+      const activationLine = window.innerHeight * 0.25;
       const active = sections.find((section) => {
         const { top, bottom } = section.getBoundingClientRect();
-        return top <= viewportCenter && bottom >= viewportCenter;
+        return top <= activationLine && bottom >= activationLine;
       });
 
+      setShowModelControls(Boolean(active));
       if (active) setStep(Number(active.dataset.derivationStep));
     };
 
@@ -43,7 +45,7 @@ const About = () => {
         <div className={styles.modelStage}>
           <StarMapModel
             step={step}
-            showControls
+            showControls={showModelControls}
             showNavigation={false}
             presentation
           />
