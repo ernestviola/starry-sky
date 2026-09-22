@@ -29,6 +29,14 @@
   min-height: 0;
 }
 
+.presentation .canvas canvas {
+  width: 100% !important;
+  height: 100% !important;
+  transform-origin: center;
+  transition: opacity 500ms ease, transform 700ms ease;
+}
+
+
 .controllerParent {
   margin: 0;
 }

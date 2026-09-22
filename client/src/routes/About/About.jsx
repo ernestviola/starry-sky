@@ -5,7 +5,7 @@ import StarMapModel from '../../components/StarMapModel/StarMapModel.jsx';
 import styles from './about.module.css';
 
 const About = () => {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
   const walkthrough = useRef(null);
 
   useEffect(() => {
@@ -16,7 +16,10 @@ const About = () => {
           .filter((entry) => entry.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
 
-        if (active) setStep(Number(active.target.dataset.derivationStep));
+        if (active) {
+          const activeStep = Number(active.target.dataset.derivationStep);
+          setStep(activeStep);
+        }
       },
       { rootMargin: '-30% 0px -40%', threshold: 0 },
     );
@@ -34,32 +37,42 @@ const About = () => {
       <h1>About Starry Sky</h1>
       <p>A simulation and game centered around 120,000 stars in our night sky.</p>
 
-      <section className={styles.inspiration}>
-        <h2>Inspiration</h2>
-        <p>
-          I wanted to make people think more about their local constellations and stars. Light
-          pollution affects all of us: in cities, it is easy to forget how beautiful the night sky
-          can be. Humans once had a much closer relationship with the sky and the stories in its
-          constellations. This project is a small way to reconnect with that view.
-        </p>
-        <p>
-          The project began as a remix of The Odin Project&apos;s{' '}
-          <a
-            href='https://www.theodinproject.com/lessons/nodejs-where-s-waldo-a-photo-tagging-app'
-            target='_blank'
-            rel='noreferrer'
-          >
-            Where&apos;s Waldo Project
-          </a>
-          , combining a star-searching game with a chance to learn Three.js.
-        </p>
-      </section>
-
       <section className={styles.walkthrough} ref={walkthrough}>
         <div className={styles.modelStage}>
-          <StarMapModel step={step} showControls={false} presentation />
+          <StarMapModel
+            step={step}
+            showControls={false}
+            presentation
+          />
         </div>
         <div className={styles.story}>
+          <section
+            data-derivation-step='0'
+            className={styles.storyIntro}
+          >
+            <div className={styles.introCard}>
+              <h2>Inspiration</h2>
+              <p>
+                I wanted to make people think more about their local constellations and stars.
+                Light pollution affects all of us: in cities, it is easy to forget how beautiful
+                the night sky can be. Humans once had a much closer relationship with the sky and
+                the stories in its constellations. This project is a small way to reconnect with
+                that view.
+              </p>
+              <p>
+                The project began as a remix of The Odin Project&apos;s{' '}
+                <a
+                  href='https://www.theodinproject.com/lessons/nodejs-where-s-waldo-a-photo-tagging-app'
+                  target='_blank'
+                  rel='noreferrer'
+                >
+                  Where&apos;s Waldo Project
+                </a>
+                , combining a star-searching game with a chance to learn Three.js.
+              </p>
+            </div>
+          </section>
+
           <section data-derivation-step='1' className={stepClass(1)}>
             <div className={styles.stepCard}>
               <h2>1. Find Y with declination</h2>

@@ -44,6 +44,22 @@
   pointer-events: none;
 }
 
+.storyIntro {
+  display: flex;
+  min-height: 100svh;
+  align-items: flex-start;
+  padding: 12rem var(--page-gutter) var(--space-8);
+}
+
+.introCard {
+  width: min(100%, 60ch);
+  pointer-events: auto;
+}
+
+.introCard h2 {
+  margin-top: 0;
+}
+
 .storyStep {
   display: flex;
   min-height: 100svh;
@@ -51,7 +67,9 @@
   padding: var(--space-8) var(--page-gutter);
   opacity: 0.2;
   transform: translateY(1.6rem);
-  transition: opacity 300ms ease, transform 300ms ease;
+  transition:
+    opacity 300ms ease,
+    transform 300ms ease;
 }
 
 .activeStep {
@@ -60,7 +78,9 @@
 }
 
 .stepCard {
-  max-width: 52ch;
+  position: relative;
+  z-index: 1;
+  width: min(100%, 52ch);
   padding: var(--space-5);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius-card);

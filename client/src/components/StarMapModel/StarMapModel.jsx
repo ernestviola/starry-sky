@@ -174,9 +174,10 @@ const AngleArcs = ({
 const CameraRig = ({ step, rightAscensionAngle }) => {
   const { camera } = useThree();
   const lookAt = useRef(new THREE.Vector3());
-  const previousStep = useRef();
+  const previousView = useRef();
   const moving = useRef(true);
   const views = {
+    0: [1, 1.5, 3],
     1: [-Math.cos(rightAscensionAngle) * 3, 0.6, Math.sin(rightAscensionAngle) * 3],
     2: [-Math.cos(rightAscensionAngle) * 3, 0.6, Math.sin(rightAscensionAngle) * 3],
     3: [0, 3, 0.01],
@@ -184,9 +185,11 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
     5: [1, 1.5, 3],
   };
   const position = new THREE.Vector3(...views[step]);
+  const target = new THREE.Vector3(0, 0, 0);
+  const viewKey = String(step);
 
-  if (previousStep.current !== step) {
-    previousStep.current = step;
+  if (previousView.current !== viewKey) {
+    previousView.current = viewKey;
     moving.current = true;
   }
 
@@ -194,10 +197,15 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
     if (!moving.current) return;
 
     camera.position.lerp(position, 0.08);
+    lookAt.current.lerp(target, 0.08);
     camera.lookAt(lookAt.current);
 
-    if (camera.position.distanceTo(position) < 0.01) {
+    if (
+      camera.position.distanceTo(position) < 0.01 &&
+      lookAt.current.distanceTo(target) < 0.01
+    ) {
       camera.position.copy(position);
+      lookAt.current.copy(target);
       camera.lookAt(lookAt.current);
       moving.current = false;
     }
@@ -473,21 +481,23 @@ const StarMapModel = ({
       <Canvas camera={{ position: [1, 1.5, 3] }} className={styles.canvas}>
         <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} />
         <ModelGrid gridSize={gridSize} />
-        <PointLabels starPos={starPos} showZ={step >= 3} />
-        {(step <= 2 || step === 5) && (
-          <Declination starPos={starPos} showHorizontalRadius={step >= 2} />
+        <PointLabels starPos={starPos} showZ={step === 0 || step >= 3} />
+        {(step === 0 || step <= 2 || step === 5) && (
+          <Declination starPos={starPos} showHorizontalRadius={step === 0 || step >= 2} />
         )}
-        {step >= 3 && <RightAscension starPos={starPos} showZ={step >= 4} />}
+        {(step === 0 || step >= 3) && (
+          <RightAscension starPos={starPos} showZ={step === 0 || step >= 4} />
+        )}
         <AngleArcs
           starRadius={starRadius}
           declinationAngle={declinationAngle}
           rightAscensionAngle={rightAscensionAngle}
-          showRightAscension={step >= 3}
-          showDeclination={step <= 2 || step === 5}
+          showRightAscension={step === 0 || step >= 3}
+          showDeclination={step === 0 || step <= 2 || step === 5}
         />
-        {(step <= 2 || step === 5) && <Star starPos={starPos} />}
+        {(step === 0 || step <= 2 || step === 5) && <Star starPos={starPos} />}
         <CelestialSphere />
-        <OrbitControls enabled={step === 5} />
+        <OrbitControls enabled={step === 0 || step === 5} enableZoom={false} />
       </Canvas>
       {showControls && (
         <Controls
