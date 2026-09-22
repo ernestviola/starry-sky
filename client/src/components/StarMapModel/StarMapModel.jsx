@@ -175,7 +175,7 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
   const { camera } = useThree();
   const transition = useRef({ key: '', start: new THREE.Vector3(), elapsed: 0 });
   const views = {
-    0: [-Math.cos(rightAscensionAngle) * 3, 0.6, Math.sin(rightAscensionAngle) * 3],
+    0: [-Math.cos(rightAscensionAngle) * 2.55, 0.51, Math.sin(rightAscensionAngle) * 2.55],
     1: [-Math.cos(rightAscensionAngle) * 3, 0.6, Math.sin(rightAscensionAngle) * 3],
     2: [-Math.cos(rightAscensionAngle) * 3, 0.6, Math.sin(rightAscensionAngle) * 3],
     3: [0, 3, 0.01],
@@ -465,7 +465,7 @@ const StarMapModel = ({
         presentation ? styles.presentation : ''
       }`}
     >
-      <Canvas camera={{ position: [1, 1.5, 3] }} className={styles.canvas}>
+      <Canvas camera={{ position: [-1.8, 0.51, 1.8] }} className={styles.canvas}>
         <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} />
         <ModelGrid gridSize={gridSize} />
         <PointLabels starPos={starPos} showZ={step === 0 || step >= 3} />
