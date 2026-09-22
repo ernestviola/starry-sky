@@ -6,10 +6,25 @@ import styles from './starMapModel.module.css';
 
 const RightAscension = ({ starPos, showZ }) => (
   <>
-    <Line points={[[0, 0, 0], [starPos[0], 0, starPos[2]]]} color='deepskyblue' />
-    <Line points={[[0, 0, 0], [0, 0, starPos[2]]]} color='deepskyblue' />
     <Line
-      points={[[0, 0, starPos[2]], [starPos[0], 0, starPos[2]]]}
+      points={[
+        [0, 0, 0],
+        [starPos[0], 0, starPos[2]],
+      ]}
+      color='deepskyblue'
+    />
+    <Line
+      points={[
+        [0, 0, 0],
+        [0, 0, starPos[2]],
+      ]}
+      color='deepskyblue'
+    />
+    <Line
+      points={[
+        [0, 0, starPos[2]],
+        [starPos[0], 0, starPos[2]],
+      ]}
       color='deepskyblue'
     />
     <Html position={[starPos[0] / 2, 0, starPos[2] / 2]}>
@@ -140,7 +155,11 @@ const AngleArcs = ({
   ];
   const raPoints = Array.from({ length: steps + 1 }, (_, index) => {
     const angle = (rightAscensionAngle * index) / steps;
-    return [horizontalRadius * Math.sin(angle), 0, horizontalRadius * Math.cos(angle)];
+    return [
+      horizontalRadius * Math.sin(angle),
+      0,
+      horizontalRadius * Math.cos(angle),
+    ];
   });
   const decPoints = Array.from({ length: steps + 1 }, (_, index) => {
     const angle = (declinationAngle * index) / steps;
@@ -173,28 +192,52 @@ const AngleArcs = ({
 
 const CameraRig = ({ step, rightAscensionAngle }) => {
   const { camera } = useThree();
-  const transition = useRef({ key: '', start: new THREE.Vector3(), elapsed: 0 });
+  const transition = useRef({
+    key: '',
+    start: new THREE.Vector3(),
+    elapsed: 0,
+  });
   const views = {
-    0: [-Math.cos(rightAscensionAngle) * 2.55, 0.51, Math.sin(rightAscensionAngle) * 2.55],
-    1: [-Math.cos(rightAscensionAngle) * 3, 0.6, Math.sin(rightAscensionAngle) * 3],
-    2: [-Math.cos(rightAscensionAngle) * 3, 0.6, Math.sin(rightAscensionAngle) * 3],
+    0: [1, 0.51, 1.8],
+    1: [
+      -Math.cos(rightAscensionAngle) * 3,
+      0.6,
+      Math.sin(rightAscensionAngle) * 3,
+    ],
+    2: [
+      -Math.cos(rightAscensionAngle) * 3,
+      0.6,
+      Math.sin(rightAscensionAngle) * 3,
+    ],
     3: [0, 3, 0.01],
     4: [0, 3, 0.01],
     5: [1, 1.5, 3],
   };
   const position = new THREE.Vector3(...views[step]);
-  const duration = { 0: 0, 1: 0.8, 2: 0.8, 3: 1.6, 4: 0.8, 5: 1.2 }[step] ?? 1.2;
+  const duration =
+    { 0: 1.2, 1: 0.8, 2: 0.8, 3: 1.6, 4: 0.8, 5: 1.2 }[step] ?? 1.2;
   const viewKey = String(step);
 
   if (transition.current.key !== viewKey) {
-    transition.current = { key: viewKey, start: camera.position.clone(), elapsed: 0 };
+    transition.current = {
+      key: viewKey,
+      start: camera.position.clone(),
+      elapsed: 0,
+    };
   }
 
   useFrame((_, delta) => {
     if (transition.current.elapsed >= duration) return;
 
-    transition.current.elapsed = Math.min(transition.current.elapsed + delta, duration);
-    const progress = THREE.MathUtils.smoothstep(transition.current.elapsed / duration, 0, 1);
+    transition.current.elapsed = Math.min(
+      transition.current.elapsed + delta,
+      duration,
+    );
+    const progress = THREE.MathUtils.smoothstep(
+      transition.current.elapsed / duration,
+      0,
+      1,
+    );
     camera.position.lerpVectors(transition.current.start, position, progress);
     camera.lookAt(0, 0, 0);
   });
@@ -321,7 +364,9 @@ const Controls = ({
   return (
     <div className={styles.controllerParent}>
       <div className={styles.controlsContainer}>
-        <div className={styles.stepTitle}>DOM step: {step} · {stage}</div>
+        <div className={styles.stepTitle}>
+          DOM step: {step} · {stage}
+        </div>
         {(step === 0 || step >= 3) && (
           <label>
             Right ascension: {degrees(rightAscensionAngle)}°
@@ -353,7 +398,9 @@ const Controls = ({
             <div className={styles.equation}>Given: r = 1</div>
             <div className={styles.equation}>sin(Dec) = y / r</div>
             <div className={styles.equation}>sin(Dec) = y / 1</div>
-            <div className={styles.equation}>y = sin(Dec) = {starPos[1].toFixed(2)}</div>
+            <div className={styles.equation}>
+              y = sin(Dec) = {starPos[1].toFixed(2)}
+            </div>
           </>
         )}
         {step === 2 && (
@@ -367,7 +414,9 @@ const Controls = ({
         )}
         {step === 3 && (
           <>
-            <div className={styles.equation}>Given: h = {horizontalRadius.toFixed(2)}</div>
+            <div className={styles.equation}>
+              Given: h = {horizontalRadius.toFixed(2)}
+            </div>
             <div className={styles.equation}>sin(RA) = x / h</div>
             <div className={styles.equation}>
               x = h sin(RA) = {starPos[0].toFixed(2)}
@@ -376,7 +425,9 @@ const Controls = ({
         )}
         {step === 4 && (
           <>
-            <div className={styles.equation}>Given: h = {horizontalRadius.toFixed(2)}</div>
+            <div className={styles.equation}>
+              Given: h = {horizontalRadius.toFixed(2)}
+            </div>
             <div className={styles.equation}>cos(RA) = z / h</div>
             <div className={styles.equation}>
               z = h cos(RA) = {starPos[2].toFixed(2)}
@@ -385,9 +436,15 @@ const Controls = ({
         )}
         {step === 5 && (
           <>
-            <div className={styles.equation}>x = cos(Dec) sin(RA) = {starPos[0].toFixed(2)}</div>
-            <div className={styles.equation}>y = sin(Dec) = {starPos[1].toFixed(2)}</div>
-            <div className={styles.equation}>z = cos(Dec) cos(RA) = {starPos[2].toFixed(2)}</div>
+            <div className={styles.equation}>
+              x = cos(Dec) sin(RA) = {starPos[0].toFixed(2)}
+            </div>
+            <div className={styles.equation}>
+              y = sin(Dec) = {starPos[1].toFixed(2)}
+            </div>
+            <div className={styles.equation}>
+              z = cos(Dec) cos(RA) = {starPos[2].toFixed(2)}
+            </div>
           </>
         )}
         {showNavigation && (
@@ -472,13 +529,19 @@ const StarMapModel = ({
         presentation ? styles.presentation : ''
       }`}
     >
-      <Canvas camera={{ position: [-1.8, 0.51, 1.8] }} className={styles.canvas}>
+      <Canvas
+        camera={{ position: [-1.8, 0.51, 1.8] }}
+        className={styles.canvas}
+      >
         <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} />
         <StepIndicator step={step} />
         <ModelGrid gridSize={gridSize} />
         <PointLabels starPos={starPos} showZ={step === 0 || step >= 3} />
         {(step === 0 || step <= 2 || step === 5) && (
-          <Declination starPos={starPos} showHorizontalRadius={step === 0 || step >= 2} />
+          <Declination
+            starPos={starPos}
+            showHorizontalRadius={step === 0 || step >= 2}
+          />
         )}
         {(step === 0 || step >= 3) && (
           <RightAscension starPos={starPos} showZ={step === 0 || step >= 4} />
