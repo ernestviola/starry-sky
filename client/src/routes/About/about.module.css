@@ -83,6 +83,10 @@
   transform: translateY(0);
 }
 
+.storyStep:last-child {
+  margin-bottom: 100svh;
+}
+
 .stepCard {
   position: relative;
   z-index: 1;
@@ -104,6 +108,7 @@
 }
 
 .earlyDrafts {
+  max-width: none;
   margin-top: var(--space-8);
 }
 

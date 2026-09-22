@@ -309,18 +309,18 @@ const Controls = ({
   const degrees = (angle) => THREE.MathUtils.radToDeg(angle).toFixed(1);
   const horizontalRadius = starRadius * Math.cos(declinationAngle);
   const stage = [
-    '',
-    '1. Find y',
-    '2. Find the horizontal radius',
-    '3. Find x',
-    '4. Find z',
-    '5. Combine the coordinates',
+    'Explore',
+    'Find y',
+    'Find the horizontal radius',
+    'Find x',
+    'Find z',
+    'Combine the coordinates',
   ][step];
 
   return (
     <div className={styles.controllerParent}>
       <div className={styles.controlsContainer}>
-        <div className={styles.stepTitle}>{stage}</div>
+        <div className={styles.stepTitle}>DOM step: {step} · {stage}</div>
         {(step === 0 || step >= 3) && (
           <label>
             Right ascension: {degrees(rightAscensionAngle)}°
@@ -404,6 +404,12 @@ const Controls = ({
   );
 };
 
+const StepIndicator = ({ step }) => (
+  <Html position={[0, 1.3, 0]} center>
+    <div className={styles.stepIndicator}>Map step: {step}</div>
+  </Html>
+);
+
 const PointLabels = ({ starPos, showZ }) => (
   <>
     <Html position={[0, 0, 0]}>
@@ -467,6 +473,7 @@ const StarMapModel = ({
     >
       <Canvas camera={{ position: [-1.8, 0.51, 1.8] }} className={styles.canvas}>
         <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} />
+        <StepIndicator step={step} />
         <ModelGrid gridSize={gridSize} />
         <PointLabels starPos={starPos} showZ={step === 0 || step >= 3} />
         {(step === 0 || step <= 2 || step === 5) && (

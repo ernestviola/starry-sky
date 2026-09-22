@@ -9,23 +9,25 @@ const About = () => {
   const walkthrough = useRef(null);
 
   useEffect(() => {
-    const sections = walkthrough.current.querySelectorAll('[data-derivation-step]');
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const active = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+    const sections = [...walkthrough.current.querySelectorAll('[data-derivation-step]')];
 
-        if (active) {
-          const activeStep = Number(active.target.dataset.derivationStep);
-          setStep(activeStep);
-        }
-      },
-      { rootMargin: '-30% 0px -40%', threshold: 0 },
-    );
+    const updateStep = () => {
+      const viewportCenter = window.innerHeight / 2;
+      const active = sections.find((section) => {
+        const { top, bottom } = section.getBoundingClientRect();
+        return top <= viewportCenter && bottom >= viewportCenter;
+      });
 
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
+      if (active) setStep(Number(active.dataset.derivationStep));
+    };
+
+    updateStep();
+    window.addEventListener('scroll', updateStep, { passive: true });
+    window.addEventListener('resize', updateStep);
+    return () => {
+      window.removeEventListener('scroll', updateStep);
+      window.removeEventListener('resize', updateStep);
+    };
   }, []);
 
   const stepClass = (number) =>

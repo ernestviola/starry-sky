@@ -4,6 +4,7 @@ test('captures the About walkthrough', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/about');
   await expect(page.locator('[class*="controlsContainer"]')).toBeVisible();
+  await expect(page.getByText('DOM step: 0 · Explore')).toBeVisible();
 
   await page.screenshot({ path: 'test-results/about-intro.png' });
 
@@ -18,8 +19,12 @@ test('captures the About walkthrough', async ({ page }) => {
 
   await page.waitForTimeout(1300);
   await expect(page.locator('[class*="controlsContainer"]')).toBeVisible();
+  await expect(page.getByText('DOM step: 1 · Find y')).toBeVisible();
   await expect
     .poll(async () => (await page.locator('canvas').boundingBox()).width)
     .toBeGreaterThan(1000);
   await page.screenshot({ path: 'test-results/about-step-1.png' });
+
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(page.getByText('DOM step: 0 · Explore')).toBeVisible();
 });
