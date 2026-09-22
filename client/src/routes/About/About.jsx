@@ -41,7 +41,8 @@ const About = () => {
         <div className={styles.modelStage}>
           <StarMapModel
             step={step}
-            showControls={false}
+            showControls
+            showNavigation={false}
             presentation
           />
         </div>

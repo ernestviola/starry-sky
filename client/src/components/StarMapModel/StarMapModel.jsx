@@ -173,11 +173,9 @@ const AngleArcs = ({
 
 const CameraRig = ({ step, rightAscensionAngle }) => {
   const { camera } = useThree();
-  const lookAt = useRef(new THREE.Vector3());
-  const previousView = useRef();
-  const moving = useRef(true);
+  const transition = useRef({ key: '', start: new THREE.Vector3(), elapsed: 0 });
   const views = {
-    0: [1, 1.5, 3],
+    0: [-Math.cos(rightAscensionAngle) * 3, 0.6, Math.sin(rightAscensionAngle) * 3],
     1: [-Math.cos(rightAscensionAngle) * 3, 0.6, Math.sin(rightAscensionAngle) * 3],
     2: [-Math.cos(rightAscensionAngle) * 3, 0.6, Math.sin(rightAscensionAngle) * 3],
     3: [0, 3, 0.01],
@@ -185,30 +183,19 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
     5: [1, 1.5, 3],
   };
   const position = new THREE.Vector3(...views[step]);
-  const target = new THREE.Vector3(0, 0, 0);
   const viewKey = String(step);
 
-  if (previousView.current !== viewKey) {
-    previousView.current = viewKey;
-    moving.current = true;
+  if (transition.current.key !== viewKey) {
+    transition.current = { key: viewKey, start: camera.position.clone(), elapsed: 0 };
   }
 
-  useFrame(() => {
-    if (!moving.current) return;
+  useFrame((_, delta) => {
+    if (transition.current.elapsed >= 1.2) return;
 
-    camera.position.lerp(position, 0.08);
-    lookAt.current.lerp(target, 0.08);
-    camera.lookAt(lookAt.current);
-
-    if (
-      camera.position.distanceTo(position) < 0.01 &&
-      lookAt.current.distanceTo(target) < 0.01
-    ) {
-      camera.position.copy(position);
-      lookAt.current.copy(target);
-      camera.lookAt(lookAt.current);
-      moving.current = false;
-    }
+    transition.current.elapsed = Math.min(transition.current.elapsed + delta, 1.2);
+    const progress = THREE.MathUtils.smoothstep(transition.current.elapsed / 1.2, 0, 1);
+    camera.position.lerpVectors(transition.current.start, position, progress);
+    camera.lookAt(0, 0, 0);
   });
 
   return null;
@@ -334,7 +321,7 @@ const Controls = ({
     <div className={styles.controllerParent}>
       <div className={styles.controlsContainer}>
         <div className={styles.stepTitle}>{stage}</div>
-        {step >= 3 && (
+        {(step === 0 || step >= 3) && (
           <label>
             Right ascension: {degrees(rightAscensionAngle)}°
             <input

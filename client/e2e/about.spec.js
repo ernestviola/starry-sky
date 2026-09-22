@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 test('captures the About walkthrough', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/about');
+  await expect(page.locator('[class*="controlsContainer"]')).toBeVisible();
 
   await page.screenshot({ path: 'test-results/about-intro.png' });
 
@@ -15,7 +16,8 @@ test('captures the About walkthrough', async ({ page }) => {
     await page.waitForTimeout(50);
   }
 
-  await page.waitForTimeout(800);
+  await page.waitForTimeout(1300);
+  await expect(page.locator('[class*="controlsContainer"]')).toBeVisible();
   await expect
     .poll(async () => (await page.locator('canvas').boundingBox()).width)
     .toBeGreaterThan(1000);
