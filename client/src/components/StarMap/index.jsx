@@ -160,6 +160,7 @@ const StarMap = ({
   handleClick,
   enableHover = true,
 }) => {
+  const [canvasReady, setCanvasReady] = useState(false);
   const { constellationLinesDictionary, loadConstellationFrames } =
     useConstellationFrameLoader();
   const {
@@ -277,7 +278,11 @@ const StarMap = ({
       className=''
       style={{ height: '100vh', width: '100vw', position: 'relative' }}
     >
-      <Canvas camera={{ position: [0, 0, 0], fov: 50 }}>
+      <Canvas
+        camera={{ position: [0, 0, 0], fov: 50 }}
+        onCreated={() => requestAnimationFrame(() => requestAnimationFrame(() => setCanvasReady(true)))}
+        style={{ opacity: canvasReady ? 1 : 0, transition: 'opacity 500ms ease' }}
+      >
         <color attach='background' args={['#000000']} />
         {/* <ModelGrid /> */}
         <CameraControls

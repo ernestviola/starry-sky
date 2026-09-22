@@ -518,6 +518,7 @@ const StarMapModel = ({
   const [declinationAngle, setDeclinationAngle] = useState(Math.PI / 6);
   const [rightAscensionAngle, setRightAscensionAngle] = useState(Math.PI / 4);
   const [showSphere, setShowSphere] = useState(true);
+  const [canvasReady, setCanvasReady] = useState(false);
   const [selectedStep, setSelectedStep] = useState(1);
   const step = controlledStep ?? selectedStep;
   const setStep = (nextStep) => {
@@ -546,7 +547,8 @@ const StarMapModel = ({
     >
       <Canvas
         camera={{ position: [-1.8, 0.51, 1.8] }}
-        className={styles.canvas}
+        className={`${styles.canvas} ${canvasReady ? styles.canvasReady : ''}`}
+        onCreated={() => requestAnimationFrame(() => requestAnimationFrame(() => setCanvasReady(true)))}
       >
         <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} />
         <ModelGrid gridSize={gridSize} />
