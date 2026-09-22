@@ -1,5 +1,6 @@
 .about {
   padding: 10rem var(--page-gutter) 4rem;
+  view-transition-name: about-content;
 }
 
 .about h1,

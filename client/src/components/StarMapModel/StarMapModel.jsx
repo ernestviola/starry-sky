@@ -376,7 +376,7 @@ const Controls = ({
   return (
     <>
       <div className={styles.controllerParent}>
-        <div className={styles.controlsContainer}>
+        <div className={`${styles.controlsContainer} ${step === 0 ? styles.panelEnter : ''}`}>
           <div className={styles.stepTitle}>{stage}</div>
         {(step === 0 || step >= 3) && (
           <label>
@@ -470,7 +470,7 @@ const Controls = ({
           )}
         </div>
         <div className={styles.wireframeParent}>
-          <div className={styles.controlsContainer}>
+          <div className={`${styles.controlsContainer} ${step === 0 ? styles.panelEnter : ''}`}>
             <label className={styles.toggle}>
               <input
                 type='checkbox'
