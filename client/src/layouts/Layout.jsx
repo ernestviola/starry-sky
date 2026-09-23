@@ -7,7 +7,8 @@ import styles from './layout.module.css';
 const Layout = () => {
   const { hoveredStarId, setHoveredStarId, handleClick } = useStarMap();
   const { pathname } = useLocation();
-  const showStarMap = !['/about', '/design-system'].includes(pathname);
+  const normalizedPathname = pathname.replace(/\/+$/, '') || '/';
+  const showStarMap = !['/about', '/design-system'].includes(normalizedPathname);
 
   return (
     <div className={styles.layout}>
