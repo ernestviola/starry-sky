@@ -6,6 +6,29 @@ hash=$(printf '%s' "$workspace" | cksum | awk '{print $1}')
 api_port=$((5200 + hash % 500))
 client_port=$((4200 + hash % 500))
 
+main_worktree=$(git worktree list --porcelain | awk '
+  /^worktree / { path = substr($0, 10) }
+  /^branch refs\/heads\/main$/ { print path; exit }
+')
+env_file=server/.env
+[ -f "$env_file" ] || env_file="$main_worktree/server/.env"
+if [ -f "$env_file" ]; then
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+      ''|'#'*) continue ;;
+      *=*)
+        key=${line%%=*}
+        value=${line#*=}
+        case "$value" in
+          \"*\") value=${value#\"}; value=${value%\"} ;;
+          \'*\') value=${value#\'}; value=${value%\'} ;;
+        esac
+        export "$key=$value"
+        ;;
+    esac
+  done < "$env_file"
+fi
+
 : "${PASSPORT_JS_SECRET:=dev-secret}"
 export PASSPORT_JS_SECRET
 export PORT="$api_port"
