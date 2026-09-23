@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@hscmap/healpix": "^1.4.12",
-    "@react-three/drei": "^10.7.7",
+    "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.6.1",
     "jwt-decode": "^4.0.0",
     "react": "^19.2.7",
