@@ -138,9 +138,8 @@ const Play = () => {
   };
 
   const checkAllStarsFound = () => {
-    return (
-      Object.values(starsFoundDictionary).filter((star) => !star.found) >= 0
-    );
+    const stars = Object.values(starsFoundDictionary);
+    return stars.length > 0 && stars.every((star) => star.found);
   };
 
   const handleStarClick = () => {

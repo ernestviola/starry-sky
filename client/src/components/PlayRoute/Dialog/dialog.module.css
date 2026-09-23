@@ -31,6 +31,7 @@
 }
 
 .dialog button {
+  min-height: 4.4rem;
   cursor: pointer;
 }
 
@@ -77,5 +78,55 @@ dialog[open].closing {
   to {
     opacity: 0;
     transform: translate(-50%, -70%);
+  }
+}
+
+@media (max-width: 600px) {
+  .dialog {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: calc(100svh - var(--space-3));
+    padding: var(--space-5) var(--space-4)
+      calc(var(--space-5) + env(safe-area-inset-bottom));
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+  }
+
+  .dialog[open] {
+    animation-name: dialog-sheet-enter;
+  }
+
+  .dialog.closing,
+  dialog[open].closing {
+    animation-name: dialog-sheet-exit;
+  }
+
+  @keyframes dialog-sheet-enter {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes dialog-sheet-exit {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    to {
+      opacity: 0;
+      transform: translateY(100%);
+    }
   }
 }
