@@ -62,6 +62,9 @@
   --focus-ring: 0 0 0 3px rgb(194 141 255 / 40%);
   --duration-fast: 180ms;
   --duration-normal: 300ms;
+  --duration-enter: 450ms;
+  --duration-delay: 100ms;
+  --duration-medium: 500ms;
   --duration-slow: 700ms;
   --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -80,6 +83,9 @@
   :root {
     --duration-fast: 0ms;
     --duration-normal: 0ms;
+    --duration-enter: 0ms;
+    --duration-delay: 0ms;
+    --duration-medium: 0ms;
     --duration-slow: 0ms;
   }
 }

@@ -19,11 +19,11 @@
 }
 
 .fadeIn {
-  animation: fade-in 180ms ease-out;
+  animation: fade-in var(--duration-fast) ease-out;
 }
 
 .fadeOut {
-  animation: fade-out 180ms ease-in forwards;
+  animation: fade-out var(--duration-fast) ease-in forwards;
 }
 
 @keyframes fade-in {
