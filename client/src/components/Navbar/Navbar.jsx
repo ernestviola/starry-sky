@@ -1,11 +1,38 @@
+import { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router';
 import styles from './navbar.module.css';
 
 const Navbar = () => {
   const { pathname } = useLocation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuButtonRef = useRef(null);
+  const firstLinkRef = useRef(null);
   const preventCurrentNavigation = (path) => (event) => {
     if (pathname === path) event.preventDefault();
+    setIsMenuOpen(false);
   };
+
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (isMenuOpen) firstLinkRef.current?.focus();
+  }, [isMenuOpen]);
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+    menuButtonRef.current?.focus();
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && isMenuOpen) closeMenu();
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isMenuOpen]);
 
   return (
     <header className={styles.navbar}>
@@ -17,10 +44,22 @@ const Navbar = () => {
       >
         STARRY SKY
       </NavLink>
-      <nav>
-        <ul>
+      <button
+        ref={menuButtonRef}
+        className={styles.menuButton}
+        type='button'
+        aria-expanded={isMenuOpen}
+        aria-controls='primary-navigation'
+        aria-label={isMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+        onClick={() => (isMenuOpen ? closeMenu() : setIsMenuOpen(true))}
+      >
+        <span aria-hidden='true'>☰</span>
+      </button>
+      <nav id='primary-navigation' aria-label='Primary navigation'>
+        <ul className={isMenuOpen ? styles.open : undefined}>
           <li>
             <NavLink
+              ref={firstLinkRef}
               to='/'
               end
               viewTransition

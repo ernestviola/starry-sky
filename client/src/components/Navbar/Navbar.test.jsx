@@ -1,5 +1,4 @@
-import { render, screen } from '@testing-library/react';
-import vi, { beforeAll } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import Navbar from './Navbar.jsx';
 
@@ -13,6 +12,22 @@ describe('Navigation tests', () => {
   });
   test('component mounts', () => {
     expect(screen.getByRole('navigation')).toBeInTheDocument();
+  });
+
+  test('mobile menu opens and closes with Escape', () => {
+    const menuButton = screen.getByRole('button', {
+      name: /open navigation menu/i,
+    });
+
+    expect(menuButton).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(menuButton);
+
+    expect(menuButton).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('link', { name: /home/i })).toHaveFocus();
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(menuButton).toHaveAttribute('aria-expanded', 'false');
+    expect(menuButton).toHaveFocus();
   });
 
   test('navigate links exist', () => {
