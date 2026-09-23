@@ -13,20 +13,8 @@ main_worktree=$(git worktree list --porcelain | awk '
 env_file=server/.env
 [ -f "$env_file" ] || env_file="$main_worktree/server/.env"
 if [ -f "$env_file" ]; then
-  while IFS= read -r line || [ -n "$line" ]; do
-    case "$line" in
-      ''|'#'*) continue ;;
-      *=*)
-        key=${line%%=*}
-        value=${line#*=}
-        case "$value" in
-          \"*\") value=${value#\"}; value=${value%\"} ;;
-          \'*\') value=${value#\'}; value=${value%\'} ;;
-        esac
-        export "$key=$value"
-        ;;
-    esac
-  done < "$env_file"
+  env_file=$(CDPATH= cd -- "$(dirname "$env_file")" && pwd)/$(basename "$env_file")
+  export DOTENV_CONFIG_PATH="$env_file"
 fi
 
 : "${PASSPORT_JS_SECRET:=dev-secret}"
