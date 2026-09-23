@@ -4,6 +4,7 @@ const StarMapContext = createContext(null);
 
 export const StarMapProvider = ({ children }) => {
   const [hoveredStarId, setHoveredStarId] = useState(null);
+  const [selectedStarId, setSelectedStarId] = useState(null);
   const clickHandler = useRef(() => {});
 
   const handleClick = useCallback((event) => {
@@ -22,6 +23,8 @@ export const StarMapProvider = ({ children }) => {
       value={{
         hoveredStarId,
         setHoveredStarId,
+        selectedStarId,
+        setSelectedStarId,
         handleClick,
         registerClickHandler,
       }}

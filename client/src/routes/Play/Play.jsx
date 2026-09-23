@@ -13,7 +13,7 @@ import dialogStyles from '../../components/PlayRoute/Dialog/dialog.module.css';
 
 const Play = () => {
   const [loading, setLoading] = useState(false);
-  const { hoveredStarId, registerClickHandler } = useStarMap();
+  const { selectedStarId, registerClickHandler } = useStarMap();
   const [gameStartTime, setGameStartTime] = useState(null);
   const [gameTotalTime, setGameTotalTime] = useState(null);
   const [gameStarted, setGameStarted] = useState(false);
@@ -25,8 +25,6 @@ const Play = () => {
   const [isGameStatusLeaving, setIsGameStatusLeaving] = useState(false);
 
   const [starsFoundDictionary, setStarsFoundDictionary] = useState({});
-
-  const hoveredStarIdRef = useRef();
 
   const dialogGameStartRef = useRef();
   const dialogSubmitScoreRef = useRef();
@@ -89,10 +87,6 @@ const Play = () => {
     }
   }, [blocker.state]);
 
-  useEffect(() => {
-    hoveredStarIdRef.current = hoveredStarId;
-  }, [hoveredStarId]);
-
   const handleStartGame = async () => {
     try {
       setLoading(true);
@@ -143,10 +137,8 @@ const Play = () => {
     );
   };
 
-  const handleStarClick = () => {
-    const starId = hoveredStarIdRef.current;
-
-    if (starId !== null && starsFoundDictionary[starId] !== undefined) {
+  const handleStarClick = (starId = selectedStarId) => {
+    if (starId !== null && starId !== undefined && starsFoundDictionary[starId] !== undefined) {
       setStarsFoundDictionary((prev) => {
         const starToUpdate = prev[starId];
         starToUpdate.found = true;

@@ -5,7 +5,12 @@ import { useStarMap } from '../contexts/StarMapContext.jsx';
 import styles from './layout.module.css';
 
 const Layout = () => {
-  const { hoveredStarId, setHoveredStarId, handleClick } = useStarMap();
+  const {
+    hoveredStarId,
+    setHoveredStarId,
+    setSelectedStarId,
+    handleClick,
+  } = useStarMap();
   const { pathname } = useLocation();
   const normalizedPathname = pathname.replace(/\/+$/, '') || '/';
   const showStarMap = !['/about', '/design-system'].includes(normalizedPathname);
@@ -17,6 +22,7 @@ const Layout = () => {
           <StarMap
             hoveredStarId={hoveredStarId}
             setHoveredStarId={setHoveredStarId}
+            setSelectedStarId={setSelectedStarId}
             handleClick={handleClick}
             enableHover={pathname !== '/'}
           />
