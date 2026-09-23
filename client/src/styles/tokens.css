@@ -1,23 +1,46 @@
 :root {
-  /* Colors */
+  /* Color — Arcade Orbit */
   --color-background: #0b0c16;
   --color-panel: #06070d;
+  --color-panel-raised: #10111b;
   --color-scrim: #010203;
   --color-text-primary: #f4eee4;
   --color-text-body: #b4b6c4;
   --color-text-subtle: #8a8ca0;
+  --color-text-disabled: #5f6172;
   --color-accent: #c28dff;
+  --color-accent-hover: #d2adff;
+  --color-accent-pressed: #a96fe8;
   --color-border: #31323d;
+  --color-border-strong: #515263;
+  --color-focus: #f4eee4;
+
+  /* Semantic feedback — reserved for UI state, not map rendering */
+  --color-success: #8fe3b0;
+  --color-warning: #f0c674;
+  --color-danger: #ff8f9f;
 
   /* Typography */
   --font-heading: 'Space Grotesk', sans-serif;
   --font-body: Inter, sans-serif;
   --font-data: 'Space Mono', monospace;
+  --font-size-xs: 1.1rem;
+  --font-size-sm: 1.3rem;
+  --font-size-md: 1.6rem;
+  --font-size-lg: 1.8rem;
+  --font-size-xl: 2.4rem;
+  --font-size-display: 4.2rem;
+  --line-height-tight: 1.1;
+  --line-height-body: 1.5;
+  --line-height-data: 1.4;
+  --weight-medium: 500;
+  --weight-bold: 700;
 
   /* Shape and spacing */
   --border-width: 1px;
   --radius-button: 0.8rem;
   --radius-card: 1rem;
+  --radius-pill: 999px;
   --space-1: 0.4rem;
   --space-2: 0.8rem;
   --space-3: 1.2rem;
@@ -27,4 +50,14 @@
   --space-7: 2.8rem;
   --space-8: 3.2rem;
   --page-gutter: clamp(2rem, 20vw, 14rem);
+
+  /* Elevation and interaction */
+  --shadow-panel: 0 0 2.4rem rgb(0 0 0 / 50%);
+  --shadow-overlay: 0 0 3rem rgb(0 0 0 / 100%);
+  --shadow-accent: 0 0 2.4rem rgb(194 141 255 / 15%);
+  --focus-ring: 0 0 0 3px rgb(194 141 255 / 40%);
+  --duration-fast: 180ms;
+  --duration-normal: 300ms;
+  --duration-slow: 700ms;
+  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
 }

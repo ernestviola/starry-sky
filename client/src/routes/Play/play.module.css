@@ -17,9 +17,7 @@
   background: var(--color-panel);
   color: var(--color-text-primary);
   font-size: 1.6rem;
-  box-shadow:
-    0 0 3rem rgb(0 0 0 / 100%),
-    0 0 2.4rem rgb(194 141 255 / 15%);
+  box-shadow: var(--shadow-overlay), var(--shadow-accent);
   backdrop-filter: blur(8px);
   view-transition-name: game-status;
   animation: gameStatus-enter 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
