@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import compression from 'compression';
 import cors from 'cors';
@@ -9,7 +10,12 @@ import passport from 'passport';
 import './libs/passport.js';
 
 const PORT = process.env.PORT || 3000;
-const allowedOrigins = [process.env.STARRY_SKY_FRONTEND];
+const configuredOrigin = process.env.STARRY_SKY_FRONTEND;
+const allowedOrigins = [
+  configuredOrigin,
+  configuredOrigin?.replace('://localhost', '://127.0.0.1'),
+  configuredOrigin?.replace('://127.0.0.1', '://localhost'),
+].filter(Boolean);
 
 const app = express();
 
