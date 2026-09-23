@@ -50,6 +50,10 @@
   --space-7: 2.8rem;
   --space-8: 3.2rem;
   --page-gutter: clamp(2rem, 20vw, 14rem);
+  --page-gutter-mobile: var(--space-4);
+  --page-edge-start: max(var(--page-gutter), env(safe-area-inset-left));
+  --page-edge-end: max(var(--page-gutter), env(safe-area-inset-right));
+  --touch-target-min: 4.4rem;
 
   /* Elevation and interaction */
   --shadow-panel: 0 0 2.4rem rgb(0 0 0 / 50%);
@@ -60,4 +64,22 @@
   --duration-normal: 300ms;
   --duration-slow: 700ms;
   --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (max-width: 700px) {
+  :root {
+    --page-gutter: var(--page-gutter-mobile);
+    --font-size-md: 1.5rem;
+    --font-size-lg: 1.7rem;
+    --font-size-xl: 2rem;
+    --font-size-display: 3.2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+    --duration-slow: 0ms;
+  }
 }
