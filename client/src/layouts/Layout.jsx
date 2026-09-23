@@ -7,7 +7,7 @@ import styles from './layout.module.css';
 const Layout = () => {
   const { hoveredStarId, setHoveredStarId, handleClick } = useStarMap();
   const { pathname } = useLocation();
-  const showStarMap = pathname !== '/about';
+  const showStarMap = !['/about', '/design-system'].includes(pathname);
 
   return (
     <div className={styles.layout}>

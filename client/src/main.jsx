@@ -6,6 +6,7 @@ import Home from './routes/Home/Home.jsx';
 import Explore from './routes/Explore.jsx';
 import Play from './routes/Play/Play.jsx';
 import About from './routes/About/About.jsx';
+import DesignSystem from './routes/DesignSystem/DesignSystem.jsx';
 import Layout from './layouts/Layout.jsx';
 
 import { StarDataProvider } from './contexts/StarDataContext.jsx';
@@ -19,6 +20,7 @@ const router = createBrowserRouter([
       { path: '/explore', element: <Explore /> },
       { path: '/play', element: <Play /> },
       { path: '/about', element: <About /> },
+      { path: '/design-system', element: <DesignSystem /> },
     ],
   },
 ]);
