@@ -7,10 +7,6 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuButtonRef = useRef(null);
   const firstLinkRef = useRef(null);
-  const preventCurrentNavigation = (path) => (event) => {
-    if (pathname === path) event.preventDefault();
-    setIsMenuOpen(false);
-  };
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -23,6 +19,12 @@ const Navbar = () => {
   const closeMenu = () => {
     setIsMenuOpen(false);
     menuButtonRef.current?.focus();
+  };
+
+  const preventCurrentNavigation = (path) => (event) => {
+    if (pathname === path) event.preventDefault();
+    if (isMenuOpen) closeMenu();
+    else setIsMenuOpen(false);
   };
 
   useEffect(() => {

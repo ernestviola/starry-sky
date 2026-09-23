@@ -30,6 +30,18 @@ describe('Navigation tests', () => {
     expect(menuButton).toHaveFocus();
   });
 
+  test('menu link selection restores focus to the menu button', () => {
+    const menuButton = screen.getByRole('button', {
+      name: /open navigation menu/i,
+    });
+
+    fireEvent.click(menuButton);
+    fireEvent.click(screen.getByRole('link', { name: /home/i }));
+
+    expect(menuButton).toHaveAttribute('aria-expanded', 'false');
+    expect(menuButton).toHaveFocus();
+  });
+
   test('navigate links exist', () => {
     expect(screen.getByRole('link', { name: /home/i })).toHaveAttribute(
       'href',
