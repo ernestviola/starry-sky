@@ -1,12 +1,23 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, useNavigate } from 'react-router';
 import Navbar from './Navbar.jsx';
+
+const RouteChangeButton = () => {
+  const navigate = useNavigate();
+
+  return (
+    <button type='button' onClick={() => navigate('/about')}>
+      Navigate to About
+    </button>
+  );
+};
 
 describe('Navigation tests', () => {
   beforeEach(() => {
     render(
       <MemoryRouter>
         <Navbar />
+        <RouteChangeButton />
       </MemoryRouter>,
     );
   });
@@ -40,6 +51,19 @@ describe('Navigation tests', () => {
 
     expect(menuButton).toHaveAttribute('aria-expanded', 'false');
     expect(menuButton).toHaveFocus();
+  });
+
+  test('route changes restore focus when the menu is open', () => {
+    const menuButton = screen.getByRole('button', {
+      name: /open navigation menu/i,
+    });
+
+    fireEvent.click(menuButton);
+    fireEvent.click(screen.getByRole('button', { name: /navigate to about/i }));
+
+    expect(menuButton).toHaveAttribute('aria-expanded', 'false');
+    expect(menuButton).toHaveFocus();
+    expect(screen.getByRole('link', { name: /home/i })).not.toHaveFocus();
   });
 
   test('navigate links exist', () => {

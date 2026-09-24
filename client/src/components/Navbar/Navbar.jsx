@@ -7,13 +7,19 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuButtonRef = useRef(null);
   const firstLinkRef = useRef(null);
+  const previousPathnameRef = useRef(pathname);
+  const wasMenuOpenRef = useRef(false);
 
   useEffect(() => {
-    setIsMenuOpen(false);
-  }, [pathname]);
+    if (previousPathnameRef.current === pathname) return;
+
+    previousPathnameRef.current = pathname;
+    if (isMenuOpen) closeMenu();
+  }, [pathname, isMenuOpen]);
 
   useEffect(() => {
-    if (isMenuOpen) firstLinkRef.current?.focus();
+    if (isMenuOpen && !wasMenuOpenRef.current) firstLinkRef.current?.focus();
+    wasMenuOpenRef.current = isMenuOpen;
   }, [isMenuOpen]);
 
   const closeMenu = () => {
