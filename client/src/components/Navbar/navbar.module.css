@@ -23,10 +23,14 @@
   text-shadow: var(--color-text-primary) 0px 0px 10px;
 }
 
+.menuButton {
+  display: none;
+}
+
 .navbar > nav ul {
   display: flex;
   justify-content: flex-end;
-  gap: 4rem;
+  gap: clamp(1.2rem, 4vw, 4rem);
   list-style: none;
   font-size: 1.8em;
   padding: 0;
@@ -60,4 +64,59 @@
 .navbar > nav a.active {
   color: var(--color-accent);
   text-shadow: var(--color-text-primary) 0px 0px 10px;
+}
+
+@media (max-width: 600px) {
+  .navbar {
+    grid-template-columns: 1fr auto;
+    padding: var(--space-3) 1.6rem;
+  }
+
+  .logo {
+    font-size: 1.8rem;
+  }
+
+  .menuButton {
+    pointer-events: auto;
+    display: grid;
+    place-items: center;
+    width: 4.4rem;
+    height: 4.4rem;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: rgb(6 7 13 / 85%);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    font-size: 2rem;
+  }
+
+  .navbar > nav {
+    grid-column: 1 / -1;
+    pointer-events: auto;
+  }
+
+  .navbar > nav ul {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    margin-top: var(--space-3);
+    padding: var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: rgb(6 7 13 / 95%);
+    box-shadow: var(--shadow-panel);
+    font-size: 1.6rem;
+  }
+
+  .navbar > nav ul.open {
+    display: flex;
+  }
+
+  .navbar > nav a {
+    display: block;
+    min-height: 4.4rem;
+    padding: var(--space-3);
+  }
 }
