@@ -120,17 +120,48 @@ const FrustumRadiusTracker = ({ setRadius }) => {
   return null;
 };
 
-const CanvasClick = ({ handleClick, hoveredStarId }) => {
+const MapInteraction = ({ handleInteraction }) => {
   const { gl } = useThree();
+  const gestureRef = useRef(null);
+
   useEffect(() => {
     const canvas = gl.domElement;
-    const handleCanvasClick = (event) => {
-      if (event.sourceCapabilities?.firesTouchEvents) return;
-      handleClick(hoveredStarId);
+    const handlePointerDown = (event) => {
+      gestureRef.current = {
+        pointerId: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+        moved: false,
+      };
     };
-    canvas.addEventListener('click', handleCanvasClick);
-    return () => canvas.removeEventListener('click', handleCanvasClick);
-  }, [gl, handleClick, hoveredStarId]);
+    const handlePointerMove = (event) => {
+      const gesture = gestureRef.current;
+      if (!gesture || gesture.pointerId !== event.pointerId) return;
+      if (Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) > 10) {
+        if (!gesture.moved) handleInteraction('drag');
+        gesture.moved = true;
+      }
+    };
+    const handlePointerUp = () => {
+      gestureRef.current = null;
+    };
+    const handleWheel = () => handleInteraction('zoom');
+
+    canvas.addEventListener('pointerdown', handlePointerDown);
+    canvas.addEventListener('pointermove', handlePointerMove);
+    canvas.addEventListener('pointerup', handlePointerUp);
+    canvas.addEventListener('pointercancel', handlePointerUp);
+    canvas.addEventListener('wheel', handleWheel);
+    return () => {
+      canvas.removeEventListener('pointerdown', handlePointerDown);
+      canvas.removeEventListener('pointermove', handlePointerMove);
+      canvas.removeEventListener('pointerup', handlePointerUp);
+      canvas.removeEventListener('pointercancel', handlePointerUp);
+      canvas.removeEventListener('wheel', handleWheel);
+    };
+  }, [gl, handleInteraction]);
+
+  return null;
 };
 
 const SmoothCameraTarget = ({ controlsRef, zenith }) => {
@@ -163,6 +194,7 @@ const StarMap = ({
   setHoveredStarId,
   setSelectedStarId,
   handleClick,
+  handleInteraction = () => {},
   enableHover = true,
 }) => {
   const [canvasReady, setCanvasReady] = useState(false);
@@ -313,11 +345,12 @@ const StarMap = ({
           consumePendingStars={consumePendingStars}
           setSelectedStarId={setSelectedStarId}
           handleClick={handleClick}
+          handleInteraction={handleInteraction}
         />
         <ConstellationLines
           constellationLinesDictionary={constellationLinesDictionary}
         />
-        <CanvasClick handleClick={handleClick} hoveredStarId={hoveredStarId} />
+        <MapInteraction handleInteraction={handleInteraction} />
       </Canvas>
     </div>
   );

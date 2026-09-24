@@ -6,15 +6,27 @@ export const StarMapProvider = ({ children }) => {
   const [hoveredStarId, setHoveredStarId] = useState(null);
   const [selectedStarId, setSelectedStarId] = useState(null);
   const clickHandler = useRef(() => {});
+  const interactionHandler = useRef(() => {});
 
   const handleClick = useCallback((event) => {
     clickHandler.current(event);
+  }, []);
+
+  const handleInteraction = useCallback((interaction) => {
+    interactionHandler.current(interaction);
   }, []);
 
   const registerClickHandler = useCallback((handler) => {
     clickHandler.current = handler;
     return () => {
       if (clickHandler.current === handler) clickHandler.current = () => {};
+    };
+  }, []);
+
+  const registerInteractionHandler = useCallback((handler) => {
+    interactionHandler.current = handler;
+    return () => {
+      if (interactionHandler.current === handler) interactionHandler.current = () => {};
     };
   }, []);
 
@@ -27,6 +39,8 @@ export const StarMapProvider = ({ children }) => {
         setSelectedStarId,
         handleClick,
         registerClickHandler,
+        handleInteraction,
+        registerInteractionHandler,
       }}
     >
       {children}

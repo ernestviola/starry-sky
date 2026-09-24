@@ -21,6 +21,37 @@ const STAR_COLOR_STOPS = [
   { t: 1.0, color: new THREE.Color(1.0, 0.5, 0.3) },
 ];
 
+const pointerFromEvent = (canvas, event) => {
+  const rect = canvas.getBoundingClientRect();
+  return new THREE.Vector2(
+    ((event.clientX - rect.left) / rect.width) * 2 - 1,
+    -((event.clientY - rect.top) / rect.height) * 2 + 1,
+  );
+};
+
+export const CanvasClick = ({ handleClick, handleInteraction, pickStar }) => {
+  const { gl } = useThree();
+
+  useEffect(() => {
+    const canvas = gl.domElement;
+    const handleCanvasClick = (event) => {
+      if (event.sourceCapabilities?.firesTouchEvents) return;
+
+      const starId = pickStar(pointerFromEvent(canvas, event));
+
+      if (starId !== null && starId !== undefined) {
+        handleInteraction?.('star');
+      }
+      handleClick?.(starId);
+    };
+
+    canvas.addEventListener('click', handleCanvasClick);
+    return () => canvas.removeEventListener('click', handleCanvasClick);
+  }, [gl, handleClick, handleInteraction, pickStar]);
+
+  return null;
+};
+
 const setStarColor = (ci, target) => {
   if (ci === null || ci === undefined) return target.set('white');
 
@@ -49,6 +80,7 @@ const Star3dObjects = ({
   consumePendingStars = null,
   setSelectedStarId = null,
   handleClick = null,
+  handleInteraction = null,
 }) => {
   // currently processed star
   const nextIndexRef = useRef(0);
@@ -284,14 +316,6 @@ const Star3dObjects = ({
       if (!setSelectedStarId) return;
       const canvas = gl.domElement;
 
-      const toPointer = (event) => {
-        const rect = canvas.getBoundingClientRect();
-        return new THREE.Vector2(
-          ((event.clientX - rect.left) / rect.width) * 2 - 1,
-          -((event.clientY - rect.top) / rect.height) * 2 + 1,
-        );
-      };
-
       const handlePointerDown = (event) => {
         if (event.pointerType === 'mouse') return;
         gestureRef.current = {
@@ -312,8 +336,11 @@ const Star3dObjects = ({
           return;
         }
 
-        const starId = pickStar(toPointer(event));
+        const starId = pickStar(pointerFromEvent(canvas, event));
         setSelectedStarId(starId);
+        if (starId !== null && starId !== undefined) {
+          handleInteraction?.('star');
+        }
         handleClick?.(starId);
       };
 
@@ -324,13 +351,17 @@ const Star3dObjects = ({
         canvas.removeEventListener('pointerup', handlePointerUp);
       };
     }, [gl]);
-
     return null;
   };
 
   return (
     <>
       {setSelectedStarId && <TouchStarSelection />}
+      <CanvasClick
+        handleClick={handleClick}
+        handleInteraction={handleInteraction}
+        pickStar={pickStar}
+      />
       {enableHover && <StarIndicator indicatorRef={indicatorRingMeshRef} />}
 
       <StarPoints
