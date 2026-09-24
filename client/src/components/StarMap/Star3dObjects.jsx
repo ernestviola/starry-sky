@@ -47,6 +47,8 @@ const Star3dObjects = ({
   enableHover = true,
   pendingStars = [],
   consumePendingStars = null,
+  setSelectedStarId = null,
+  handleClick = null,
 }) => {
   // currently processed star
   const nextIndexRef = useRef(0);
@@ -100,7 +102,7 @@ const Star3dObjects = ({
     return Math.abs((mag - MAX_MAG - 1) / (MIN_MAG - MAX_MAG - 1));
   };
 
-  const detectHoveredStar = useStarHover({
+  const { detectHoveredStar, pickStar } = useStarHover({
     starsDictionary,
     viewedFrames,
     hoveredStarId,
@@ -274,8 +276,61 @@ const Star3dObjects = ({
     visitedStarManager(starId);
   });
 
+  const TouchStarSelection = () => {
+    const { gl } = useThree();
+    const gestureRef = useRef(null);
+
+    useEffect(() => {
+      if (!setSelectedStarId) return;
+      const canvas = gl.domElement;
+
+      const toPointer = (event) => {
+        const rect = canvas.getBoundingClientRect();
+        return new THREE.Vector2(
+          ((event.clientX - rect.left) / rect.width) * 2 - 1,
+          -((event.clientY - rect.top) / rect.height) * 2 + 1,
+        );
+      };
+
+      const handlePointerDown = (event) => {
+        if (event.pointerType === 'mouse') return;
+        gestureRef.current = {
+          pointerId: event.pointerId,
+          x: event.clientX,
+          y: event.clientY,
+        };
+      };
+
+      const handlePointerUp = (event) => {
+        const gesture = gestureRef.current;
+        gestureRef.current = null;
+        if (
+          !gesture ||
+          gesture.pointerId !== event.pointerId ||
+          Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) > 10
+        ) {
+          return;
+        }
+
+        const starId = pickStar(toPointer(event));
+        setSelectedStarId(starId);
+        handleClick?.(starId);
+      };
+
+      canvas.addEventListener('pointerdown', handlePointerDown);
+      canvas.addEventListener('pointerup', handlePointerUp);
+      return () => {
+        canvas.removeEventListener('pointerdown', handlePointerDown);
+        canvas.removeEventListener('pointerup', handlePointerUp);
+      };
+    }, [gl]);
+
+    return null;
+  };
+
   return (
     <>
+      {setSelectedStarId && <TouchStarSelection />}
       {enableHover && <StarIndicator indicatorRef={indicatorRingMeshRef} />}
 
       <StarPoints

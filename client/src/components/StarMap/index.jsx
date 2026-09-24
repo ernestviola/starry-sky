@@ -120,13 +120,17 @@ const FrustumRadiusTracker = ({ setRadius }) => {
   return null;
 };
 
-const CanvasClick = ({ handleClick }) => {
+const CanvasClick = ({ handleClick, hoveredStarId }) => {
   const { gl } = useThree();
   useEffect(() => {
     const canvas = gl.domElement;
-    canvas.addEventListener('click', handleClick);
-    return () => canvas.removeEventListener('click', handleClick);
-  }, [handleClick]);
+    const handleCanvasClick = (event) => {
+      if (event.sourceCapabilities?.firesTouchEvents) return;
+      handleClick(hoveredStarId);
+    };
+    canvas.addEventListener('click', handleCanvasClick);
+    return () => canvas.removeEventListener('click', handleCanvasClick);
+  }, [gl, handleClick, hoveredStarId]);
 };
 
 const SmoothCameraTarget = ({ controlsRef, zenith }) => {
@@ -157,6 +161,7 @@ const SmoothCameraTarget = ({ controlsRef, zenith }) => {
 const StarMap = ({
   hoveredStarId,
   setHoveredStarId,
+  setSelectedStarId,
   handleClick,
   enableHover = true,
 }) => {
@@ -306,11 +311,13 @@ const StarMap = ({
           enableHover={enableHover}
           pendingStars={pendingStars}
           consumePendingStars={consumePendingStars}
+          setSelectedStarId={setSelectedStarId}
+          handleClick={handleClick}
         />
         <ConstellationLines
           constellationLinesDictionary={constellationLinesDictionary}
         />
-        <CanvasClick handleClick={handleClick} />
+        <CanvasClick handleClick={handleClick} hoveredStarId={hoveredStarId} />
       </Canvas>
     </div>
   );
