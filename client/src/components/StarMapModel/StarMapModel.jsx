@@ -1,10 +1,34 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useSyncExternalStore } from 'react';
+import { createPortal } from 'react-dom';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Grid, OrbitControls, Line, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import styles from './starMapModel.module.css';
 
-const RightAscension = ({ starPos, showZ, highlight }) => (
+const MOBILE_QUERY = '(max-width: 700px)';
+// The phone model stage is roughly square and short, so pull the camera back a little.
+const MOBILE_CAMERA_DISTANCE = 1.3;
+
+const subscribeToMobile = (onChange) => {
+  const query = window.matchMedia(MOBILE_QUERY);
+  query.addEventListener?.('change', onChange);
+  return () => query.removeEventListener?.('change', onChange);
+};
+
+const useIsMobile = () =>
+  useSyncExternalStore(
+    subscribeToMobile,
+    () => window.matchMedia(MOBILE_QUERY).matches,
+    () => false,
+  );
+
+const SceneLabel = ({ children, mobile = false, className = '' }) => (
+  <div className={`${styles.sceneLabel} ${styles.mobileSceneLabel} ${mobile ? styles.mobileSceneLabelActive : ''} ${className}`}>
+    {children}
+  </div>
+);
+
+const RightAscension = ({ starPos, showZ, highlight, step }) => (
   <>
     <Line
       points={[
@@ -28,14 +52,14 @@ const RightAscension = ({ starPos, showZ, highlight }) => (
       color={highlight === 'x' || highlight === 'all' ? 'gold' : 'deepskyblue'}
     />
     <Html position={[starPos[0] / 2, 0, starPos[2] / 2]}>
-      <div className={`${styles.sceneLabel} ${highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}`}>h</div>
+      <SceneLabel mobile={step === 3 || step === 4} className={highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}>h</SceneLabel>
     </Html>
     <Html position={[starPos[0] / 2, 0, starPos[2]]}>
-      <div className={`${styles.sceneLabel} ${highlight === 'x' || highlight === 'all' ? styles.highlightLabel : ''}`}>x</div>
+      <SceneLabel mobile={step === 3} className={highlight === 'x' || highlight === 'all' ? styles.highlightLabel : ''}>x</SceneLabel>
     </Html>
     {showZ && (
       <Html position={[0, 0, starPos[2] / 2]}>
-        <div className={`${styles.sceneLabel} ${highlight === 'z' || highlight === 'all' ? styles.highlightLabel : ''}`}>z</div>
+        <SceneLabel mobile={step === 4} className={highlight === 'z' || highlight === 'all' ? styles.highlightLabel : ''}>z</SceneLabel>
       </Html>
     )}
     <mesh>
@@ -70,18 +94,18 @@ const RightAscension = ({ starPos, showZ, highlight }) => (
   </>
 );
 
-const Declination = ({ starPos, showHorizontalRadius, highlight }) => {
+const Declination = ({ starPos, showHorizontalRadius, highlight, step }) => {
   return (
     <>
       <Html position={[starPos[0] / 2, starPos[1] / 2, starPos[2] / 2]}>
-        <div className={styles.sceneLabel}>r = 1</div>
+        <SceneLabel mobile={step === 1}>r = 1</SceneLabel>
       </Html>
       <Html position={[starPos[0], starPos[1] / 2, starPos[2]]}>
-        <div className={`${styles.sceneLabel} ${highlight === 'y' || highlight === 'all' ? styles.highlightLabel : ''}`}>y</div>
+        <SceneLabel mobile={step === 1 || step === 5} className={highlight === 'y' || highlight === 'all' ? styles.highlightLabel : ''}>y</SceneLabel>
       </Html>
       {showHorizontalRadius && (
         <Html position={[starPos[0] / 2, 0, starPos[2] / 2]}>
-          <div className={`${styles.sceneLabel} ${highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}`}>h</div>
+          <SceneLabel mobile={step === 2} className={highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}>h</SceneLabel>
         </Html>
       )}
       <Line
@@ -146,6 +170,7 @@ const AngleArcs = ({
   showRightAscension,
   showDeclination,
   highlight,
+  step,
 }) => {
   const horizontalRadius = starRadius * Math.cos(declinationAngle);
   const steps = 32;
@@ -175,7 +200,7 @@ const AngleArcs = ({
         <>
           <Line points={raPoints} color={highlight === 'ra' || highlight === 'all' ? 'gold' : 'deepskyblue'} lineWidth={2} />
           <Html position={raLabel}>
-            <div className={`${styles.sceneLabel} ${styles.arcLabel} ${highlight === 'ra' || highlight === 'all' ? styles.highlightLabel : ''}`}>RA</div>
+            <SceneLabel mobile={step === 3 || step === 4} className={`${styles.arcLabel} ${highlight === 'ra' || highlight === 'all' ? styles.highlightLabel : ''}`}>RA</SceneLabel>
           </Html>
         </>
       )}
@@ -183,7 +208,7 @@ const AngleArcs = ({
         <>
           <Line points={decPoints} color={highlight === 'dec' || highlight === 'all' ? 'gold' : 'orchid'} lineWidth={2} />
           <Html position={decLabel}>
-            <div className={`${styles.sceneLabel} ${styles.arcLabel} ${highlight === 'dec' || highlight === 'all' ? styles.highlightLabel : ''}`}>Dec</div>
+            <SceneLabel mobile={step === 1 || step === 2} className={`${styles.arcLabel} ${highlight === 'dec' || highlight === 'all' ? styles.highlightLabel : ''}`}>Dec</SceneLabel>
           </Html>
         </>
       )}
@@ -191,7 +216,7 @@ const AngleArcs = ({
   );
 };
 
-const CameraRig = ({ step, rightAscensionAngle }) => {
+const CameraRig = ({ step, rightAscensionAngle, distanceScale = 1 }) => {
   const { camera } = useThree();
   const transition = useRef({
     key: '',
@@ -215,10 +240,10 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
     4: [0, 3, 0.01],
     5: [1, 1.5, 3],
   };
-  const position = new THREE.Vector3(...views[step]);
+  const position = new THREE.Vector3(...views[step]).multiplyScalar(distanceScale);
   const duration =
     { 0: 1.2, 1: 0.8, 2: 0.8, 3: 1.2, 4: 0.8, 5: 1 }[step] ?? 1.2;
-  const viewKey = String(step);
+  const viewKey = `${step}:${distanceScale}`;
 
   if (transition.current.key !== viewKey) {
     transition.current = {
@@ -229,8 +254,17 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
     };
   }
 
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   useFrame((_, delta) => {
     if (transition.current.elapsed >= duration) return;
+
+    if (prefersReducedMotion) {
+      camera.position.copy(position);
+      camera.lookAt(0, 0, 0);
+      transition.current.elapsed = duration;
+      return;
+    }
 
     transition.current.elapsed = Math.min(
       transition.current.elapsed + delta,
@@ -255,7 +289,7 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
   return null;
 };
 
-const ModelGrid = ({ gridSize }) => {
+const ModelGrid = ({ gridSize, step }) => {
   const lineSize = gridSize / 2;
   return (
     <>
@@ -269,10 +303,10 @@ const ModelGrid = ({ gridSize }) => {
       <directionalLight position={[5, 5, -5]} intensity={1} />
       {/* x axis */}
       <Html position={[lineSize + 0.1, 0, 0]}>
-        <div className={styles.axisLabel}>+X</div>
+        <div className={`${styles.axisLabel} ${styles.mobileSceneLabel} ${step === 3 || step === 4 || step === 5 ? styles.mobileSceneLabelActive : ''}`}>+X</div>
       </Html>
       <Html position={[-(lineSize + 0.1), 0, 0]}>
-        <div className={styles.axisLabel}>-X</div>
+        <div className={`${styles.axisLabel} ${styles.mobileSceneLabel} ${step === 3 || step === 4 || step === 5 ? styles.mobileSceneLabelActive : ''}`}>-X</div>
       </Html>
       <Line
         points={[
@@ -283,10 +317,10 @@ const ModelGrid = ({ gridSize }) => {
       />
       {/* y axis */}
       <Html position={[0, -(lineSize + 0.1), 0]}>
-        <div className={styles.axisLabel}>-Y</div>
+        <div className={`${styles.axisLabel} ${styles.mobileSceneLabel} ${step === 1 || step === 5 ? styles.mobileSceneLabelActive : ''}`}>-Y</div>
       </Html>
       <Html position={[0, lineSize + 0.5, 0]}>
-        <div className={styles.axisLabel}>+Y</div>
+        <div className={`${styles.axisLabel} ${styles.mobileSceneLabel} ${step === 1 || step === 5 ? styles.mobileSceneLabelActive : ''}`}>+Y</div>
       </Html>
       <Line
         points={[
@@ -298,10 +332,10 @@ const ModelGrid = ({ gridSize }) => {
 
       {/* z axis */}
       <Html position={[0, 0, -(lineSize + 0.1)]}>
-        <div className={styles.axisLabel}>-Z</div>
+        <div className={`${styles.axisLabel} ${styles.mobileSceneLabel} ${step === 4 || step === 5 ? styles.mobileSceneLabelActive : ''}`}>-Z</div>
       </Html>
       <Html position={[0, 0, lineSize + 0.1]}>
-        <div className={styles.axisLabel}>+Z</div>
+        <div className={`${styles.axisLabel} ${styles.mobileSceneLabel} ${step === 4 || step === 5 ? styles.mobileSceneLabelActive : ''}`}>+Z</div>
       </Html>
       <Line
         points={[
@@ -314,7 +348,7 @@ const ModelGrid = ({ gridSize }) => {
   );
 };
 
-const Star = ({ starPos }) => {
+const Star = ({ starPos, step }) => {
   return (
     <>
       <mesh position={[starPos[0], starPos[1], starPos[2]]}>
@@ -328,9 +362,9 @@ const Star = ({ starPos }) => {
         />
       </mesh>
       <Html position={[starPos[0], starPos[1], starPos[2]]}>
-        <div className={styles.sceneLabel}>
+        <SceneLabel mobile={step === 5}>
           Star [{starPos.map((coordinate) => coordinate.toFixed(2)).join(', ')}]
-        </div>
+        </SceneLabel>
       </Html>
     </>
   );
@@ -361,6 +395,8 @@ const Controls = ({
   showNavigation,
   showSphere,
   setShowSphere,
+  variant = 'panel',
+  targets = [],
 }) => {
   const degrees = (angle) => THREE.MathUtils.radToDeg(angle).toFixed(1);
   const horizontalRadius = starRadius * Math.cos(declinationAngle);
@@ -373,12 +409,9 @@ const Controls = ({
     'Combine the coordinates',
   ][step];
 
-  return (
+  const renderFields = (fieldStep) => (
     <>
-      <div className={styles.controllerParent}>
-        <div className={`${styles.controlsContainer} ${step === 0 ? styles.panelEnter : ''}`}>
-          <div className={styles.stepTitle}>{stage}</div>
-        {(step === 0 || step >= 3) && (
+        {(fieldStep === 0 || fieldStep >= 3) && (
           <label>
             Right ascension: {degrees(rightAscensionAngle)}°
             <input
@@ -391,7 +424,7 @@ const Controls = ({
             />
           </label>
         )}
-        {(step <= 2 || step === 5) && (
+        {(fieldStep <= 2 || fieldStep === 5) && (
           <label>
             Declination: {degrees(declinationAngle)}°
             <input
@@ -404,7 +437,7 @@ const Controls = ({
             />
           </label>
         )}
-        {step === 1 && (
+        {fieldStep === 1 && (
           <>
             <div className={styles.equation}>Given: r = 1</div>
             <div className={styles.equation}>sin(Dec) = y / r</div>
@@ -414,7 +447,7 @@ const Controls = ({
             </div>
           </>
         )}
-        {step === 2 && (
+        {fieldStep === 2 && (
           <>
             <div className={styles.equation}>cos(Dec) = h / r</div>
             <div className={styles.equation}>cos(Dec) = h / 1</div>
@@ -423,7 +456,7 @@ const Controls = ({
             </div>
           </>
         )}
-        {step === 3 && (
+        {fieldStep === 3 && (
           <>
             <div className={styles.equation}>
               Given: h = {horizontalRadius.toFixed(2)}
@@ -434,7 +467,7 @@ const Controls = ({
             </div>
           </>
         )}
-        {step === 4 && (
+        {fieldStep === 4 && (
           <>
             <div className={styles.equation}>
               Given: h = {horizontalRadius.toFixed(2)}
@@ -445,7 +478,7 @@ const Controls = ({
             </div>
           </>
         )}
-        {step === 5 && (
+        {fieldStep === 5 && (
           <>
             <div className={styles.equation}>
               x = cos(Dec) sin(RA) = {starPos[0].toFixed(2)}
@@ -458,6 +491,14 @@ const Controls = ({
             </div>
           </>
         )}
+    </>
+  );
+
+  const panels = (
+    <>
+          <div className={`${styles.controlsContainer} ${step === 0 ? styles.panelEnter : ''}`}>
+            <div className={styles.stepTitle}>{stage}</div>
+            {renderFields(step)}
           {showNavigation && (
             <div className={styles.stepNavigation}>
               <button disabled={step === 1} onClick={() => setStep(step - 1)}>
@@ -468,35 +509,48 @@ const Controls = ({
               </button>
             </div>
           )}
-        </div>
-        <div className={styles.wireframeParent}>
-          <div className={`${styles.controlsContainer} ${step === 0 ? styles.panelEnter : ''}`}>
-            <label className={styles.toggle}>
-              <input
-                type='checkbox'
-                checked={showSphere}
-                onChange={(event) => setShowSphere(event.target.checked)}
-              />
-              Show sphere wireframe
-            </label>
           </div>
-        </div>
-      </div>
+          <div className={styles.wireframeParent}>
+            <div className={`${styles.controlsContainer} ${step === 0 ? styles.panelEnter : ''}`}>
+              <label className={styles.toggle}>
+                <input
+                  type='checkbox'
+                  checked={showSphere}
+                  onChange={(event) => setShowSphere(event.target.checked)}
+                />
+                Show sphere wireframe
+              </label>
+            </div>
+          </div>
     </>
   );
+
+  if (variant === 'inline') {
+    // Phones (design C): every step card gets its own controls, so card heights
+    // never change while scrolling. All of them drive the same model state.
+    return targets.map(({ step: cardStep, element }) =>
+      createPortal(
+        <div className={styles.inlineControls}>{renderFields(cardStep)}</div>,
+        element,
+        `controls-${cardStep}`,
+      ),
+    );
+  }
+
+  return <div className={styles.controllerParent}>{panels}</div>;
 };
 
-const PointLabels = ({ starPos }) => (
+const PointLabels = ({ starPos, step }) => (
   <>
     <Html position={[0, 0, 0]}>
-      <div className={styles.sceneLabel}>Origin</div>
+      <SceneLabel mobile={step >= 1}>Origin</SceneLabel>
     </Html>
     <mesh position={[0, 0, 0]}>
       <sphereGeometry args={[0.02, 32, 32]} />
       <meshStandardMaterial color='black' />
     </mesh>
     <Html position={[starPos[0], 0, starPos[2]]}>
-      <div className={styles.sceneLabel}>XZ projection</div>
+      <SceneLabel mobile={step >= 2}>XZ projection</SceneLabel>
     </Html>
     <mesh position={[starPos[0], 0, starPos[2]]}>
       <sphereGeometry args={[0.02, 32, 32]} />
@@ -512,12 +566,15 @@ const StarMapModel = ({
   stacked = false,
   showControls = true,
   presentation = false,
+  controlsTargets = [],
 }) => {
   const gridSize = 4;
   const starRadius = 1;
   const [declinationAngle, setDeclinationAngle] = useState(Math.PI / 6);
   const [rightAscensionAngle, setRightAscensionAngle] = useState(Math.PI / 4);
   const [showSphere, setShowSphere] = useState(true);
+  const isMobile = useIsMobile();
+  const mobilePresentation = presentation && isMobile;
   const [canvasReady, setCanvasReady] = useState(false);
   const [selectedStep, setSelectedStep] = useState(1);
   const step = controlledStep ?? selectedStep;
@@ -538,26 +595,34 @@ const StarMapModel = ({
     4: { rightAscension: 'z', arc: 'ra' },
   };
   const highlight = highlights[step] ?? {};
+  // Phones: steps 0-4 are scroll-only so swipes on the model scroll the page;
+  // step 5 is the playground where orbiting turns on.
+  const orbitEnabled = mobilePresentation ? step === 5 : step === 0 || step === 5;
 
   return (
     <div
       className={`${styles.container} ${stacked ? styles.stacked : ''} ${
         presentation ? styles.presentation : ''
-      }`}
+      } ${mobilePresentation && !orbitEnabled ? styles.touchScrolls : ''}`}
     >
       <Canvas
         camera={{ position: [-1.8, 0.51, 1.8] }}
         className={`${styles.canvas} ${canvasReady ? styles.canvasReady : ''}`}
         onCreated={() => requestAnimationFrame(() => requestAnimationFrame(() => setCanvasReady(true)))}
       >
-        <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} />
-        <ModelGrid gridSize={gridSize} />
-        <PointLabels starPos={starPos} />
+        <CameraRig
+          step={step}
+          rightAscensionAngle={rightAscensionAngle}
+          distanceScale={mobilePresentation ? MOBILE_CAMERA_DISTANCE : 1}
+        />
+        <ModelGrid gridSize={gridSize} step={step} />
+        <PointLabels starPos={starPos} step={step} />
         {(step === 0 || step <= 2 || step === 5) && (
           <Declination
             starPos={starPos}
             showHorizontalRadius={step === 0 || step >= 2}
             highlight={highlight.declination}
+            step={step}
           />
         )}
         {(step === 0 || step >= 3) && (
@@ -565,6 +630,7 @@ const StarMapModel = ({
             starPos={starPos}
             showZ={step === 0 || step >= 4}
             highlight={highlight.rightAscension}
+            step={step}
           />
         )}
         <AngleArcs
@@ -574,11 +640,22 @@ const StarMapModel = ({
           showRightAscension={step === 0 || step >= 3}
           showDeclination={step === 0 || step <= 2 || step === 5}
           highlight={highlight.arc}
+          step={step}
         />
-        {(step === 0 || step <= 2 || step === 5) && <Star starPos={starPos} />}
+        {(step === 0 || step <= 2 || step === 5) && <Star starPos={starPos} step={step} />}
         {showSphere && <CelestialSphere />}
-        <OrbitControls enabled={step === 0 || step === 5} enableZoom={false} />
+        <OrbitControls enabled={orbitEnabled} enableZoom={false} />
       </Canvas>
+      {mobilePresentation && (
+        <label className={styles.wireframeToggle}>
+          <input
+            type='checkbox'
+            checked={showSphere}
+            onChange={(event) => setShowSphere(event.target.checked)}
+          />
+          Wireframe
+        </label>
+      )}
       {showControls && (
         <Controls
           starPos={starPos}
@@ -592,6 +669,8 @@ const StarMapModel = ({
           showNavigation={showNavigation}
           showSphere={showSphere}
           setShowSphere={setShowSphere}
+          variant={mobilePresentation ? 'inline' : 'panel'}
+          targets={controlsTargets}
         />
       )}
     </div>

@@ -56,7 +56,12 @@
   flex-direction: column;
   gap: var(--space-4);
   width: min(22rem, calc(100vw - (2 * var(--page-gutter))));
+  pointer-events: none;
   view-transition-name: walkthrough-controller;
+}
+
+.presentation .controllerParent > * {
+  pointer-events: auto;
 }
 
 .presentation .panelEnter {
@@ -209,7 +214,85 @@
 }
 
 @media (max-width: 700px) {
+  .presentation .mobileSceneLabel {
+    display: none;
+  }
+
+  .presentation .mobileSceneLabelActive {
+    display: block;
+  }
+
   .container {
     grid-template-columns: 1fr;
   }
+}
+
+/* Mobile walkthrough (design C): wireframe toggle on the model, and the
+   step controls rendered inside each step card. */
+/* R3F puts an inline pointer-events style on its wrapper, so !important is
+   needed to let vertical swipes fall through to the page. */
+.touchScrolls .canvas,
+.touchScrolls .canvas * {
+  pointer-events: none !important;
+}
+
+.wireframeToggle {
+  position: absolute;
+  bottom: var(--space-3);
+  left: var(--page-edge-start);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-target-min);
+  padding: 0 var(--space-3);
+  border: var(--border-width) solid var(--color-accent);
+  border-radius: var(--radius-pill);
+  background: rgb(6 7 13 / 85%);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: var(--weight-medium);
+}
+
+.wireframeToggle input {
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+.wireframeToggle:focus-within {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  box-shadow: var(--focus-ring);
+}
+
+.inlineControls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: var(--border-width) solid var(--color-border);
+}
+
+.inlineControls > label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--weight-medium);
+}
+
+.inlineControls input[type='range'] {
+  width: 100%;
+  min-height: var(--touch-target-min);
+  margin: 0;
+  accent-color: var(--color-accent);
+}
+
+.inlineControls .equation {
+  color: var(--color-accent);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-data);
 }
