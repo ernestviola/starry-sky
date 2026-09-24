@@ -19,7 +19,7 @@ const About = () => {
         return top <= activationLine && bottom >= activationLine;
       });
 
-      setShowModelControls(Boolean(active));
+      setShowModelControls(window.innerWidth <= 700 || Boolean(active));
       if (active) setStep(Number(active.dataset.derivationStep));
     };
 

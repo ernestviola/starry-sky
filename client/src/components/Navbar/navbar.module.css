@@ -10,7 +10,7 @@
   z-index: 10;
   background-color: transparent;
   align-items: center;
-  width: 100vw;
+  width: 100%;
 }
 
 .logo {
@@ -39,6 +39,21 @@
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
   text-decoration: none;
   transition: text-shadow var(--duration-normal) ease;
+}
+
+@media (max-width: 700px) {
+  .navbar {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+    padding: var(--space-4);
+  }
+
+  .navbar > nav ul {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    font-size: var(--font-size-md);
+  }
 }
 
 .navbar > nav a:hover,
