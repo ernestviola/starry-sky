@@ -20,12 +20,22 @@
   box-shadow: var(--shadow-overlay), var(--shadow-accent);
   backdrop-filter: blur(8px);
   view-transition-name: game-status;
-  animation: gameStatus-enter var(--duration-slow) cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: gameStatus-enter var(--duration-slow) var(--ease-standard) both;
 }
 
-.leaving {
-  animation: gameStatus-exit var(--duration-normal) ease-in both;
-  view-transition-name: none;
+@media (max-width: 600px) {
+  .gameStatus {
+    position: fixed;
+    top: auto;
+    right: 0;
+    bottom: max(var(--space-3), env(safe-area-inset-bottom));
+    left: 0;
+    max-height: 34svh;
+    margin: 0 var(--space-3);
+    padding: var(--space-3);
+    overflow: auto;
+    font-size: 1.4rem;
+  }
 }
 
 @keyframes gameStatus-enter {
@@ -40,10 +50,8 @@
   }
 }
 
-@keyframes gameStatus-exit {
-  to {
-    opacity: 0;
-    transform: translateX(4rem);
+@media (prefers-reduced-motion: reduce) {
+  .gameStatus {
+    animation: none;
   }
 }
-

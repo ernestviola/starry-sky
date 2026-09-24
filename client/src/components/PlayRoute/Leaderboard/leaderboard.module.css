@@ -22,7 +22,7 @@
 }
 
 .leaderboard[open] {
-  animation: leaderboard-enter var(--duration-medium) cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: leaderboard-enter var(--duration-slow) var(--ease-standard) both;
 }
 
 @keyframes leaderboard-enter {
@@ -156,10 +156,56 @@
 }
 
 .icon {
-  font-size: 2.5rem !important;
-  transition: transform var(--duration-normal) ease;
+  transition: transform var(--duration-normal) var(--ease-standard);
+}
+
+@media (max-width: 600px) {
+  .leaderboard {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: calc(100svh - var(--space-3));
+    padding: var(--space-5) var(--space-4)
+      calc(var(--space-5) + env(safe-area-inset-bottom));
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+  }
+
+  .leaderboard[open] {
+    animation-name: leaderboard-sheet-enter;
+  }
+
+  .pager button,
+  .retry {
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+  }
+
+  @keyframes leaderboard-sheet-enter {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 .retry:hover .icon {
   transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leaderboard[open],
+  .icon {
+    animation: none;
+    transition: none;
+  }
 }

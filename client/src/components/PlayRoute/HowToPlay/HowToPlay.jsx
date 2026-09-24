@@ -10,7 +10,7 @@ const HowToPlay = ({ ref, onClose }) => {
         <ol>
           <li>Use the map to look around the sky.</li>
           <li>Find the stars listed in the panel.</li>
-          <li>Click each star and get a final time.</li>
+          <li>Tap or click each star and get a final time.</li>
         </ol>
         <button className={styles.closeButton} onClick={onClose}>
           Close
