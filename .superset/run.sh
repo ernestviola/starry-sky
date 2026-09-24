@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-workspace=${SUPERSET_WORKSPACE_NAME:-workspace}
+workspace=${SUPERSET_WORKSPACE_NAME:-${SUPERSET_WORKSPACE_ID:-${SUPERSET_WORKSPACE_PATH:-$PWD}}}
 hash=$(printf '%s' "$workspace" | cksum | awk '{print $1}')
 api_port=$((5200 + hash % 500))
 client_port=$((4200 + hash % 500))
