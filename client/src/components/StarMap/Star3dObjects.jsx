@@ -323,7 +323,7 @@ const Star3dObjects = ({
         canvas.removeEventListener('pointerdown', handlePointerDown);
         canvas.removeEventListener('pointerup', handlePointerUp);
       };
-    }, [gl, handleClick, pickStar, setSelectedStarId]);
+    }, [gl]);
 
     return null;
   };

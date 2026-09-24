@@ -76,9 +76,11 @@ const StarDetails = ({
         >
           ×
         </button>
-        <p>HIP: {starData.hip}</p>
-        {starData.proper && <p>NAME: {starData.proper}</p>}
-        <p>MAG: {starData.mag}</p>
+        <p className={styles.data}>HIP: {starData.hip}</p>
+        {starData.proper && (
+          <p className={styles.data}>NAME: {starData.proper}</p>
+        )}
+        <p className={styles.data}>MAG: {starData.mag}</p>
       </aside>
     );
   }
@@ -91,9 +93,11 @@ const StarDetails = ({
       }`}
       style={{ left: mousePosition.x, top: mousePosition.y }}
     >
-      <p>HIP: {starData.hip}</p>
-      {starData.proper && <p>NAME: {starData.proper}</p>}
-      <p>MAG: {starData.mag}</p>
+      <p className={styles.data}>HIP: {starData.hip}</p>
+      {starData.proper && (
+        <p className={styles.data}>NAME: {starData.proper}</p>
+      )}
+      <p className={styles.data}>MAG: {starData.mag}</p>
     </div>
   );
 };
