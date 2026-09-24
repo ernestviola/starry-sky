@@ -1,5 +1,4 @@
 import { useRef, useState, useEffect } from 'react';
-import { useBlocker } from 'react-router';
 import { jwtDecode } from 'jwt-decode';
 import { useStarMap } from '../../contexts/StarMapContext.jsx';
 import GameTimer from '../../components/PlayRoute/GameTimer/GameTimer.jsx';
@@ -22,8 +21,6 @@ const Play = () => {
   const [name, setName] = useState('');
   const [leaderboardId, setLeaderboardId] = useState(null);
   const [refreshLeaderboard, setRefreshLeaderboard] = useState(false);
-  const [isGameStatusLeaving, setIsGameStatusLeaving] = useState(false);
-
   const [starsFoundDictionary, setStarsFoundDictionary] = useState({});
 
   const hoveredStarIdRef = useRef();
@@ -32,19 +29,6 @@ const Play = () => {
   const dialogSubmitScoreRef = useRef();
   const dialogLeaderboardRef = useRef();
   const dialogHowToPlayRef = useRef();
-
-  const blocker = useBlocker(({ currentLocation, nextLocation }) => {
-    const dialogIsOpen = [
-      dialogGameStartRef,
-      dialogSubmitScoreRef,
-      dialogLeaderboardRef,
-      dialogHowToPlayRef,
-    ].some((ref) => ref.current?.open);
-
-    return (
-      currentLocation.pathname !== nextLocation.pathname && dialogIsOpen
-    );
-  });
 
   useEffect(() => {
     const preventEscape = (event) => {
@@ -70,24 +54,6 @@ const Play = () => {
     dialogGameStartRef.current.show();
     // dialogLeaderboardRef.current.showModal();
   }, []);
-
-  useEffect(() => {
-    if (blocker.state !== 'blocked') return;
-
-    const openDialog = [
-      dialogGameStartRef,
-      dialogSubmitScoreRef,
-      dialogLeaderboardRef,
-      dialogHowToPlayRef,
-    ].find((ref) => ref.current?.open);
-
-    if (openDialog) {
-      setIsGameStatusLeaving(true);
-      closeDialog(openDialog, blocker.proceed);
-    } else {
-      blocker.proceed();
-    }
-  }, [blocker.state]);
 
   useEffect(() => {
     hoveredStarIdRef.current = hoveredStarId;
@@ -267,6 +233,12 @@ const Play = () => {
   const closeDialog = (ref, onClosed) => {
     const dialog = ref.current;
 
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      dialog.close();
+      onClosed?.();
+      return;
+    }
+
     dialog.classList.add(dialogStyles.closing);
 
     dialog.addEventListener(
@@ -313,11 +285,7 @@ const Play = () => {
         setRefreshLeaderboard={setRefreshLeaderboard}
       />
       {gameStarted && (
-        <div
-          className={`${styles.gameStatus} ${
-            isGameStatusLeaving ? styles.leaving : ''
-          }`}
-        >
+        <div className={styles.gameStatus}>
           <GameTimer startTime={gameStartTime} totalTime={gameTotalTime} />
           <SearchList items={starsFoundDictionary} />
         </div>

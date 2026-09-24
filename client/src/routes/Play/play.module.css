@@ -20,12 +20,7 @@
   box-shadow: var(--shadow-overlay), var(--shadow-accent);
   backdrop-filter: blur(8px);
   view-transition-name: game-status;
-  animation: gameStatus-enter 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.leaving {
-  animation: gameStatus-exit 300ms ease-in both;
-  view-transition-name: none;
+  animation: gameStatus-enter var(--duration-slow) var(--ease-standard) both;
 }
 
 @media (max-width: 600px) {
@@ -55,10 +50,8 @@
   }
 }
 
-@keyframes gameStatus-exit {
-  to {
-    opacity: 0;
-    transform: translateX(4rem);
+@media (prefers-reduced-motion: reduce) {
+  .gameStatus {
+    animation: none;
   }
 }
-
