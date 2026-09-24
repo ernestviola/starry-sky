@@ -31,7 +31,7 @@
 }
 
 .dialog button {
-  min-height: 4.4rem;
+  min-height: var(--touch-target-min);
   cursor: pointer;
 }
 

@@ -30,3 +30,13 @@ test('captures the About walkthrough', async ({ page }) => {
   await expect(page.locator('[class*="controllerParent"]')).toHaveCount(0);
   await expect(page.locator('[class*="wireframeParent"]')).toHaveCount(0);
 });
+
+test('keeps the About model controls available on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/about');
+
+  await expect(page.locator('[class*="controllerParent"]')).toBeVisible();
+  await expect(page.getByLabel('Show sphere wireframe')).toBeVisible();
+  await page.getByLabel('Show sphere wireframe').uncheck();
+  await expect(page.getByLabel('Show sphere wireframe')).not.toBeChecked();
+});

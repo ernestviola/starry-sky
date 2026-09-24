@@ -54,6 +54,8 @@ Reuse the spacing scale, button/card radii, focus ring, and shadow tokens from `
 
 Cards should remain dark, lightly bordered, moderately rounded, and restrained in their use of shadow.
 
+Mobile geometry uses the shared `--page-gutter-mobile`, `--page-edge-start`, and `--page-edge-end` tokens. The edge tokens include `safe-area-inset-*` so content clears notches and rounded screen corners. `--touch-target-min` is the 44px minimum for controls. At the mobile breakpoint, the type scale steps down through token overrides; cards and grids become a single column.
+
 ### Accessibility
 
 Every interactive element must have:
@@ -61,8 +63,8 @@ Every interactive element must have:
 - Visible keyboard focus
 - Adequate contrast
 - A usable disabled state
-- A touch target of approximately 44px on mobile
-- Reduced-motion behavior where animation is present
+- A touch target of at least 44px on mobile (`--touch-target-min`)
+- Reduced-motion behavior where animation is present; duration tokens become zero when `prefers-reduced-motion: reduce` is active
 - Text that can grow without breaking the layout
 
 ## Dialog and navigation behavior
@@ -90,13 +92,18 @@ Preserve meaning, hierarchy, and interaction language. Adapt geometry, density, 
 
 ### Mobile
 
-- Prefer a single-column flow.
+- Prefer a single-column flow and full-width cards.
+- Use compact, safe-area-aware page edges from the shared tokens.
 - Use full-width panels or bottom sheets instead of cramped overlays.
 - Replace hover behavior with tap, focus, or persistent selected states.
-- Stack or widen primary actions for touch.
+- Stack or widen primary actions for touch; every interactive example must expose keyboard focus and a 44px target.
 - Reduce type scale and gutters while reusing the shared tokens.
 - Keep route navigation available from contextual dialogs and sheets.
-- Simplify motion when it competes with content.
+- Simplify motion when it competes with content; honor `prefers-reduced-motion`.
+
+### Bottom sheet or overlay?
+
+Prefer a **bottom sheet** for contextual content on mobile when it is touch-driven, needs more room than a popover, or should remain attached to the current screen. Prefer an **overlay** when content is brief, spatially anchored to its trigger, and should not interrupt the surrounding task. A blocking confirmation is the exception: use a modal dialog only when the user must resolve it before continuing.
 
 ## Decision rule
 
