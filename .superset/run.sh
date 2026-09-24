@@ -6,16 +6,24 @@ hash=$(printf '%s' "$workspace" | cksum | awk '{print $1}')
 api_port=$((5200 + hash % 500))
 client_port=$((4200 + hash % 500))
 
-main_worktree=$(git worktree list --porcelain | awk '
-  /^worktree / { path = substr($0, 10) }
-  /^branch refs\/heads\/main$/ { print path; exit }
-')
 env_file=server/.env
-[ -f "$env_file" ] || env_file="$main_worktree/server/.env"
-if [ -f "$env_file" ]; then
-  env_file=$(CDPATH= cd -- "$(dirname "$env_file")" && pwd)/$(basename "$env_file")
-  export DOTENV_CONFIG_PATH="$env_file"
+if [ ! -f "$env_file" ]; then
+  branch=$(git branch --show-current)
+  base_branch=$(git config --get "branch.$branch.base" || printf '%s' main)
+  base_worktree=$(git worktree list --porcelain | awk -v branch="refs/heads/$base_branch" '
+    /^worktree / { path = substr($0, 10) }
+    $0 == "branch " branch { print path; exit }
+  ')
+  env_file="$base_worktree/server/.env"
 fi
+
+if [ ! -f "$env_file" ]; then
+  printf '%s\n' 'Could not find server/.env in this or its base worktree.' >&2
+  exit 1
+fi
+
+env_file=$(CDPATH= cd -- "$(dirname "$env_file")" && pwd)/$(basename "$env_file")
+export DOTENV_CONFIG_PATH="$env_file"
 
 : "${PASSPORT_JS_SECRET:=dev-secret}"
 export PASSPORT_JS_SECRET
