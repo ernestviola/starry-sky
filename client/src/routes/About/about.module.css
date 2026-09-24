@@ -148,7 +148,7 @@
 
 @media (max-width: 700px) {
   .about {
-    padding: var(--space-8) var(--space-4) var(--space-6);
+    padding: 10rem var(--space-4) var(--space-6);
   }
 
   .about h1 {
