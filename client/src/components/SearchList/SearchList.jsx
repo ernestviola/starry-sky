@@ -2,9 +2,9 @@ import styles from './searchList.module.css';
 
 const SearchList = ({ items = [] }) => {
   return (
-    <div role='list'>
-      <h2>Stars to find!</h2>
-      <ul className={styles.searchList}>
+    <div>
+      <h2 id='search-list-heading'>Stars to find!</h2>
+      <ul aria-labelledby='search-list-heading' className={styles.searchList}>
         {Object.entries(items)
           .sort((a, b) => a - b)
           .map((keyValue) => {

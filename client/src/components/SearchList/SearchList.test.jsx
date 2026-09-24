@@ -5,7 +5,7 @@ import styles from './searchList.module.css';
 test('component should be in the document', () => {
   render(<SearchList />);
 
-  const list = screen.getByRole('list');
+  const list = screen.getByRole('list', { name: 'Stars to find!' });
 
   expect(list).toBeInTheDocument();
 });
