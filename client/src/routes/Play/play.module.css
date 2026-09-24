@@ -28,11 +28,13 @@
     position: fixed;
     top: auto;
     right: 0;
-    bottom: max(var(--space-3), env(safe-area-inset-bottom));
+    bottom: 0;
     left: 0;
     max-height: 34svh;
-    margin: 0 var(--space-3);
-    padding: var(--space-3);
+    margin: 0;
+    padding: var(--space-3) var(--page-edge-end)
+      calc(var(--space-3) + env(safe-area-inset-bottom)) var(--page-edge-start);
+    border-radius: 0;
     overflow: auto;
     font-size: 1.4rem;
   }
