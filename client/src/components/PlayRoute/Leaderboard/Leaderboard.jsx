@@ -17,6 +17,7 @@ const Leaderboard = ({
   setRefreshLeaderboard,
 }) => {
   const [globalLoading, setGlobalLoading] = useState(false);
+  const [globalError, setGlobalError] = useState(false);
 
   const [globalLeaderboardData, setGlobalLeaderboardData] = useState({
     leaderboard: [],
@@ -35,6 +36,7 @@ const Leaderboard = ({
 
   const loadGlobal = async (page, leaderboardId) => {
     setGlobalLoading(true);
+    setGlobalError(false);
 
     try {
       const url = new URL(
@@ -58,6 +60,7 @@ const Leaderboard = ({
       const data = await response.json();
       setGlobalLeaderboardData(data);
     } catch (error) {
+      setGlobalError(true);
     } finally {
       setGlobalLoading(false);
     }
@@ -65,6 +68,7 @@ const Leaderboard = ({
 
   const loadLocal = async (page, leaderboardId) => {
     setGlobalLoading(true);
+    setGlobalError(false);
 
     try {
       const url = new URL(
@@ -81,6 +85,7 @@ const Leaderboard = ({
       const data = await response.json();
       setGlobalLeaderboardData(data);
     } catch (error) {
+      setGlobalError(true);
     } finally {
       setGlobalLoading(false);
     }
@@ -90,6 +95,12 @@ const Leaderboard = ({
     <Dialog ref={ref} className={styles.leaderboard}>
       <h1>Leaderboard</h1>
       <div className={styles.rankings}>
+        {globalError && (
+          <p className={styles.error} role="alert">
+            Unable to load leaderboard.
+          </p>
+        )}
+
         <div className={styles.header}>
           <h3>Rank</h3>
           <h3>Name</h3>

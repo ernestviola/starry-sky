@@ -61,6 +61,11 @@
   align-items: center;
 }
 
+.error {
+  grid-column: 1 / -1;
+  color: var(--color-danger);
+}
+
 .header {
   padding-bottom: var(--space-2);
   border-bottom: var(--border-width) solid var(--color-border);
@@ -110,10 +115,16 @@
 
 .pager button,
 .retry {
+  min-height: var(--touch-target-min);
   border: 0;
   background: transparent;
   color: var(--color-accent);
   cursor: pointer;
+}
+
+.pager button {
+  min-width: var(--touch-target-min);
+  padding: var(--space-2);
 }
 
 .pager button:disabled {
