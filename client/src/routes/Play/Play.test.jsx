@@ -1,12 +1,20 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useNavigate } from 'react-router';
 import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import Play from './Play.jsx';
+
+const mapMock = vi.hoisted(() => ({ interactionHandler: null }));
 
 vi.mock('../../contexts/StarMapContext.jsx', () => ({
   useStarMap: () => ({
     hoveredStarId: null,
     registerClickHandler: vi.fn(() => vi.fn()),
+    registerInteractionHandler: vi.fn((handler) => {
+      mapMock.interactionHandler = handler;
+      return () => {
+        if (mapMock.interactionHandler === handler) mapMock.interactionHandler = null;
+      };
+    }),
   }),
 }));
 
@@ -23,7 +31,9 @@ vi.mock('../../components/PlayRoute/GameTimer/GameTimer.jsx', () => ({
 }));
 
 vi.mock('../../components/SearchList/SearchList.jsx', () => ({
-  default: () => null,
+  default: ({ expanded }) => (
+    <div data-testid='search-list-state'>{expanded ? 'expanded' : 'collapsed'}</div>
+  ),
 }));
 
 const NavigateAway = () => {
@@ -62,6 +72,8 @@ afterAll(() => {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mapMock.interactionHandler = null;
+  vi.stubEnv('VITE_STAR_API', 'http://api.test/');
   vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false })));
 });
 
@@ -93,6 +105,49 @@ describe('Play dialog flow', () => {
 
     expect(await screen.findByText('About')).toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  test('expands stars at game start and collapses once on valid map interaction', async () => {
+    const token = `eyJhbGciOiJub25lIn0.${btoa(
+      JSON.stringify({ startTime: 1000, starsToFind: [] }),
+    )}.signature`;
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ token }),
+    }));
+
+    render(<Play />);
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+
+    expect(await screen.findByTestId('search-list-state')).toHaveTextContent('expanded');
+    expect(mapMock.interactionHandler).toEqual(expect.any(Function));
+
+    act(() => mapMock.interactionHandler('drag'));
+    expect(screen.getByTestId('search-list-state')).toHaveTextContent('collapsed');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Expand stars' }));
+    expect(screen.getByTestId('search-list-state')).toHaveTextContent('expanded');
+
+    act(() => mapMock.interactionHandler('zoom'));
+    expect(screen.getByTestId('search-list-state')).toHaveTextContent('expanded');
+  });
+
+  test('does not collapse for an invalid map interaction', async () => {
+    const token = `eyJhbGciOiJub25lIn0.${btoa(
+      JSON.stringify({ startTime: 1000, starsToFind: [] }),
+    )}.signature`;
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ token }),
+    }));
+
+    render(<Play />);
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    expect(await screen.findByTestId('search-list-state')).toHaveTextContent('expanded');
+
+    act(() => mapMock.interactionHandler('blank'));
+    expect(screen.getByTestId('search-list-state')).toHaveTextContent('expanded');
+    expect(screen.getByRole('button', { name: 'Collapse stars' })).toHaveAttribute('aria-expanded', 'true');
   });
 
   test('closes immediately in reduced motion and invokes the next-dialog callback', () => {

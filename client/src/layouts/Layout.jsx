@@ -10,6 +10,7 @@ const Layout = () => {
     setHoveredStarId,
     setSelectedStarId,
     handleClick,
+    handleInteraction,
   } = useStarMap();
   const { pathname } = useLocation();
   const normalizedPathname = pathname.replace(/\/+$/, '') || '/';
@@ -24,6 +25,7 @@ const Layout = () => {
             setHoveredStarId={setHoveredStarId}
             setSelectedStarId={setSelectedStarId}
             handleClick={handleClick}
+            handleInteraction={handleInteraction}
             enableHover={pathname !== '/'}
           />
         </div>
