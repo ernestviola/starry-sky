@@ -56,16 +56,12 @@
   display: flex;
   min-height: 100svh;
   align-items: flex-start;
-  padding: 5rem var(--page-gutter) var(--space-8);
+  padding: 0 var(--page-gutter) var(--space-8);
 }
 
 .introCard {
   width: min(100%, 60ch);
   pointer-events: auto;
-}
-
-.introCard h2 {
-  margin-top: 0;
 }
 
 .storyStep {
@@ -165,18 +161,29 @@
   }
 
   .walkthrough {
-    display: block;
+    display: flex;
     width: auto;
     margin: var(--space-6) 0 0;
+    flex-direction: column;
+  }
+
+  .story {
+    display: contents;
+    pointer-events: auto;
+  }
+
+  .storyIntro {
+    order: 0;
   }
 
   .modelStage {
     position: relative;
+    order: 1;
     height: clamp(27rem, 78svh, 42rem);
   }
 
-  .story {
-    pointer-events: auto;
+  .storyStep {
+    order: 2;
   }
 
   .storyIntro,

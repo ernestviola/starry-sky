@@ -58,22 +58,53 @@ const About = () => {
             <div className={styles.introCard}>
               <h2>Inspiration</h2>
               <p>
-                I wanted to make people think more about their local constellations and stars.
-                Light pollution affects all of us: in cities, it is easy to forget how beautiful
-                the night sky can be. Humans once had a much closer relationship with the sky and
-                the stories in its constellations. This project is a small way to reconnect with
-                that view.
+                So, I&apos;m in the middle of The Odin Project. After leaving tech to travel abroad
+                for a year, I decided it was time to upskill, and I&apos;ve always been interested in
+                full-stack development.
               </p>
               <p>
-                The project began as a remix of The Odin Project&apos;s{' '}
+                I&apos;m currently working through one of their projects,{' '}
                 <a
                   href='https://www.theodinproject.com/lessons/nodejs-where-s-waldo-a-photo-tagging-app'
                   target='_blank'
                   rel='noreferrer'
                 >
-                  Where&apos;s Waldo Project
+                  The Where&apos;s Waldo tagging app
                 </a>
-                , combining a star-searching game with a chance to learn Three.js.
+                . I took the searching aspect of the project and pointed it towards space.
+              </p>
+              <p>
+                I&apos;ve always been interested in space, and I&apos;ve thought for a while now that
+                it&apos;s disappointing to be in a city and not be able to look up and observe the
+                stars. Light pollution is a major problem, and I wanted to make something that
+                reminds people about the beauty of the night sky.
+              </p>
+              <p>
+                Thus, I built Starry Sky: a star-searching app to help people become more familiar
+                with what might be invisible, but is always around us.
+              </p>
+              <h2>Challenges</h2>
+              <p>
+                I was a bit ambitious with this project. During my initial research, I found the{' '}
+                <a href='https://codeberg.org/astronexus/hyg' target='_blank' rel='noreferrer'>
+                  HYG Star Database
+                </a>
+                , which had the exact data I needed for the simulation.
+              </p>
+              <p>
+                Astronomers use an equivalent of latitude and longitude to map the celestial sphere:
+                declination and right ascension. With those angles, I had a plan. I would use a
+                unit sphere and calculate the x, y, and z coordinates of each star relative to its
+                origin.
+              </p>
+              <p>
+                But how was I going to do that? Geometry. You can see me try to figure it out with
+                pen and paper before turning the model into my first Three.js project.
+              </p>
+              <p>
+                I won&apos;t lie: I struggled with this. But we got there eventually. Follow along and
+                I&apos;ll show you how the good old SOHCAHTOA from high-school mathematics can translate
+                angles into points in a Cartesian coordinate system.
               </p>
             </div>
           </section>
@@ -82,13 +113,20 @@ const About = () => {
             <div className={styles.stepCard}>
               <h2>1. Find y with declination</h2>
               <p>
-                Astronomers map stars against an imaginary sphere centered on Earth: the celestial
-                sphere. In our simulation, the viewer is at the origin and every star lies on a
-                unit sphere, so r = 1. Three.js uses Y as vertical and XZ as the horizontal plane.
+                Declination is the angle away from the celestial equator: positive going north and
+                negative going south. We&apos;re working with a unit sphere, so the distance from the
+                origin to the star is 1, which gives us the hypotenuse of a right triangle.
               </p>
               <p>
-                Declination measures the angle north or south of the celestial equator. Its right
-                triangle gives the vertical distance: y = sin(Dec).
+                Since we know an angle and one side, we can calculate the side we&apos;re interested in:
+                the distance y away from the equator.
+              </p>
+              <p>
+                sin(Dec) = opposite / hypotenuse
+                <br />
+                sin(Dec) = y / 1
+                <br />
+                y = sin(Dec)
               </p>
             </div>
           </section>
