@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import styles from './gameTimer.module.css';
 
-const GameTimer = ({ startTime, totalTime }) => {
+const GameTimer = ({ startTime, totalTime, showLabel = true }) => {
+  const label = showLabel ? 'Time: ' : '';
   const [currentTime, setCurrentTime] = useState(null);
   useEffect(() => {
     const currentInterval = setInterval(() => {
@@ -17,8 +18,9 @@ const GameTimer = ({ startTime, totalTime }) => {
 
   if (totalTime) {
     return (
-      <div role='timer' className={styles.timer}>
-        Time: {(totalTime / 1000).toFixed(2)}s
+      <div role='timer' className={`${styles.timer} ${styles.complete}`}>
+        {label}
+        {(totalTime / 1000).toFixed(2)}s
       </div>
     );
   }
@@ -26,7 +28,8 @@ const GameTimer = ({ startTime, totalTime }) => {
   if (startTime) {
     return (
       <div role='timer' className={styles.timer}>
-        Time: {currentTime}
+        {label}
+        {currentTime}
       </div>
     );
   }
