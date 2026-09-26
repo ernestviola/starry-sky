@@ -150,6 +150,21 @@
   white-space: nowrap;
 }
 
+/* Phone labels: plain text with a dark halo instead of a filled box, so they
+   hide as little of the diagram as possible. */
+.sceneLabel.compactLabel {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  font-size: var(--font-size-sm);
+  text-shadow:
+    0 0 2px var(--color-background),
+    0 0 2px var(--color-background),
+    0 0 4px var(--color-background),
+    0 0 6px var(--color-background);
+}
+
 .axisLabel {
   color: var(--color-text-subtle);
   font-family: var(--font-data);

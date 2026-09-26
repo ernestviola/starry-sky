@@ -1,4 +1,4 @@
-import { useRef, useState, useSyncExternalStore } from 'react';
+import { createContext, useContext, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Grid, OrbitControls, Line, Html } from '@react-three/drei';
@@ -6,8 +6,9 @@ import * as THREE from 'three';
 import styles from './starMapModel.module.css';
 
 const MOBILE_QUERY = '(max-width: 700px)';
-// The phone model stage is roughly square and short, so pull the camera back a little.
-const MOBILE_CAMERA_DISTANCE = 1.3;
+// The phone model stage is roughly square; this keeps the sphere as large as
+// it can be while still fitting, so the labels have room around the triangle.
+const MOBILE_CAMERA_DISTANCE = 1.05;
 
 const subscribeToMobile = (onChange) => {
   const query = window.matchMedia(MOBILE_QUERY);
@@ -27,6 +28,41 @@ const SceneLabel = ({ children, mobile = false, className = '' }) => (
     {children}
   </div>
 );
+
+// Phones use compact labels: unboxed text, centered on its point, then pushed
+// a little away from the shape it describes so it never sits on the triangle.
+const CompactLabelsContext = createContext(false);
+const LABEL_OFFSET = 0.18;
+const ORIGIN = [0, 0, 0];
+
+const pushAway = (point, from, distance) => {
+  const direction = new THREE.Vector3(...point).sub(new THREE.Vector3(...from));
+  if (direction.lengthSq() < 1e-6) return point;
+  return direction.normalize().multiplyScalar(distance).add(new THREE.Vector3(...point)).toArray();
+};
+
+const Tag = ({ position, compactPosition, away, mobile, className = '', compactText, children }) => {
+  const compact = useContext(CompactLabelsContext);
+
+  if (!compact) {
+    return (
+      <Html position={position}>
+        <SceneLabel mobile={mobile} className={className}>{children}</SceneLabel>
+      </Html>
+    );
+  }
+
+  return (
+    <Html center position={pushAway(compactPosition ?? position, away ?? ORIGIN, away ? LABEL_OFFSET : 0)}>
+      <SceneLabel mobile={mobile} className={`${className} ${styles.compactLabel}`}>
+        {compactText ?? children}
+      </SceneLabel>
+    </Html>
+  );
+};
+
+const decCentroid = (starPos) => [(2 * starPos[0]) / 3, starPos[1] / 3, (2 * starPos[2]) / 3];
+const raCentroid = (starPos) => [starPos[0] / 3, 0, (2 * starPos[2]) / 3];
 
 const RightAscension = ({ starPos, showZ, highlight, step }) => (
   <>
@@ -51,16 +87,10 @@ const RightAscension = ({ starPos, showZ, highlight, step }) => (
       ]}
       color={highlight === 'x' || highlight === 'all' ? 'gold' : 'deepskyblue'}
     />
-    <Html position={[starPos[0] / 2, 0, starPos[2] / 2]}>
-      <SceneLabel mobile={step === 3 || step === 4} className={highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}>h</SceneLabel>
-    </Html>
-    <Html position={[starPos[0] / 2, 0, starPos[2]]}>
-      <SceneLabel mobile={step === 3} className={highlight === 'x' || highlight === 'all' ? styles.highlightLabel : ''}>x</SceneLabel>
-    </Html>
+    <Tag position={[starPos[0] / 2, 0, starPos[2] / 2]} away={raCentroid(starPos)} mobile={step === 3 || step === 4} className={highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}>h</Tag>
+    <Tag position={[starPos[0] / 2, 0, starPos[2]]} away={raCentroid(starPos)} mobile={step === 3} className={highlight === 'x' || highlight === 'all' ? styles.highlightLabel : ''}>x</Tag>
     {showZ && (
-      <Html position={[0, 0, starPos[2] / 2]}>
-        <SceneLabel mobile={step === 4} className={highlight === 'z' || highlight === 'all' ? styles.highlightLabel : ''}>z</SceneLabel>
-      </Html>
+      <Tag position={[0, 0, starPos[2] / 2]} away={raCentroid(starPos)} mobile={step === 4} className={highlight === 'z' || highlight === 'all' ? styles.highlightLabel : ''}>z</Tag>
     )}
     <mesh>
       <bufferGeometry key={starPos.join(',')}>
@@ -97,16 +127,10 @@ const RightAscension = ({ starPos, showZ, highlight, step }) => (
 const Declination = ({ starPos, showHorizontalRadius, highlight, step }) => {
   return (
     <>
-      <Html position={[starPos[0] / 2, starPos[1] / 2, starPos[2] / 2]}>
-        <SceneLabel mobile={step === 1}>r = 1</SceneLabel>
-      </Html>
-      <Html position={[starPos[0], starPos[1] / 2, starPos[2]]}>
-        <SceneLabel mobile={step === 1 || step === 5} className={highlight === 'y' || highlight === 'all' ? styles.highlightLabel : ''}>y</SceneLabel>
-      </Html>
+      <Tag position={[starPos[0] / 2, starPos[1] / 2, starPos[2] / 2]} away={decCentroid(starPos)} mobile={step === 1}>r = 1</Tag>
+      <Tag position={[starPos[0], starPos[1] / 2, starPos[2]]} away={decCentroid(starPos)} mobile={step === 1 || step === 5} className={highlight === 'y' || highlight === 'all' ? styles.highlightLabel : ''}>y</Tag>
       {showHorizontalRadius && (
-        <Html position={[starPos[0] / 2, 0, starPos[2] / 2]}>
-          <SceneLabel mobile={step === 2} className={highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}>h</SceneLabel>
-        </Html>
+        <Tag position={[starPos[0] / 2, 0, starPos[2] / 2]} away={decCentroid(starPos)} mobile={step === 2} className={highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}>h</Tag>
       )}
       <Line
         points={[
@@ -193,23 +217,22 @@ const AngleArcs = ({
   });
   const raLabel = raPoints[Math.floor(steps / 2)];
   const decLabel = decPoints[Math.floor(steps / 2)];
+  // On phones the middle of the Dec arc sits right beside the y label, so the
+  // compact label moves up the arc, near the star.
+  const decLabelCompact = decPoints[Math.round(steps * 0.85)];
 
   return (
     <>
       {showRightAscension && (
         <>
           <Line points={raPoints} color={highlight === 'ra' || highlight === 'all' ? 'gold' : 'deepskyblue'} lineWidth={2} />
-          <Html position={raLabel}>
-            <SceneLabel mobile={step === 3 || step === 4} className={`${styles.arcLabel} ${highlight === 'ra' || highlight === 'all' ? styles.highlightLabel : ''}`}>RA</SceneLabel>
-          </Html>
+          <Tag position={raLabel} away={ORIGIN} mobile={step === 3 || step === 4} className={`${styles.arcLabel} ${highlight === 'ra' || highlight === 'all' ? styles.highlightLabel : ''}`}>RA</Tag>
         </>
       )}
       {showDeclination && (
         <>
           <Line points={decPoints} color={highlight === 'dec' || highlight === 'all' ? 'gold' : 'orchid'} lineWidth={2} />
-          <Html position={decLabel}>
-            <SceneLabel mobile={step === 1 || step === 2} className={`${styles.arcLabel} ${highlight === 'dec' || highlight === 'all' ? styles.highlightLabel : ''}`}>Dec</SceneLabel>
-          </Html>
+          <Tag position={decLabel} compactPosition={decLabelCompact} away={ORIGIN} mobile={step === 1 || step === 2} className={`${styles.arcLabel} ${highlight === 'dec' || highlight === 'all' ? styles.highlightLabel : ''}`}>Dec</Tag>
         </>
       )}
     </>
@@ -361,11 +384,9 @@ const Star = ({ starPos, step }) => {
           depthWrite={false}
         />
       </mesh>
-      <Html position={[starPos[0], starPos[1], starPos[2]]}>
-        <SceneLabel mobile={step === 5}>
-          Star [{starPos.map((coordinate) => coordinate.toFixed(2)).join(', ')}]
-        </SceneLabel>
-      </Html>
+      <Tag position={starPos} away={ORIGIN} mobile={step === 5} compactText='Star'>
+        Star [{starPos.map((coordinate) => coordinate.toFixed(2)).join(', ')}]
+      </Tag>
     </>
   );
 };
@@ -542,16 +563,12 @@ const Controls = ({
 
 const PointLabels = ({ starPos, step }) => (
   <>
-    <Html position={[0, 0, 0]}>
-      <SceneLabel mobile={step >= 1}>Origin</SceneLabel>
-    </Html>
+    <Tag position={[0, 0, 0]} away={decCentroid(starPos)} mobile={step === 1 || step === 2}>Origin</Tag>
     <mesh position={[0, 0, 0]}>
       <sphereGeometry args={[0.02, 32, 32]} />
       <meshStandardMaterial color='black' />
     </mesh>
-    <Html position={[starPos[0], 0, starPos[2]]}>
-      <SceneLabel mobile={step >= 2}>XZ projection</SceneLabel>
-    </Html>
+    <Tag position={[starPos[0], 0, starPos[2]]} away={ORIGIN} mobile={step === 2}>XZ projection</Tag>
     <mesh position={[starPos[0], 0, starPos[2]]}>
       <sphereGeometry args={[0.02, 32, 32]} />
       <meshStandardMaterial color='black' />
@@ -610,6 +627,7 @@ const StarMapModel = ({
         className={`${styles.canvas} ${canvasReady ? styles.canvasReady : ''}`}
         onCreated={() => requestAnimationFrame(() => requestAnimationFrame(() => setCanvasReady(true)))}
       >
+        <CompactLabelsContext.Provider value={mobilePresentation}>
         <CameraRig
           step={step}
           rightAscensionAngle={rightAscensionAngle}
@@ -645,6 +663,7 @@ const StarMapModel = ({
         {(step === 0 || step <= 2 || step === 5) && <Star starPos={starPos} step={step} />}
         {showSphere && <CelestialSphere />}
         <OrbitControls enabled={orbitEnabled} enableZoom={false} />
+        </CompactLabelsContext.Provider>
       </Canvas>
       {mobilePresentation && (
         <label className={styles.wireframeToggle}>
