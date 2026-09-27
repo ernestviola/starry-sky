@@ -4,44 +4,71 @@ import rightAscensionDiagram from '../../assets/IMG_4206.jpeg';
 import StarMapModel from '../../components/StarMapModel/StarMapModel.jsx';
 import styles from './about.module.css';
 
-const StepCard = ({ children }) => <div className={styles.stepCard}>{children}</div>;
+const StepCard = ({ children }) => (
+  <div className={styles.stepCard}>{children}</div>
+);
 
 const About = () => {
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(null);
   const [focusedStep, setFocusedStep] = useState(0);
-  const [showModelControls, setShowModelControls] = useState(true);
+  const [showControllerPanel, setShowControllerPanel] = useState(false);
   const walkthrough = useRef(null);
 
   useEffect(() => {
     const sections = [
       ...walkthrough.current.querySelectorAll('[data-derivation-step]'),
     ];
-    document.documentElement.classList.add('aboutSnap');
     const updateStep = () => {
       const modelStepLine = window.innerHeight * 0.25;
       const active = sections.find((section) => {
         const { top, bottom } = section.getBoundingClientRect();
         return top <= modelStepLine && bottom >= modelStepLine;
       });
+
       const focused = sections.findLast(
-        (section) => section.getBoundingClientRect().top <= window.innerHeight * 0.5,
+        (section) =>
+          section.getBoundingClientRect().top <= window.innerHeight * 0.5,
       );
+
       const activeStep = active ? Number(active.dataset.derivationStep) : null;
-      const focusedStepNumber = focused ? Number(focused.dataset.derivationStep) : 0;
-      sections.slice(1).forEach((section, index) => {
+      const focusedStepNumber = focused
+        ? Number(focused.dataset.derivationStep)
+        : 0;
+      sections.forEach((section, index) => {
         const cardTop = section.firstElementChild.getBoundingClientRect().top;
-        const reveal = Math.max(0, Math.min(1,
-          cardTop / (window.innerHeight * 0.25),
-          (window.innerHeight * 0.75 - cardTop) / (window.innerHeight * 0.25),
-        ));
+        const reveal = Math.max(
+          0,
+          Math.min(
+            1,
+            cardTop / (window.innerHeight * 0.25),
+            (window.innerHeight * 0.75 - cardTop) / (window.innerHeight * 0.25),
+          ),
+        );
         section.style.setProperty('--reveal', reveal);
-        if (index === sections.length - 2) return;
-        const nextTop = sections[index + 2].getBoundingClientRect().top;
-        const progress = Math.max(0, Math.min(1, (window.innerHeight - nextTop) / (window.innerHeight * 0.4)));
-        section.firstElementChild.style.setProperty('--border-progress', progress);
+        if (index === sections.length - 1) return;
+        const nextTop = sections[index + 1].getBoundingClientRect().top;
+
+        const progress = Math.max(
+          0,
+          Math.min(
+            1,
+            (window.innerHeight - nextTop) / (window.innerHeight * 0.4),
+          ),
+        );
+        section.firstElementChild.style.setProperty(
+          '--border-progress',
+          progress,
+        );
       });
       setFocusedStep(focusedStepNumber);
-      setShowModelControls(focusedStepNumber >= 1);
+      const stickyLine = window.innerHeight * 0.25;
+
+      const showController = sections.findLast((section) => {
+        const card = section.firstElementChild;
+        return Math.abs(card.getBoundingClientRect().top - stickyLine) < 1;
+      });
+
+      setShowControllerPanel(Boolean(showController));
       if (active) setStep(activeStep);
     };
 
@@ -49,7 +76,6 @@ const About = () => {
     window.addEventListener('scroll', updateStep, { passive: true });
     window.addEventListener('resize', updateStep);
     return () => {
-      document.documentElement.classList.remove('aboutSnap');
       window.removeEventListener('scroll', updateStep);
       window.removeEventListener('resize', updateStep);
     };
@@ -65,17 +91,17 @@ const About = () => {
         <div className={styles.modelStage}>
           <StarMapModel
             step={step}
-            showControls={showModelControls}
+            showControls={showControllerPanel}
             showNavigation={false}
             presentation
           />
         </div>
         <div className={styles.story}>
-          <section data-derivation-step='0' className={styles.aboutHeader}>
+          <section className={styles.aboutHeader}>
             <h1>About Starry Sky</h1>
             <p>
-              A simulation and game centered around 120,000 stars in our night sky.{' '}
-              <b>Read until the end to see the star model.</b>
+              A simulation and game centered around 120,000 stars in our night
+              sky. <b>Read until the end to see the star model.</b>
             </p>
             <div className={styles.introCard}>
               <h2>Inspiration</h2>
