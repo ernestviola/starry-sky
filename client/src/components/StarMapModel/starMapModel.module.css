@@ -180,8 +180,12 @@
   user-select: none;
 }
 
-.arcLabel {
-  color: var(--color-accent);
+.raLabel {
+  color: #56b4e9;
+}
+
+.decLabel {
+  color: #e69f00;
 }
 
 .highlightLabel {

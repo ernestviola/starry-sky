@@ -1,39 +1,43 @@
 import { useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Grid, OrbitControls, Line, Html } from '@react-three/drei';
+import { OrbitControls, Line, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import styles from './starMapModel.module.css';
 
-const RightAscension = ({ starPos, showZ, highlight }) => (
+const RightAscension = ({ starPos, showZ, highlight, showAllLabels }) => (
   <>
     <Line
       points={[
         [0, 0, 0],
         [starPos[0], 0, starPos[2]],
       ]}
-      color={highlight === 'h' || highlight === 'all' ? 'gold' : 'deepskyblue'}
+      color={highlight === 'h' || highlight === 'all' ? 'gold' : '#56B4E9'}
     />
     <Line
       points={[
         [0, 0, 0],
         [0, 0, starPos[2]],
       ]}
-      color={highlight === 'z' || highlight === 'all' ? 'gold' : 'deepskyblue'}
+      color={highlight === 'z' || highlight === 'all' ? 'gold' : '#56B4E9'}
     />
     <Line
       points={[
         [0, 0, starPos[2]],
         [starPos[0], 0, starPos[2]],
       ]}
-      color={highlight === 'x' || highlight === 'all' ? 'gold' : 'deepskyblue'}
+      color={highlight === 'x' || highlight === 'all' ? 'gold' : '#56B4E9'}
     />
-    <Html position={[starPos[0] / 2, 0, starPos[2] / 2]}>
-      <div className={`${styles.sceneLabel} ${highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}`}>h</div>
-    </Html>
-    <Html position={[starPos[0] / 2, 0, starPos[2]]}>
-      <div className={`${styles.sceneLabel} ${highlight === 'x' || highlight === 'all' ? styles.highlightLabel : ''}`}>x</div>
-    </Html>
-    {showZ && (
+    {(showAllLabels || highlight === 'h' || highlight === 'x' || highlight === 'all') && (
+      <Html position={[starPos[0] / 2, 0, starPos[2] / 2]}>
+        <div className={`${styles.sceneLabel} ${highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}`}>h</div>
+      </Html>
+    )}
+    {(showAllLabels || highlight === 'x' || highlight === 'all') && (
+      <Html position={[starPos[0] / 2, 0, starPos[2]]}>
+        <div className={`${styles.sceneLabel} ${highlight === 'x' || highlight === 'all' ? styles.highlightLabel : ''}`}>x</div>
+      </Html>
+    )}
+    {showZ && (showAllLabels || highlight === 'z' || highlight === 'all') && (
       <Html position={[0, 0, starPos[2] / 2]}>
         <div className={`${styles.sceneLabel} ${highlight === 'z' || highlight === 'all' ? styles.highlightLabel : ''}`}>z</div>
       </Html>
@@ -60,7 +64,7 @@ const RightAscension = ({ starPos, showZ, highlight }) => (
         />
       </bufferGeometry>
       <meshStandardMaterial
-        color='blue'
+        color='#56B4E9'
         side={THREE.DoubleSide}
         transparent
         opacity={0.4}
@@ -70,16 +74,20 @@ const RightAscension = ({ starPos, showZ, highlight }) => (
   </>
 );
 
-const Declination = ({ starPos, showHorizontalRadius, highlight }) => {
+const Declination = ({ starPos, showHorizontalRadius, highlight, showAllLabels }) => {
   return (
     <>
-      <Html position={[starPos[0] / 2, starPos[1] / 2, starPos[2] / 2]}>
-        <div className={styles.sceneLabel}>r = 1</div>
-      </Html>
-      <Html position={[starPos[0], starPos[1] / 2, starPos[2]]}>
-        <div className={`${styles.sceneLabel} ${highlight === 'y' || highlight === 'all' ? styles.highlightLabel : ''}`}>y</div>
-      </Html>
-      {showHorizontalRadius && (
+      {showAllLabels && (
+        <Html position={[starPos[0] / 2, starPos[1] / 2, starPos[2] / 2]}>
+          <div className={styles.sceneLabel}>r = 1</div>
+        </Html>
+      )}
+      {(showAllLabels || highlight === 'y' || highlight === 'all') && (
+        <Html position={[starPos[0], starPos[1] / 2, starPos[2]]}>
+          <div className={`${styles.sceneLabel} ${highlight === 'y' || highlight === 'all' ? styles.highlightLabel : ''}`}>y</div>
+        </Html>
+      )}
+      {showHorizontalRadius && (showAllLabels || highlight === 'h' || highlight === 'all') && (
         <Html position={[starPos[0] / 2, 0, starPos[2] / 2]}>
           <div className={`${styles.sceneLabel} ${highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}`}>h</div>
         </Html>
@@ -89,21 +97,21 @@ const Declination = ({ starPos, showHorizontalRadius, highlight }) => {
           [0, 0, 0],
           [starPos[0], starPos[1], starPos[2]],
         ]}
-        color='purple'
+        color='#E69F00'
       />
       <Line
         points={[
           [0, 0, 0],
           [starPos[0], 0, starPos[2]],
         ]}
-        color={highlight === 'h' || highlight === 'all' ? 'gold' : 'purple'}
+        color={highlight === 'h' || highlight === 'all' ? 'gold' : '#E69F00'}
       />
       <Line
         points={[
           [starPos[0], 0, starPos[2]],
           [starPos[0], starPos[1], starPos[2]],
         ]}
-        color={highlight === 'y' || highlight === 'all' ? 'gold' : 'purple'}
+        color={highlight === 'y' || highlight === 'all' ? 'gold' : '#E69F00'}
       />
 
       <mesh>
@@ -128,7 +136,7 @@ const Declination = ({ starPos, showHorizontalRadius, highlight }) => {
           />
         </bufferGeometry>
         <meshStandardMaterial
-          color='purple'
+          color='#E69F00'
           side={THREE.DoubleSide}
           transparent
           opacity={0.4}
@@ -173,17 +181,17 @@ const AngleArcs = ({
     <>
       {showRightAscension && (
         <>
-          <Line points={raPoints} color={highlight === 'ra' || highlight === 'all' ? 'gold' : 'deepskyblue'} lineWidth={2} />
+          <Line points={raPoints} color={highlight === 'ra' || highlight === 'all' ? 'gold' : '#56B4E9'} lineWidth={2} />
           <Html position={raLabel}>
-            <div className={`${styles.sceneLabel} ${styles.arcLabel} ${highlight === 'ra' || highlight === 'all' ? styles.highlightLabel : ''}`}>RA</div>
+            <div className={`${styles.sceneLabel} ${styles.raLabel} ${highlight === 'ra' || highlight === 'all' ? styles.highlightLabel : ''}`}>RA</div>
           </Html>
         </>
       )}
       {showDeclination && (
         <>
-          <Line points={decPoints} color={highlight === 'dec' || highlight === 'all' ? 'gold' : 'orchid'} lineWidth={2} />
+          <Line points={decPoints} color={highlight === 'dec' || highlight === 'all' ? 'gold' : '#E69F00'} lineWidth={2} />
           <Html position={decLabel}>
-            <div className={`${styles.sceneLabel} ${styles.arcLabel} ${highlight === 'dec' || highlight === 'all' ? styles.highlightLabel : ''}`}>Dec</div>
+            <div className={`${styles.sceneLabel} ${styles.decLabel} ${highlight === 'dec' || highlight === 'all' ? styles.highlightLabel : ''}`}>Dec</div>
           </Html>
         </>
       )}
@@ -260,11 +268,6 @@ const ModelGrid = ({ gridSize }) => {
   return (
     <>
       <color attach='background' args={['#0b0c16']} />
-      <Grid
-        args={[gridSize, gridSize, gridSize]}
-        side={THREE.DoubleSide}
-        cellSize={0.5}
-      />
       <ambientLight intensity={0.6} />
       <directionalLight position={[5, 5, -5]} intensity={1} />
       {/* x axis */}
@@ -279,7 +282,7 @@ const ModelGrid = ({ gridSize }) => {
           [-lineSize, 0, 0],
           [lineSize, 0, 0],
         ]}
-        color='red'
+        color='#758096'
       />
       {/* y axis */}
       <Html position={[0, -(lineSize + 0.1), 0]}>
@@ -293,7 +296,7 @@ const ModelGrid = ({ gridSize }) => {
           [0, -lineSize, 0],
           [0, lineSize, 0],
         ]}
-        color='green'
+        color='#758096'
       />
 
       {/* z axis */}
@@ -308,13 +311,13 @@ const ModelGrid = ({ gridSize }) => {
           [0, 0, -lineSize],
           [0, 0, lineSize],
         ]}
-        color='blue'
+        color='#758096'
       />
     </>
   );
 };
 
-const Star = ({ starPos }) => {
+const Star = ({ starPos, showLabel }) => {
   return (
     <>
       <mesh position={[starPos[0], starPos[1], starPos[2]]}>
@@ -327,11 +330,13 @@ const Star = ({ starPos }) => {
           depthWrite={false}
         />
       </mesh>
-      <Html position={[starPos[0], starPos[1], starPos[2]]}>
-        <div className={styles.sceneLabel}>
-          Star [{starPos.map((coordinate) => coordinate.toFixed(2)).join(', ')}]
-        </div>
-      </Html>
+      {showLabel && (
+        <Html position={[starPos[0], starPos[1], starPos[2]]}>
+          <div className={styles.sceneLabel}>
+            Star [{starPos.map((coordinate) => coordinate.toFixed(2)).join(', ')}]
+          </div>
+        </Html>
+      )}
     </>
   );
 };
@@ -491,18 +496,22 @@ const Controls = ({
   );
 };
 
-const PointLabels = ({ starPos }) => (
+const PointLabels = ({ starPos, showLabels }) => (
   <>
-    <Html position={[0, 0, 0]}>
-      <div className={styles.sceneLabel}>Origin</div>
-    </Html>
+    {showLabels && (
+      <Html position={[0, 0, 0]}>
+        <div className={styles.sceneLabel}>Origin</div>
+      </Html>
+    )}
     <mesh position={[0, 0, 0]}>
       <sphereGeometry args={[0.02, 32, 32]} />
       <meshStandardMaterial color='black' />
     </mesh>
-    <Html position={[starPos[0], 0, starPos[2]]}>
-      <div className={styles.sceneLabel}>XZ projection</div>
-    </Html>
+    {showLabels && (
+      <Html position={[starPos[0], 0, starPos[2]]}>
+        <div className={styles.sceneLabel}>XZ projection</div>
+      </Html>
+    )}
     <mesh position={[starPos[0], 0, starPos[2]]}>
       <sphereGeometry args={[0.02, 32, 32]} />
       <meshStandardMaterial color='black' />
@@ -545,6 +554,7 @@ const StarMapModel = ({
     4: { rightAscension: 'z', arc: 'ra' },
   };
   const highlight = highlights[step] ?? {};
+  const showAllLabels = step === 0 || step === 5;
 
   return (
     <div
@@ -559,12 +569,13 @@ const StarMapModel = ({
       >
         <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} />
         <ModelGrid gridSize={gridSize} />
-        <PointLabels starPos={starPos} />
+        <PointLabels starPos={starPos} showLabels={showAllLabels} />
         {(step === 0 || step <= 2 || step === 5) && (
           <Declination
             starPos={starPos}
             showHorizontalRadius={step === 0 || step >= 2}
             highlight={highlight.declination}
+            showAllLabels={showAllLabels}
           />
         )}
         {(step === 0 || step >= 3) && (
@@ -572,6 +583,7 @@ const StarMapModel = ({
             starPos={starPos}
             showZ={step === 0 || step >= 4}
             highlight={highlight.rightAscension}
+            showAllLabels={showAllLabels}
           />
         )}
         <AngleArcs
@@ -582,7 +594,9 @@ const StarMapModel = ({
           showDeclination={step === 0 || step <= 2 || step === 5}
           highlight={highlight.arc}
         />
-        {(step === 0 || step <= 2 || step === 5) && <Star starPos={starPos} />}
+        {(step === 0 || step <= 2 || step === 5) && (
+          <Star starPos={starPos} showLabel={showAllLabels} />
+        )}
         {showSphere && <CelestialSphere />}
         <OrbitControls enabled={step === 0 || step === 5} enableZoom={false} />
       </Canvas>
