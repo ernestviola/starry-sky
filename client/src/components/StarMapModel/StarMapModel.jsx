@@ -361,6 +361,7 @@ const Controls = ({
   showNavigation,
   showSphere,
   setShowSphere,
+  hidden = false,
 }) => {
   const degrees = (angle) => THREE.MathUtils.radToDeg(angle).toFixed(1);
   const horizontalRadius = starRadius * Math.cos(declinationAngle);
@@ -375,7 +376,11 @@ const Controls = ({
 
   return (
     <>
-      <div className={styles.controllerParent}>
+      <div
+        className={`${styles.controllerParent} ${hidden ? styles.controlsHidden : ''}`}
+        aria-hidden={hidden}
+        inert={hidden}
+      >
         <div className={`${styles.controlsContainer} ${step === 0 ? styles.panelEnter : ''}`}>
           <div className={styles.stepTitle}>{stage}</div>
         {(step === 0 || step >= 3) && (
@@ -579,21 +584,20 @@ const StarMapModel = ({
         {showSphere && <CelestialSphere />}
         <OrbitControls enabled={step === 0 || step === 5} enableZoom={false} />
       </Canvas>
-      {showControls && (
-        <Controls
-          starPos={starPos}
-          starRadius={starRadius}
-          declinationAngle={declinationAngle}
-          setDeclinationAngle={setDeclinationAngle}
-          rightAscensionAngle={rightAscensionAngle}
-          setRightAscensionAngle={setRightAscensionAngle}
-          step={step}
-          setStep={setStep}
-          showNavigation={showNavigation}
-          showSphere={showSphere}
-          setShowSphere={setShowSphere}
-        />
-      )}
+      <Controls
+        starPos={starPos}
+        starRadius={starRadius}
+        declinationAngle={declinationAngle}
+        setDeclinationAngle={setDeclinationAngle}
+        rightAscensionAngle={rightAscensionAngle}
+        setRightAscensionAngle={setRightAscensionAngle}
+        step={step}
+        setStep={setStep}
+        showNavigation={showNavigation}
+        showSphere={showSphere}
+        setShowSphere={setShowSphere}
+        hidden={!showControls}
+      />
     </div>
   );
 };

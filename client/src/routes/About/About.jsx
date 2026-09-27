@@ -18,6 +18,9 @@ const About = () => {
     const sections = [
       ...walkthrough.current.querySelectorAll('[data-derivation-step]'),
     ];
+    const stepCards = sections.filter(
+      (section) => section.dataset.derivationStep !== '0',
+    );
     const updateStep = () => {
       const modelStepLine = window.innerHeight * 0.25;
       const active = sections.find((section) => {
@@ -34,19 +37,17 @@ const About = () => {
       const focusedStepNumber = focused
         ? Number(focused.dataset.derivationStep)
         : 0;
-      sections.forEach((section, index) => {
+      const viewportHeight = window.innerHeight;
+      stepCards.forEach((section, index) => {
         const cardTop = section.firstElementChild.getBoundingClientRect().top;
-        const reveal = Math.max(
-          0,
-          Math.min(
-            1,
-            cardTop / (window.innerHeight * 0.25),
-            (window.innerHeight * 0.75 - cardTop) / (window.innerHeight * 0.25),
-          ),
+        const fadeIn = (viewportHeight * 0.75 - cardTop) / (viewportHeight * 0.25);
+        const fadeOut = cardTop / (viewportHeight * 0.25);
+        section.style.setProperty(
+          '--reveal',
+          Math.max(0, Math.min(1, fadeIn, fadeOut)),
         );
-        section.style.setProperty('--reveal', reveal);
-        if (index === sections.length - 1) return;
-        const nextTop = sections[index + 1].getBoundingClientRect().top;
+        if (index === stepCards.length - 1) return;
+        const nextTop = stepCards[index + 1].getBoundingClientRect().top;
 
         const progress = Math.max(
           0,
@@ -63,7 +64,7 @@ const About = () => {
       setFocusedStep(focusedStepNumber);
       const stickyLine = window.innerHeight * 0.25;
 
-      const showController = sections.findLast((section) => {
+      const showController = stepCards.findLast((section) => {
         const card = section.firstElementChild;
         return Math.abs(card.getBoundingClientRect().top - stickyLine) < 1;
       });
@@ -97,7 +98,7 @@ const About = () => {
           />
         </div>
         <div className={styles.story}>
-          <section className={styles.aboutHeader}>
+          <section data-derivation-step='0' className={styles.aboutHeader}>
             <h1>About Starry Sky</h1>
             <p>
               A simulation and game centered around 120,000 stars in our night

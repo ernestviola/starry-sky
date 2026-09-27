@@ -56,6 +56,29 @@
   gap: var(--space-4);
   width: min(22rem, calc(100vw - (2 * var(--page-gutter))));
   view-transition-name: walkthrough-controller;
+  transition:
+    opacity var(--duration-slow) var(--ease-standard),
+    transform var(--duration-slow) var(--ease-standard);
+}
+
+.presentation .controllerParent.controlsHidden {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateX(4rem);
+  transition:
+    opacity var(--duration-slow) var(--ease-standard),
+    transform var(--duration-slow) var(--ease-standard),
+    visibility 0s linear var(--duration-slow);
+}
+
+.presentation .controllerParent:not(.controlsHidden) {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity var(--duration-slow) var(--ease-standard),
+    transform var(--duration-slow) var(--ease-standard),
+    visibility 0s;
 }
 
 .presentation .panelEnter {
@@ -72,6 +95,10 @@
 
 .controllerParent {
   margin: 0;
+}
+
+.controllerParent.controlsHidden {
+  visibility: hidden;
 }
 
 .controlsContainer {

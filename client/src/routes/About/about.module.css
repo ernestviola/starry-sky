@@ -66,20 +66,22 @@
 }
 
 .storyStep {
-  scroll-snap-align: start;
   display: flex;
   min-height: 100svh;
   align-items: flex-start;
   padding: 25svh var(--page-gutter) var(--space-8);
-  opacity: 0;
-}
-
-.storyStep[data-derivation-step='1'] {
-  scroll-snap-align: none;
-}
-
-.activeStep {
   opacity: var(--reveal, 0);
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .storyStep {
+    opacity: 0;
+  }
+
+  .storyStep.activeStep {
+    opacity: 1;
+  }
 }
 
 .stepCard {
@@ -189,7 +191,6 @@
 
   .storyStep {
     order: 2;
-    scroll-snap-align: none;
   }
 
   .aboutHeader,
@@ -197,7 +198,6 @@
     min-height: 0;
     padding: 0 0;
     opacity: 1;
-    transform: none;
   }
 
   .introCard,
