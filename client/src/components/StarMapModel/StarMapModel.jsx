@@ -512,6 +512,7 @@ const PointLabels = ({ starPos }) => (
 
 const StarMapModel = ({
   step: controlledStep,
+  controlsStep: controlledControlsStep,
   onStepChange,
   showNavigation = true,
   stacked = false,
@@ -526,6 +527,7 @@ const StarMapModel = ({
   const [canvasReady, setCanvasReady] = useState(false);
   const [selectedStep, setSelectedStep] = useState(1);
   const step = controlledStep ?? selectedStep;
+  const controlsStep = controlledControlsStep ?? step;
   const setStep = (nextStep) => {
     if (controlledStep === undefined) setSelectedStep(nextStep);
     onStepChange?.(nextStep);
@@ -591,7 +593,7 @@ const StarMapModel = ({
         setDeclinationAngle={setDeclinationAngle}
         rightAscensionAngle={rightAscensionAngle}
         setRightAscensionAngle={setRightAscensionAngle}
-        step={step}
+        step={controlsStep}
         setStep={setStep}
         showNavigation={showNavigation}
         showSphere={showSphere}

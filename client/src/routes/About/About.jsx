@@ -12,6 +12,7 @@ const About = () => {
   const [step, setStep] = useState(null);
   const [focusedStep, setFocusedStep] = useState(0);
   const [showControllerPanel, setShowControllerPanel] = useState(false);
+  const [controllerStep, setControllerStep] = useState(1);
   const walkthrough = useRef(null);
 
   useEffect(() => {
@@ -69,6 +70,9 @@ const About = () => {
         return Math.abs(card.getBoundingClientRect().top - stickyLine) < 1;
       });
 
+      if (showController) {
+        setControllerStep(Number(showController.dataset.derivationStep));
+      }
       setShowControllerPanel(Boolean(showController));
       if (active) setStep(activeStep);
     };
@@ -92,6 +96,7 @@ const About = () => {
         <div className={styles.modelStage}>
           <StarMapModel
             step={step}
+            controlsStep={controllerStep}
             showControls={showControllerPanel}
             showNavigation={false}
             presentation
