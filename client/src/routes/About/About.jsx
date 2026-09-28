@@ -8,7 +8,7 @@ const StepCard = ({ children }) => (
   <div className={styles.stepCard}>{children}</div>
 );
 
-const About = () => {
+const AboutWalkthrough = ({ isMobile }) => {
   const [step, setStep] = useState(null);
   const [focusedStep, setFocusedStep] = useState(0);
   const [showControllerPanel, setShowControllerPanel] = useState(false);
@@ -18,13 +18,15 @@ const About = () => {
   useEffect(() => {
     const root = document.documentElement;
     const previousSnapType = root.style.scrollSnapType;
-    root.style.scrollSnapType = 'none';
+    if (!isMobile) root.style.scrollSnapType = 'none';
     const sections = [
       ...walkthrough.current.querySelectorAll('[data-derivation-step]'),
     ];
     const stepCards = sections.filter(
       (section) => section.dataset.derivationStep !== '0',
     );
+    let snapEnabled = true;
+    let previousScrollY = window.scrollY;
     const updateStep = () => {
       const modelStepLine = window.innerHeight * 0.25;
       const active = sections.find((section) => {
@@ -41,14 +43,17 @@ const About = () => {
       const focusedStepNumber = focused
         ? Number(focused.dataset.derivationStep)
         : 0;
-      const snapType =
-        focusedStepNumber === 0
-          ? 'none'
-          : focusedStepNumber === 1
-            ? 'y proximity'
-            : 'y mandatory';
-      if (root.style.scrollSnapType !== snapType) {
-        root.style.scrollSnapType = snapType;
+      const scrollY = window.scrollY;
+      if (!isMobile) {
+        if (focusedStepNumber === 0) {
+          if (scrollY < previousScrollY) snapEnabled = false;
+          if (scrollY > previousScrollY) snapEnabled = true;
+        } else snapEnabled = true;
+        previousScrollY = scrollY;
+        const snapType = snapEnabled ? 'y proximity' : 'none';
+        if (root.style.scrollSnapType !== snapType) {
+          root.style.scrollSnapType = snapType;
+        }
       }
       const viewportHeight = window.innerHeight;
       stepCards.forEach((section, index) => {
@@ -93,17 +98,20 @@ const About = () => {
     window.addEventListener('scroll', updateStep, { passive: true });
     window.addEventListener('resize', updateStep);
     return () => {
-      root.style.scrollSnapType = previousSnapType;
+      if (!isMobile) root.style.scrollSnapType = previousSnapType;
       window.removeEventListener('scroll', updateStep);
       window.removeEventListener('resize', updateStep);
     };
-  }, []);
+  }, [isMobile]);
 
   const stepClass = (number) =>
     `${styles.storyStep} ${focusedStep === number ? styles.activeStep : ''}`;
 
   return (
-    <div className={styles.about}>
+    <div
+      className={styles.about}
+      data-walkthrough={isMobile ? 'mobile' : 'desktop'}
+    >
       <title>About | Starry Sky</title>
       <section className={styles.walkthrough} ref={walkthrough}>
         <div className={styles.modelStage}>
@@ -284,6 +292,24 @@ const About = () => {
       </section>
     </div>
   );
+};
+
+const DesktopAboutWalkthrough = () => <AboutWalkthrough isMobile={false} />;
+const MobileAboutWalkthrough = () => <AboutWalkthrough isMobile />;
+
+const About = () => {
+  const [isMobile, setIsMobile] = useState(
+    () => window.matchMedia('(max-width: 900px)').matches,
+  );
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 900px)');
+    const update = (event) => setIsMobile(event.matches);
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+
+  return isMobile ? <MobileAboutWalkthrough /> : <DesktopAboutWalkthrough />;
 };
 
 export default About;

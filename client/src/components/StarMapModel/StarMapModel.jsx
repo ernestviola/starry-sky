@@ -392,7 +392,7 @@ const Star = ({ starPos, showLabel }) => {
 
 const CelestialSphere = () => (
   <mesh>
-    <sphereGeometry args={[1, 16, 8]} />
+    <sphereGeometry args={[1, 32, 16]} />
     <meshBasicMaterial
       color='white'
       wireframe
