@@ -27,19 +27,34 @@ const RightAscension = ({ starPos, showZ, highlight, showAllLabels }) => (
       ]}
       color={highlight === 'x' || highlight === 'all' ? 'gold' : '#56B4E9'}
     />
-    {(showAllLabels || highlight === 'h' || highlight === 'x' || highlight === 'all') && (
+    {(showAllLabels ||
+      highlight === 'h' ||
+      highlight === 'x' ||
+      highlight === 'all') && (
       <Html position={[starPos[0] / 2, 0, starPos[2] / 2]}>
-        <div className={`${styles.sceneLabel} ${highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}`}>h</div>
+        <div
+          className={`${styles.sceneLabel} ${highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}`}
+        >
+          h
+        </div>
       </Html>
     )}
     {(showAllLabels || highlight === 'x' || highlight === 'all') && (
       <Html position={[starPos[0] / 2, 0, starPos[2]]}>
-        <div className={`${styles.sceneLabel} ${highlight === 'x' || highlight === 'all' ? styles.highlightLabel : ''}`}>x</div>
+        <div
+          className={`${styles.sceneLabel} ${highlight === 'x' || highlight === 'all' ? styles.highlightLabel : ''}`}
+        >
+          x
+        </div>
       </Html>
     )}
     {showZ && (showAllLabels || highlight === 'z' || highlight === 'all') && (
       <Html position={[0, 0, starPos[2] / 2]}>
-        <div className={`${styles.sceneLabel} ${highlight === 'z' || highlight === 'all' ? styles.highlightLabel : ''}`}>z</div>
+        <div
+          className={`${styles.sceneLabel} ${highlight === 'z' || highlight === 'all' ? styles.highlightLabel : ''}`}
+        >
+          z
+        </div>
       </Html>
     )}
     <mesh>
@@ -74,7 +89,12 @@ const RightAscension = ({ starPos, showZ, highlight, showAllLabels }) => (
   </>
 );
 
-const Declination = ({ starPos, showHorizontalRadius, highlight, showAllLabels }) => {
+const Declination = ({
+  starPos,
+  showHorizontalRadius,
+  highlight,
+  showAllLabels,
+}) => {
   return (
     <>
       {showAllLabels && (
@@ -84,34 +104,43 @@ const Declination = ({ starPos, showHorizontalRadius, highlight, showAllLabels }
       )}
       {(showAllLabels || highlight === 'y' || highlight === 'all') && (
         <Html position={[starPos[0], starPos[1] / 2, starPos[2]]}>
-          <div className={`${styles.sceneLabel} ${highlight === 'y' || highlight === 'all' ? styles.highlightLabel : ''}`}>y</div>
+          <div
+            className={`${styles.sceneLabel} ${highlight === 'y' || highlight === 'all' ? styles.highlightLabel : ''}`}
+          >
+            y
+          </div>
         </Html>
       )}
-      {showHorizontalRadius && (showAllLabels || highlight === 'h' || highlight === 'all') && (
-        <Html position={[starPos[0] / 2, 0, starPos[2] / 2]}>
-          <div className={`${styles.sceneLabel} ${highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}`}>h</div>
-        </Html>
-      )}
+      {showHorizontalRadius &&
+        (showAllLabels || highlight === 'h' || highlight === 'all') && (
+          <Html position={[starPos[0] / 2, 0, starPos[2] / 2]}>
+            <div
+              className={`${styles.sceneLabel} ${highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}`}
+            >
+              h
+            </div>
+          </Html>
+        )}
       <Line
         points={[
           [0, 0, 0],
           [starPos[0], starPos[1], starPos[2]],
         ]}
-        color='#E69F00'
+        color='#D55E00'
       />
       <Line
         points={[
           [0, 0, 0],
           [starPos[0], 0, starPos[2]],
         ]}
-        color={highlight === 'h' || highlight === 'all' ? 'gold' : '#E69F00'}
+        color={highlight === 'h' || highlight === 'all' ? 'gold' : '#D55E00'}
       />
       <Line
         points={[
           [starPos[0], 0, starPos[2]],
           [starPos[0], starPos[1], starPos[2]],
         ]}
-        color={highlight === 'y' || highlight === 'all' ? 'gold' : '#E69F00'}
+        color={highlight === 'y' || highlight === 'all' ? 'gold' : '#D55E00'}
       />
 
       <mesh>
@@ -136,7 +165,7 @@ const Declination = ({ starPos, showHorizontalRadius, highlight, showAllLabels }
           />
         </bufferGeometry>
         <meshStandardMaterial
-          color='#E69F00'
+          color='#D55E00'
           side={THREE.DoubleSide}
           transparent
           opacity={0.4}
@@ -181,17 +210,37 @@ const AngleArcs = ({
     <>
       {showRightAscension && (
         <>
-          <Line points={raPoints} color={highlight === 'ra' || highlight === 'all' ? 'gold' : '#56B4E9'} lineWidth={2} />
+          <Line
+            points={raPoints}
+            color={
+              highlight === 'ra' || highlight === 'all' ? 'gold' : '#56B4E9'
+            }
+            lineWidth={2}
+          />
           <Html position={raLabel}>
-            <div className={`${styles.sceneLabel} ${styles.raLabel} ${highlight === 'ra' || highlight === 'all' ? styles.highlightLabel : ''}`}>RA</div>
+            <div
+              className={`${styles.sceneLabel} ${styles.raLabel} ${highlight === 'ra' || highlight === 'all' ? styles.highlightLabel : ''}`}
+            >
+              RA
+            </div>
           </Html>
         </>
       )}
       {showDeclination && (
         <>
-          <Line points={decPoints} color={highlight === 'dec' || highlight === 'all' ? 'gold' : '#E69F00'} lineWidth={2} />
+          <Line
+            points={decPoints}
+            color={
+              highlight === 'dec' || highlight === 'all' ? 'gold' : '#D55E00'
+            }
+            lineWidth={2}
+          />
           <Html position={decLabel}>
-            <div className={`${styles.sceneLabel} ${styles.decLabel} ${highlight === 'dec' || highlight === 'all' ? styles.highlightLabel : ''}`}>Dec</div>
+            <div
+              className={`${styles.sceneLabel} ${styles.decLabel} ${highlight === 'dec' || highlight === 'all' ? styles.highlightLabel : ''}`}
+            >
+              Dec
+            </div>
           </Html>
         </>
       )}
@@ -333,7 +382,7 @@ const Star = ({ starPos, showLabel }) => {
       {showLabel && (
         <Html position={[starPos[0], starPos[1], starPos[2]]}>
           <div className={styles.sceneLabel}>
-            Star [{starPos.map((coordinate) => coordinate.toFixed(2)).join(', ')}]
+            {`Star [${starPos.map((coordinate) => coordinate.toFixed(2)).join(', ')}]`}
           </div>
         </Html>
       )}
@@ -343,7 +392,7 @@ const Star = ({ starPos, showLabel }) => {
 
 const CelestialSphere = () => (
   <mesh>
-    <sphereGeometry args={[1, 32, 16]} />
+    <sphereGeometry args={[1, 16, 8]} />
     <meshBasicMaterial
       color='white'
       wireframe
@@ -386,88 +435,90 @@ const Controls = ({
         aria-hidden={hidden}
         inert={hidden}
       >
-        <div className={`${styles.controlsContainer} ${step === 0 ? styles.panelEnter : ''}`}>
+        <div
+          className={`${styles.controlsContainer} ${step === 0 ? styles.panelEnter : ''}`}
+        >
           <div className={styles.stepTitle}>{stage}</div>
-        {(step === 0 || step >= 3) && (
-          <label>
-            Right ascension: {degrees(rightAscensionAngle)}°
-            <input
-              type='range'
-              min={0}
-              max={Math.PI * 2}
-              step={0.01}
-              value={rightAscensionAngle}
-              onChange={(e) => setRightAscensionAngle(Number(e.target.value))}
-            />
-          </label>
-        )}
-        {(step <= 2 || step === 5) && (
-          <label>
-            Declination: {degrees(declinationAngle)}°
-            <input
-              type='range'
-              min={-Math.PI / 2}
-              max={Math.PI / 2}
-              step={0.01}
-              value={declinationAngle}
-              onChange={(e) => setDeclinationAngle(Number(e.target.value))}
-            />
-          </label>
-        )}
-        {step === 1 && (
-          <>
-            <div className={styles.equation}>Given: r = 1</div>
-            <div className={styles.equation}>sin(Dec) = y / r</div>
-            <div className={styles.equation}>sin(Dec) = y / 1</div>
-            <div className={styles.equation}>
-              y = sin(Dec) = {starPos[1].toFixed(2)}
-            </div>
-          </>
-        )}
-        {step === 2 && (
-          <>
-            <div className={styles.equation}>cos(Dec) = h / r</div>
-            <div className={styles.equation}>cos(Dec) = h / 1</div>
-            <div className={styles.equation}>
-              h = cos(Dec) = {horizontalRadius.toFixed(2)}
-            </div>
-          </>
-        )}
-        {step === 3 && (
-          <>
-            <div className={styles.equation}>
-              Given: h = {horizontalRadius.toFixed(2)}
-            </div>
-            <div className={styles.equation}>sin(RA) = x / h</div>
-            <div className={styles.equation}>
-              x = h sin(RA) = {starPos[0].toFixed(2)}
-            </div>
-          </>
-        )}
-        {step === 4 && (
-          <>
-            <div className={styles.equation}>
-              Given: h = {horizontalRadius.toFixed(2)}
-            </div>
-            <div className={styles.equation}>cos(RA) = z / h</div>
-            <div className={styles.equation}>
-              z = h cos(RA) = {starPos[2].toFixed(2)}
-            </div>
-          </>
-        )}
-        {step === 5 && (
-          <>
-            <div className={styles.equation}>
-              x = cos(Dec) sin(RA) = {starPos[0].toFixed(2)}
-            </div>
-            <div className={styles.equation}>
-              y = sin(Dec) = {starPos[1].toFixed(2)}
-            </div>
-            <div className={styles.equation}>
-              z = cos(Dec) cos(RA) = {starPos[2].toFixed(2)}
-            </div>
-          </>
-        )}
+          {(step === 0 || step >= 3) && (
+            <label>
+              Right ascension: {degrees(rightAscensionAngle)}°
+              <input
+                type='range'
+                min={0}
+                max={Math.PI * 2}
+                step={0.01}
+                value={rightAscensionAngle}
+                onChange={(e) => setRightAscensionAngle(Number(e.target.value))}
+              />
+            </label>
+          )}
+          {(step <= 2 || step === 5) && (
+            <label>
+              Declination: {degrees(declinationAngle)}°
+              <input
+                type='range'
+                min={-Math.PI / 2}
+                max={Math.PI / 2}
+                step={0.01}
+                value={declinationAngle}
+                onChange={(e) => setDeclinationAngle(Number(e.target.value))}
+              />
+            </label>
+          )}
+          {step === 1 && (
+            <>
+              <div className={styles.equation}>Given: r = 1</div>
+              <div className={styles.equation}>sin(Dec) = y / r</div>
+              <div className={styles.equation}>sin(Dec) = y / 1</div>
+              <div className={styles.equation}>
+                y = sin(Dec) = {starPos[1].toFixed(2)}
+              </div>
+            </>
+          )}
+          {step === 2 && (
+            <>
+              <div className={styles.equation}>cos(Dec) = h / r</div>
+              <div className={styles.equation}>cos(Dec) = h / 1</div>
+              <div className={styles.equation}>
+                h = cos(Dec) = {horizontalRadius.toFixed(2)}
+              </div>
+            </>
+          )}
+          {step === 3 && (
+            <>
+              <div className={styles.equation}>
+                Given: h = {horizontalRadius.toFixed(2)}
+              </div>
+              <div className={styles.equation}>sin(RA) = x / h</div>
+              <div className={styles.equation}>
+                x = h sin(RA) = {starPos[0].toFixed(2)}
+              </div>
+            </>
+          )}
+          {step === 4 && (
+            <>
+              <div className={styles.equation}>
+                Given: h = {horizontalRadius.toFixed(2)}
+              </div>
+              <div className={styles.equation}>cos(RA) = z / h</div>
+              <div className={styles.equation}>
+                z = h cos(RA) = {starPos[2].toFixed(2)}
+              </div>
+            </>
+          )}
+          {step === 5 && (
+            <>
+              <div className={styles.equation}>
+                x = cos(Dec) sin(RA) = {starPos[0].toFixed(2)}
+              </div>
+              <div className={styles.equation}>
+                y = sin(Dec) = {starPos[1].toFixed(2)}
+              </div>
+              <div className={styles.equation}>
+                z = cos(Dec) cos(RA) = {starPos[2].toFixed(2)}
+              </div>
+            </>
+          )}
           {showNavigation && (
             <div className={styles.stepNavigation}>
               <button disabled={step === 1} onClick={() => setStep(step - 1)}>
@@ -480,7 +531,9 @@ const Controls = ({
           )}
         </div>
         <div className={styles.wireframeParent}>
-          <div className={`${styles.controlsContainer} ${step === 0 ? styles.panelEnter : ''}`}>
+          <div
+            className={`${styles.controlsContainer} ${step === 0 ? styles.panelEnter : ''}`}
+          >
             <label className={styles.toggle}>
               <input
                 type='checkbox'
@@ -565,7 +618,11 @@ const StarMapModel = ({
       <Canvas
         camera={{ position: [-1.8, 0.51, 1.8] }}
         className={`${styles.canvas} ${canvasReady ? styles.canvasReady : ''}`}
-        onCreated={() => requestAnimationFrame(() => requestAnimationFrame(() => setCanvasReady(true)))}
+        onCreated={() =>
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => setCanvasReady(true)),
+          )
+        }
       >
         <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} />
         <ModelGrid gridSize={gridSize} />

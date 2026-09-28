@@ -16,6 +16,9 @@ const About = () => {
   const walkthrough = useRef(null);
 
   useEffect(() => {
+    const root = document.documentElement;
+    const previousSnapType = root.style.scrollSnapType;
+    root.style.scrollSnapType = 'none';
     const sections = [
       ...walkthrough.current.querySelectorAll('[data-derivation-step]'),
     ];
@@ -38,6 +41,15 @@ const About = () => {
       const focusedStepNumber = focused
         ? Number(focused.dataset.derivationStep)
         : 0;
+      const snapType =
+        focusedStepNumber === 0
+          ? 'none'
+          : focusedStepNumber === 1
+            ? 'y proximity'
+            : 'y mandatory';
+      if (root.style.scrollSnapType !== snapType) {
+        root.style.scrollSnapType = snapType;
+      }
       const viewportHeight = window.innerHeight;
       stepCards.forEach((section, index) => {
         const cardTop = section.firstElementChild.getBoundingClientRect().top;
@@ -81,6 +93,7 @@ const About = () => {
     window.addEventListener('scroll', updateStep, { passive: true });
     window.addEventListener('resize', updateStep);
     return () => {
+      root.style.scrollSnapType = previousSnapType;
       window.removeEventListener('scroll', updateStep);
       window.removeEventListener('resize', updateStep);
     };

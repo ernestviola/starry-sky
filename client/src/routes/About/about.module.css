@@ -74,6 +74,10 @@
 }
 
 
+.storyStep {
+  scroll-snap-align: start;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .storyStep {
     opacity: 0;
