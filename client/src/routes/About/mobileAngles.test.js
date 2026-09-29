@@ -12,6 +12,11 @@ test('mobile declination sweeps both poles, then settles at the equator for RA',
   expect(degrees(mobileAngles(3, 0).declination)).toBe(0);
 });
 
+test('step 5 resets to the model defaults', () => {
+  expect(degrees(mobileAngles(5).declination)).toBeCloseTo(30);
+  expect(degrees(mobileAngles(5).rightAscension)).toBeCloseTo(45);
+});
+
 test('each right-ascension step completes a full turn in either scroll direction', () => {
   for (const step of [3, 4]) {
     expect(degrees(mobileAngles(step, 0).rightAscension)).toBe(0);

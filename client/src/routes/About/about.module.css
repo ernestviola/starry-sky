@@ -56,6 +56,10 @@
   height: 100svh;
 }
 
+.modelFrame {
+  height: 100%;
+}
+
 .story {
   z-index: 1;
   pointer-events: none;
@@ -174,8 +178,8 @@
 
   .walkthrough {
     display: flex;
-    width: auto;
-    margin: 0 0 0;
+    width: 100vw;
+    margin: 0 0 0 calc(50% - 50vw);
     flex-direction: column;
   }
 
@@ -195,6 +199,54 @@
     z-index: 1;
     height: var(--mobile-model-height);
     background: var(--color-background);
+  }
+
+  .exploringStage canvas {
+    touch-action: none;
+  }
+
+  .loweredModel {
+    transform: translateY(var(--space-2));
+    transition: transform var(--duration-slow) var(--ease-standard);
+  }
+
+  .mobileSceneInfo {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .liveCalculation {
+    position: absolute;
+    top: 22%;
+    right: var(--space-2);
+    display: grid;
+    gap: var(--space-2);
+    width: min(36%, 18rem);
+    color: var(--color-text-body);
+    font-family: var(--font-data);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-data);
+  }
+
+  .liveCalculation strong {
+    color: var(--color-text-primary);
+    font-weight: var(--weight-bold);
+  }
+
+  .overheadSceneInfo {
+    position: absolute;
+    z-index: 2;
+    top: var(--space-4);
+    left: var(--about-gutter);
+    width: min(45%, 18rem);
+    pointer-events: none;
+  }
+
+  .overheadSceneInfo .liveCalculation {
+    position: static;
+    width: auto;
   }
 
   .storyStep {
@@ -238,6 +290,56 @@
 
   .stepCard h2 {
     font-size: 2.2rem;
+  }
+
+  .exploringStep .stepCard,
+  .explorePanel[hidden] {
+    display: none;
+  }
+
+  .exploreButton,
+  .explorePanel > button {
+    min-height: var(--touch-target-min);
+    padding: var(--space-2) var(--space-4);
+    border: var(--border-width) solid var(--color-accent);
+    border-radius: var(--radius-button);
+    background: var(--color-panel-raised);
+    color: var(--color-text-primary);
+    cursor: pointer;
+  }
+
+  .exploreButton {
+    width: 100%;
+    margin-top: var(--space-4);
+  }
+
+  .explorePanel {
+    position: fixed;
+    z-index: 3;
+    right: var(--about-gutter);
+    bottom: max(var(--space-4), env(safe-area-inset-bottom));
+    left: var(--about-gutter);
+    max-height: calc(100svh - var(--mobile-model-height) - var(--space-4) - var(--space-4));
+    overflow-y: auto;
+    background: var(--color-background);
+  }
+
+  .explorePanel > button {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    width: 100%;
+    margin-bottom: var(--space-3);
+  }
+
+  .exploreButton:focus-visible,
+  .explorePanel > button:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .stepEquation {
+    display: none;
   }
 
   .stepCard::after {

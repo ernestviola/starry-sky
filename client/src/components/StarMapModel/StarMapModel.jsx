@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Line, Html } from '@react-three/drei';
 import * as THREE from 'three';
@@ -248,12 +249,15 @@ const AngleArcs = ({
   );
 };
 
-const CameraRig = ({ step, rightAscensionAngle }) => {
+const CameraRig = ({ step, rightAscensionAngle, declinationCamera, overheadCamera, finalCamera }) => {
   const { camera } = useThree();
   const transition = useRef({
     key: '',
     start: new THREE.Spherical(),
     target: new THREE.Spherical(),
+    startAim: new THREE.Vector3(),
+    aim: new THREE.Vector3(),
+    targetAim: new THREE.Vector3(),
     elapsed: 0,
   });
   const views = {
@@ -272,7 +276,14 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
     4: [0, 3, 0.01],
     5: [1, 1.5, 3],
   };
-  const position = new THREE.Vector3(...views[step]);
+  const view = declinationCamera && (step === 1 || step === 2)
+    ? declinationCamera
+    : overheadCamera && (step === 3 || step === 4)
+      ? overheadCamera
+      : finalCamera && step === 5
+        ? finalCamera
+        : { position: views[step], target: [0, 0, 0] };
+  const position = new THREE.Vector3(...view.position);
   const duration =
     { 0: 1.2, 1: 0.8, 2: 0.8, 3: 1.2, 4: 0.8, 5: 1 }[step] ?? 1.2;
   const viewKey = String(step);
@@ -282,6 +293,9 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
       key: viewKey,
       start: new THREE.Spherical().setFromVector3(camera.position),
       target: new THREE.Spherical().setFromVector3(position),
+      startAim: transition.current.aim.clone(),
+      aim: transition.current.aim.clone(),
+      targetAim: new THREE.Vector3(...view.target),
       elapsed: 0,
     };
   }
@@ -298,7 +312,7 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
       0,
       1,
     );
-    const { start, target } = transition.current;
+    const { start, target, startAim, aim, targetAim } = transition.current;
     camera.position.setFromSpherical(
       new THREE.Spherical(
         THREE.MathUtils.lerp(start.radius, target.radius, progress),
@@ -306,7 +320,8 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
         THREE.MathUtils.lerp(start.theta, target.theta, progress),
       ),
     );
-    camera.lookAt(0, 0, 0);
+    aim.copy(startAim).lerp(targetAim, progress);
+    camera.lookAt(aim);
   });
 
   return null;
@@ -415,6 +430,8 @@ const Controls = ({
   showNavigation,
   showSphere,
   setShowSphere,
+  showWireframeControl,
+  compact = false,
   hidden = false,
 }) => {
   const degrees = (angle) => THREE.MathUtils.radToDeg(angle).toFixed(1);
@@ -431,7 +448,7 @@ const Controls = ({
   return (
     <>
       <div
-        className={`${styles.controllerParent} ${hidden ? styles.controlsHidden : ''}`}
+        className={`${styles.controllerParent} ${compact ? styles.inlineControls : ''} ${hidden ? styles.controlsHidden : ''}`}
         aria-hidden={hidden}
         inert={hidden}
       >
@@ -506,7 +523,7 @@ const Controls = ({
               </div>
             </>
           )}
-          {step === 5 && (
+          {step === 5 && !compact && (
             <>
               <div className={styles.equation}>
                 x = cos(Dec) sin(RA) = {starPos[0].toFixed(2)}
@@ -530,20 +547,22 @@ const Controls = ({
             </div>
           )}
         </div>
-        <div className={styles.wireframeParent}>
-          <div
-            className={`${styles.controlsContainer} ${step === 0 ? styles.panelEnter : ''}`}
-          >
-            <label className={styles.toggle}>
-              <input
-                type='checkbox'
-                checked={showSphere}
-                onChange={(event) => setShowSphere(event.target.checked)}
-              />
-              Show sphere wireframe
-            </label>
+        {showWireframeControl && (
+          <div className={styles.wireframeParent}>
+            <div
+              className={`${styles.controlsContainer} ${step === 0 ? styles.panelEnter : ''}`}
+            >
+              <label className={styles.toggle}>
+                <input
+                  type='checkbox'
+                  checked={showSphere}
+                  onChange={(event) => setShowSphere(event.target.checked)}
+                />
+                Show sphere wireframe
+              </label>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );
@@ -582,7 +601,12 @@ const StarMapModel = ({
   presentation = false,
   scrollAngles,
   renderControls = true,
+  showWireframeControl = true,
+  controlsContainer,
   allowOrbit = true,
+  declinationCamera,
+  overheadCamera,
+  finalCamera,
 }) => {
   const starRadius = 1;
   const [savedDeclination, setDeclinationAngle] = useState(Math.PI / 6);
@@ -611,7 +635,26 @@ const StarMapModel = ({
     4: { rightAscension: 'z', arc: 'ra' },
   };
   const highlight = highlights[step] ?? {};
-  const showAllLabels = step === 0 || step === 5;
+  const showAllLabels = step === 0;
+  const showStarLabel = step === 0 || step === 5;
+  const controls = renderControls && (
+    <Controls
+      starPos={starPos}
+      starRadius={starRadius}
+      declinationAngle={declinationAngle}
+      setDeclinationAngle={setDeclinationAngle}
+      rightAscensionAngle={rightAscensionAngle}
+      setRightAscensionAngle={setRightAscensionAngle}
+      step={controlsStep}
+      setStep={setStep}
+      showNavigation={showNavigation}
+      showSphere={showSphere}
+      setShowSphere={setShowSphere}
+      showWireframeControl={showWireframeControl}
+      compact={Boolean(controlsContainer)}
+      hidden={!showControls}
+    />
+  );
 
   return (
     <div
@@ -628,7 +671,7 @@ const StarMapModel = ({
           )
         }
       >
-        <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} />
+        <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} declinationCamera={declinationCamera} overheadCamera={overheadCamera} finalCamera={finalCamera} />
         <ModelAxes />
         <PointLabels starPos={starPos} showLabels={showAllLabels} />
         {(step === 0 || step <= 2 || step === 5) && (
@@ -656,27 +699,14 @@ const StarMapModel = ({
           highlight={highlight.arc}
         />
         {(step === 0 || step <= 2 || step === 5) && (
-          <Star starPos={starPos} showLabel={showAllLabels} />
+          <Star starPos={starPos} showLabel={showStarLabel} />
         )}
         {showSphere && <CelestialSphere />}
-        <OrbitControls enabled={allowOrbit && (step === 0 || step === 5)} enableZoom={false} />
+        {allowOrbit && (
+          <OrbitControls enabled={step === 0 || step === 5} enableZoom={false} />
+        )}
       </Canvas>
-      {renderControls && (
-        <Controls
-          starPos={starPos}
-          starRadius={starRadius}
-          declinationAngle={declinationAngle}
-          setDeclinationAngle={setDeclinationAngle}
-          rightAscensionAngle={rightAscensionAngle}
-          setRightAscensionAngle={setRightAscensionAngle}
-          step={controlsStep}
-          setStep={setStep}
-          showNavigation={showNavigation}
-          showSphere={showSphere}
-          setShowSphere={setShowSphere}
-          hidden={!showControls}
-        />
-      )}
+      {controlsContainer ? createPortal(controls, controlsContainer) : controls}
     </div>
   );
 };

@@ -5,6 +5,20 @@ import StarMapModel from '../../components/StarMapModel/StarMapModel.jsx';
 import styles from './about.module.css';
 import { mobileAngles } from './mobileAngles.js';
 
+const mobileDeclinationCamera = {
+  position: [-2, 0.2, 1.18],
+  target: [0, 0, 1.18],
+};
+const mobileOverheadCamera = {
+  position: [0, 2.5, 0.01],
+  target: [0, 0, 0],
+};
+const mobileFinalCamera = {
+  position: [0.63, 0.94, 1.89],
+  target: [0, 0, 0],
+};
+const declinationTitles = ['Find y with declination', 'Find the horizontal radius, h'];
+
 const StepCard = ({ children }) => (
   <div className={styles.stepCard}>{children}</div>
 );
@@ -15,7 +29,32 @@ const AboutWalkthrough = ({ isMobile }) => {
   const [showControllerPanel, setShowControllerPanel] = useState(false);
   const [controllerStep, setControllerStep] = useState(1);
   const [scrollAngles, setScrollAngles] = useState(() => mobileAngles(0));
+  const [controlsContainer, setControlsContainer] = useState(null);
+  const [exploring, setExploring] = useState(false);
+  const exploreButton = useRef(null);
+  const backButton = useRef(null);
   const walkthrough = useRef(null);
+
+  const exitExplore = () => {
+    setExploring(false);
+    requestAnimationFrame(() => exploreButton.current?.focus());
+  };
+
+  useEffect(() => {
+    if (!isMobile || !exploring) return;
+    const root = document.documentElement;
+    const previousOverflow = root.style.overflow;
+    root.style.overflow = 'hidden';
+    backButton.current?.focus();
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') exitExplore();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      root.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [isMobile, exploring]);
 
   useEffect(() => {
     if (isMobile) {
@@ -156,25 +195,72 @@ const AboutWalkthrough = ({ isMobile }) => {
 
   const stepClass = (number) =>
     `${styles.storyStep} ${focusedStep === number ? styles.activeStep : ''}`;
+  const isLoweredModel = isMobile && (step === 3 || step === 4 || step === 5);
 
   return (
     <div
       className={styles.about}
       data-walkthrough={isMobile ? 'mobile' : 'desktop'}
+      data-mode={exploring ? 'explore' : 'walkthrough'}
     >
       <title>About | Starry Sky</title>
       <section className={styles.walkthrough} ref={walkthrough}>
-        <div className={styles.modelStage}>
-          <StarMapModel
-            step={step}
-            controlsStep={controllerStep}
-            showControls={showControllerPanel}
-            showNavigation={false}
-            presentation
-            scrollAngles={isMobile ? scrollAngles : undefined}
-            renderControls={!isMobile}
-            allowOrbit={!isMobile}
-          />
+        <div
+          className={`${styles.modelStage} ${exploring ? styles.exploringStage : ''}`}
+        >
+          {isMobile && (focusedStep === 1 || focusedStep === 2) && (
+            <div className={styles.mobileSceneInfo}>
+              <div className={styles.liveCalculation} aria-label='Live calculation'>
+                <span>Dec {Math.round(scrollAngles.declination * 180 / Math.PI)}°</span>
+                <span>{focusedStep === 1 ? 'y = sin(Dec)' : 'h = cos(Dec)'}</span>
+                <strong>
+                  {focusedStep === 1 ? 'y' : 'h'} = {' '}
+                  {(focusedStep === 1
+                    ? Math.sin(scrollAngles.declination)
+                    : Math.cos(scrollAngles.declination)).toFixed(2)}
+                </strong>
+              </div>
+            </div>
+          )}
+          {isMobile && (focusedStep === 3 || focusedStep === 4) && (
+            <div className={styles.overheadSceneInfo}>
+              <div className={styles.liveCalculation} aria-label='Live calculation'>
+                <span>RA {Math.round(scrollAngles.rightAscension * 180 / Math.PI)}°</span>
+                <span>{focusedStep === 3 ? 'x = h sin(RA)' : 'z = h cos(RA)'}</span>
+                <strong>
+                  {focusedStep === 3 ? 'x' : 'z'} ={' '}
+                  {(Math.cos(scrollAngles.declination) * (focusedStep === 3
+                    ? Math.sin(scrollAngles.rightAscension)
+                    : Math.cos(scrollAngles.rightAscension))).toFixed(2)}
+                </strong>
+              </div>
+            </div>
+          )}
+          <div
+            className={`${styles.modelFrame} ${isLoweredModel ? styles.loweredModel : ''}`}
+          >
+            <StarMapModel
+              step={step}
+              controlsStep={isMobile ? step : controllerStep}
+              showControls={isMobile ? exploring : showControllerPanel}
+              showNavigation={false}
+              presentation
+              scrollAngles={isMobile && step !== 5 ? scrollAngles : undefined}
+              renderControls={isMobile ? exploring : true}
+              showWireframeControl={!isMobile}
+              controlsContainer={isMobile ? controlsContainer : undefined}
+              allowOrbit={!isMobile || exploring}
+              declinationCamera={isMobile ? mobileDeclinationCamera : undefined}
+              overheadCamera={isMobile ? mobileOverheadCamera : undefined}
+              finalCamera={isMobile ? mobileFinalCamera : undefined}
+            />
+          </div>
+          {isMobile && (
+            <div className={styles.explorePanel} hidden={!exploring}>
+              <button ref={backButton} type='button' onClick={exitExplore}>Back to Place the star</button>
+              <div ref={setControlsContainer} />
+            </div>
+          )}
         </div>
         <div className={styles.story}>
           <section data-derivation-step='0' className={styles.aboutHeader}>
@@ -275,7 +361,7 @@ const AboutWalkthrough = ({ isMobile }) => {
 
           <section data-derivation-step='1' className={stepClass(1)}>
             <StepCard>
-              <h2>1. Find y with declination</h2>
+              <h2>{declinationTitles[0]}</h2>
               <p>
                 Declination is the angle away from the celestial equator:
                 positive going north and negative going south. We&apos;re
@@ -287,7 +373,7 @@ const AboutWalkthrough = ({ isMobile }) => {
                 Since we know an angle and one side, we can calculate the side
                 we&apos;re interested in: the distance y away from the equator.
               </p>
-              <p>
+              <p className={styles.stepEquation}>
                 sin(Dec) = opposite / hypotenuse
                 <br />
                 sin(Dec) = y / 1
@@ -298,7 +384,7 @@ const AboutWalkthrough = ({ isMobile }) => {
 
           <section data-derivation-step='2' className={stepClass(2)}>
             <StepCard>
-              <h2>2. Find the horizontal radius, h</h2>
+              <h2>{declinationTitles[1]}</h2>
               <p>
                 The other leg of the declination triangle is the distance from
                 the origin to the star&apos;s XZ projection. We call it h. Since
@@ -310,7 +396,7 @@ const AboutWalkthrough = ({ isMobile }) => {
 
           <section data-derivation-step='3' className={stepClass(3)}>
             <StepCard>
-              <h2>3. Use right ascension to find x</h2>
+              <h2>Use right ascension to find x</h2>
               <p>
                 Looking down on the XZ plane gives us a second right triangle
                 with h as its hypotenuse. Right ascension measures eastward from
@@ -322,7 +408,7 @@ const AboutWalkthrough = ({ isMobile }) => {
 
           <section data-derivation-step='4' className={stepClass(4)}>
             <StepCard>
-              <h2>4. Find z</h2>
+              <h2>Find z</h2>
               <p>
                 The adjacent side of the same right-ascension triangle is z = h
                 cos(RA). We now have all three Cartesian coordinates for the
@@ -331,14 +417,27 @@ const AboutWalkthrough = ({ isMobile }) => {
             </StepCard>
           </section>
 
-          <section data-derivation-step='5' className={stepClass(5)}>
+          <section
+            data-derivation-step='5'
+            className={`${stepClass(5)} ${exploring ? styles.exploringStep : ''}`}
+          >
             <StepCard>
-              <h2>5. Place the star</h2>
+              <h2>Place the star</h2>
               <p>
                 Substituting h = cos(Dec) gives the final unit-sphere
                 coordinates. Repeating this calculation for every catalog entry
                 places the stars around the viewer.
               </p>
+              {isMobile && (
+                <button
+                  ref={exploreButton}
+                  type='button'
+                  className={styles.exploreButton}
+                  onClick={() => setExploring(true)}
+                >
+                  Explore the model
+                </button>
+              )}
             </StepCard>
           </section>
         </div>
