@@ -8,6 +8,6 @@ export const mobileAngles = (step, progress = 0) => {
     return { declination, rightAscension: 0 };
   }
   if (step === 3 || step === 4) return { declination: 0, rightAscension: 2 * Math.PI * progress };
-  if (step === 5) return { declination: Math.PI / 6, rightAscension: Math.PI / 4 };
-  return { declination: step === 0 ? Math.PI / 2 : 0, rightAscension: 0 };
+  if (step === 0 || step === 5) return { declination: Math.PI / 6, rightAscension: Math.PI / 4 };
+  return { declination: 0, rightAscension: 0 };
 };

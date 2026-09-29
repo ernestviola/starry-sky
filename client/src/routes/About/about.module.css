@@ -189,25 +189,29 @@
   }
 
   .aboutHeader {
-    order: 0;
+    order: 1;
+    position: relative;
+    z-index: 1;
   }
 
   .modelStage {
     position: sticky;
     top: 0;
-    order: 1;
-    z-index: 1;
-    height: var(--mobile-model-height);
+    order: 0;
+    z-index: 0;
+    height: 100svh;
+    margin: -10rem 0 calc(-100svh + 10rem);
     background: var(--color-background);
+    pointer-events: none;
+  }
+
+  .exploringStage {
+    z-index: 2;
+    pointer-events: auto;
   }
 
   .exploringStage canvas {
     touch-action: none;
-  }
-
-  .loweredModel {
-    transform: translateY(var(--space-2));
-    transition: transform var(--duration-slow) var(--ease-standard);
   }
 
   .mobileSceneInfo {
@@ -219,7 +223,7 @@
 
   .liveCalculation {
     position: absolute;
-    top: 22%;
+    top: 18svh;
     right: var(--space-2);
     display: grid;
     gap: var(--space-2);
@@ -250,6 +254,8 @@
   }
 
   .storyStep {
+    position: relative;
+    z-index: 1;
     order: 2;
     height: 100svh;
     min-height: 0;
@@ -267,7 +273,6 @@
 
   .aboutHeader {
     min-height: 0;
-    padding: 0;
     opacity: 1;
   }
 

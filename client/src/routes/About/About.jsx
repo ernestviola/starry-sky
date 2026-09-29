@@ -6,15 +6,16 @@ import styles from './about.module.css';
 import { mobileAngles } from './mobileAngles.js';
 
 const mobileDeclinationCamera = {
-  position: [-2, 0.2, 1.18],
-  target: [0, 0, 1.18],
+  position: [-4.2, 0.7, 1.8],
+  target: [0, -0.9, 1.45],
 };
 const mobileOverheadCamera = {
-  position: [0, 2.5, 0.01],
+  position: [0, 3.4, 0.01],
   target: [0, 0, 0],
+  offsetY: 0.2,
 };
 const mobileFinalCamera = {
-  position: [0.63, 0.94, 1.89],
+  position: [0.85, 1.3, 2.6],
   target: [0, 0, 0],
 };
 const declinationTitles = ['Find y with declination', 'Find the horizontal radius, h'];
@@ -65,7 +66,7 @@ const AboutWalkthrough = ({ isMobile }) => {
       let frame;
       const update = () => {
         const stageRect = stage.getBoundingClientRect();
-        const line = stageRect.bottom;
+        const line = 0;
         const current =
           stageRect.top <= 0
             ? cards.findLast(
@@ -195,8 +196,6 @@ const AboutWalkthrough = ({ isMobile }) => {
 
   const stepClass = (number) =>
     `${styles.storyStep} ${focusedStep === number ? styles.activeStep : ''}`;
-  const isLoweredModel = isMobile && (step === 3 || step === 4 || step === 5);
-
   return (
     <div
       className={styles.about}
@@ -237,7 +236,7 @@ const AboutWalkthrough = ({ isMobile }) => {
             </div>
           )}
           <div
-            className={`${styles.modelFrame} ${isLoweredModel ? styles.loweredModel : ''}`}
+            className={styles.modelFrame}
           >
             <StarMapModel
               step={step}

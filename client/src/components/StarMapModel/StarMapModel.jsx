@@ -250,7 +250,7 @@ const AngleArcs = ({
 };
 
 const CameraRig = ({ step, rightAscensionAngle, declinationCamera, overheadCamera, finalCamera }) => {
-  const { camera } = useThree();
+  const { camera, size } = useThree();
   const transition = useRef({
     key: '',
     start: new THREE.Spherical(),
@@ -258,6 +258,7 @@ const CameraRig = ({ step, rightAscensionAngle, declinationCamera, overheadCamer
     startAim: new THREE.Vector3(),
     aim: new THREE.Vector3(),
     targetAim: new THREE.Vector3(),
+    startOffset: 0,
     elapsed: 0,
   });
   const views = {
@@ -296,32 +297,36 @@ const CameraRig = ({ step, rightAscensionAngle, declinationCamera, overheadCamer
       startAim: transition.current.aim.clone(),
       aim: transition.current.aim.clone(),
       targetAim: new THREE.Vector3(...view.target),
+      startOffset: camera.view?.enabled ? camera.view.offsetY : 0,
       elapsed: 0,
     };
   }
 
   useFrame((_, delta) => {
-    if (transition.current.elapsed >= duration) return;
-
-    transition.current.elapsed = Math.min(
-      transition.current.elapsed + delta,
-      duration,
-    );
-    const progress = THREE.MathUtils.smoothstep(
-      transition.current.elapsed / duration,
-      0,
-      1,
-    );
-    const { start, target, startAim, aim, targetAim } = transition.current;
-    camera.position.setFromSpherical(
-      new THREE.Spherical(
-        THREE.MathUtils.lerp(start.radius, target.radius, progress),
-        THREE.MathUtils.lerp(start.phi, target.phi, progress),
-        THREE.MathUtils.lerp(start.theta, target.theta, progress),
-      ),
-    );
-    aim.copy(startAim).lerp(targetAim, progress);
-    camera.lookAt(aim);
+    const motion = transition.current;
+    const moving = motion.elapsed < duration;
+    if (moving) motion.elapsed = Math.min(motion.elapsed + delta, duration);
+    const progress = THREE.MathUtils.smoothstep(motion.elapsed / duration, 0, 1);
+    if (moving) {
+      const { start, target, startAim, aim, targetAim } = motion;
+      camera.position.setFromSpherical(
+        new THREE.Spherical(
+          THREE.MathUtils.lerp(start.radius, target.radius, progress),
+          THREE.MathUtils.lerp(start.phi, target.phi, progress),
+          THREE.MathUtils.lerp(start.theta, target.theta, progress),
+        ),
+      );
+      aim.copy(startAim).lerp(targetAim, progress);
+      camera.lookAt(aim);
+    }
+    const offset = THREE.MathUtils.lerp(motion.startOffset, (view.offsetY ?? 0) * size.height, progress);
+    if (offset > 0.01) {
+      if (camera.view?.offsetY !== offset || camera.view.fullHeight !== size.height) {
+        camera.setViewOffset(size.width, size.height, 0, offset, size.width, size.height);
+      }
+    } else if (camera.view?.enabled) {
+      camera.clearViewOffset();
+    }
   });
 
   return null;

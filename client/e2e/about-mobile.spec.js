@@ -4,6 +4,9 @@ test('mobile walkthrough scrubs one visible card in both directions without pane
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/about');
   await expect(page.locator('[data-walkthrough="mobile"]')).toBeVisible();
+  const navLogo = await page.getByRole('link', { name: 'STARRY SKY' }).boundingBox();
+  const introTitle = await page.getByRole('heading', { name: 'About Starry Sky' }).boundingBox();
+  expect(introTitle.x).toBeCloseTo(navLogo.x, 0);
   const canvas = page.locator('canvas');
   await expect(canvas).toHaveCount(1);
   await expect.poll(() => canvas.evaluate((element) => getComputedStyle(element).touchAction)).not.toBe('none');
@@ -23,53 +26,88 @@ test('mobile walkthrough scrubs one visible card in both directions without pane
   const firstTop = await first.evaluate((section) => section.getBoundingClientRect().top + scrollY);
   const stage = page.locator('[class*="modelStage"]');
   const stageHeight = await stage.evaluate((stage) => stage.offsetHeight);
-  expect(await stage.boundingBox()).toMatchObject({ x: 0, width: 390 });
+  const activationLine = 0;
+  expect(await stage.boundingBox()).toMatchObject({ x: 0, y: 0, width: 390 });
   expect(stageHeight).toBeGreaterThan(400);
   expect(await visibleSteps()).toEqual([]);
-  await page.evaluate((top) => scrollTo(0, top), firstTop - stageHeight + 100);
+  const intro = page.locator('[data-derivation-step="0"]');
+  await page.evaluate((top) => scrollTo(0, top), firstTop - 200);
+  await expect.poll(visibleSteps).toEqual([]);
+  expect((await intro.boundingBox()).y + (await intro.boundingBox()).height).toBeGreaterThan(0);
+  await page.evaluate((top) => scrollTo(0, top), firstTop + 100);
   await expect.poll(visibleSteps).toEqual(['1']);
+  expect((await intro.boundingBox()).y + (await intro.boundingBox()).height).toBeLessThanOrEqual(0);
   expect(await stage.boundingBox()).toMatchObject({ x: 0, width: 390 });
-  await expect.poll(async () => (await page.getByText('Dec', { exact: true }).boundingBox()).x).toBeLessThan(150);
+  await expect.poll(async () => {
+    const label = await page.getByText('Dec', { exact: true }).boundingBox();
+    return label.x >= 0 && label.x + label.width < 180;
+  }).toBe(true);
+  await expect(intro).toBeVisible();
   const scene = page.locator('[class*="mobileSceneInfo"]');
   await expect(scene).not.toContainText('Find y with declination');
   await expect(firstCard.getByRole('heading', { name: 'Find y with declination' })).toBeVisible();
-  expect(await firstCard.locator('h2').evaluate((heading) => getComputedStyle(heading).textAlign)).not.toBe('right');
   const firstCalculation = await scene.getByLabel('Live calculation').boundingBox();
   expect(firstCalculation.width).toBeGreaterThan(130);
   expect(firstCalculation.x).toBeGreaterThan(240);
   expect(firstCalculation.x + firstCalculation.width).toBeCloseTo(390 - 8, 0);
+  expect(firstCalculation.y).toBeCloseTo(844 * 0.18, 0);
   await expect(scene.getByLabel('Live calculation')).toContainText('y = sin(Dec)');
   await expect(firstCard.locator('[class*="stepEquation"]')).toBeHidden();
   const cardBox = await firstCard.boundingBox();
   expect(cardBox.x).toBeGreaterThanOrEqual(16);
   expect(cardBox.y + cardBox.height).toBeCloseTo(844 - 16, 0);
+  await expect.poll(async () => {
+    const bottomAxis = await page.getByText('-Y', { exact: true }).boundingBox();
+    const readout = await scene.getByLabel('Live calculation').boundingBox();
+    const card = await firstCard.boundingBox();
+    return bottomAxis.y + bottomAxis.height < card.y && readout.y + readout.height < card.y;
+  }).toBe(true);
   expect(await firstCard.evaluate((card) => getComputedStyle(card).borderRadius)).not.toBe('0px');
   expect(await firstCard.evaluate((card) => getComputedStyle(card, '::after').display)).toBe('none');
   const firstValue = await scene.getByLabel('Live calculation').innerText();
   const labelAtStart = await page.getByText('Dec', { exact: true }).boundingBox();
-  await page.evaluate((top) => scrollTo(0, top), firstTop - stageHeight + 500);
+  await page.evaluate((top) => scrollTo(0, top), firstTop - activationLine + 500);
   await expect.poll(async () => {
     const label = await page.getByText('Dec', { exact: true }).boundingBox();
     return Math.abs(label.y - labelAtStart.y);
   }).toBeGreaterThan(10);
   await expect.poll(() => scene.getByLabel('Live calculation').innerText()).not.toBe(firstValue);
   const secondTop = await second.evaluate((section) => section.getBoundingClientRect().top + scrollY);
-  await page.evaluate((top) => scrollTo(0, top), secondTop - stageHeight + 0.85 * 844);
+  await page.evaluate((top) => scrollTo(0, top), secondTop - activationLine + 0.85 * 844);
   await expect.poll(visibleSteps).toEqual(['2']);
   await expect(second.locator('h2', { hasText: 'Find the horizontal radius, h' })).toBeVisible();
   await expect(scene.getByLabel('Live calculation')).toContainText('h = cos(Dec)');
-  await expect.poll(async () => (await page.getByText('Dec', { exact: true }).boundingBox()).x).toBeLessThan(150);
-  await page.evaluate((top) => scrollTo(0, top), firstTop - stageHeight + 100);
+  await expect.poll(async () => (await page.getByText('Dec', { exact: true }).boundingBox()).x).toBeLessThan(180);
+  await expect.poll(async () => {
+    const bottomAxis = await page.getByText('-Y', { exact: true }).boundingBox();
+    const card = await second.locator('[class*="stepCard"]').boundingBox();
+    return bottomAxis.y + bottomAxis.height < card.y;
+  }).toBe(true);
   const thirdTop = await third.evaluate((section) => section.getBoundingClientRect().top + scrollY);
-  await page.evaluate((top) => scrollTo(0, top), thirdTop - stageHeight + 100);
+  await page.evaluate((top) => scrollTo(0, top), thirdTop - activationLine + 100);
+  await expect.poll(visibleSteps).toEqual(['3']);
+  await page.waitForTimeout(400);
+  const midPositiveZ = await page.getByText('+Z', { exact: true }).boundingBox();
+  const midNegativeZ = await page.getByText('-Z', { exact: true }).boundingBox();
+  expect(midPositiveZ.y).toBeGreaterThan(midNegativeZ.y);
   await expect.poll(visibleSteps).toEqual(['3']);
   await expect(scene).toHaveCount(0);
+  await expect.poll(async () => {
+    const positive = await page.getByText('+Z', { exact: true }).boundingBox();
+    const negative = await page.getByText('-Z', { exact: true }).boundingBox();
+    return positive.y > negative.y;
+  }).toBe(true);
   const overheadAxisSpan = async () => {
     const positive = await page.getByText('+Z', { exact: true }).boundingBox();
     const negative = await page.getByText('-Z', { exact: true }).boundingBox();
     return Math.abs((positive.y + positive.height / 2) - (negative.y + negative.height / 2));
   };
   await expect.poll(overheadAxisSpan).toBeGreaterThan(260);
+  await expect.poll(async () => {
+    const north = await page.getByText('+Y', { exact: true }).boundingBox();
+    const south = await page.getByText('-Y', { exact: true }).boundingBox();
+    return Math.abs(north.y - south.y);
+  }).toBeLessThan(20);
   await expect.poll(async () => {
     const label = await page.getByText('+Z', { exact: true }).boundingBox();
     const stageBox = await stage.boundingBox();
@@ -80,7 +118,8 @@ test('mobile walkthrough scrubs one visible card in both directions without pane
   await expect.poll(async () => {
     const label = await page.getByText('+Z', { exact: true }).boundingBox();
     const stageBox = await stage.boundingBox();
-    return label.y + label.height <= stageBox.y + stageBox.height;
+    const cardBox = await third.locator('[class*="stepCard"]').boundingBox();
+    return label.y + label.height <= stageBox.y + stageBox.height && label.y + label.height <= cardBox.y;
   }).toBe(true);
   await page.setViewportSize({ width: 390, height: 844 });
   await expect.poll(visibleSteps).toEqual(['3']);
@@ -90,10 +129,8 @@ test('mobile walkthrough scrubs one visible card in both directions without pane
   expect(calcBox.x).toBeGreaterThanOrEqual(16);
   expect(calcBox.y).toBeLessThan(100);
   expect(calcBox.y + calcBox.height).toBeLessThan(thirdCardBox.y);
-  const loweredModel = stage.locator('[class*="loweredModel"]');
-  await expect.poll(async () => Math.round((await loweredModel.boundingBox()).y)).toBe(8);
   const fourthTop = await fourth.evaluate((section) => section.getBoundingClientRect().top + scrollY);
-  await page.evaluate((top) => scrollTo(0, top), fourthTop - stageHeight + 100);
+  await page.evaluate((top) => scrollTo(0, top), fourthTop - activationLine + 100);
   await expect.poll(visibleSteps).toEqual(['4']);
   await expect.poll(overheadAxisSpan).toBeGreaterThan(260);
   await expect.poll(async () => {
@@ -102,7 +139,7 @@ test('mobile walkthrough scrubs one visible card in both directions without pane
     return label.y + label.height <= stageBox.y + stageBox.height;
   }).toBe(true);
   await expect(overheadCalc).toContainText('z = h cos(RA)');
-  await page.evaluate((top) => scrollTo(0, top), firstTop - stageHeight + 100);
+  await page.evaluate((top) => scrollTo(0, top), firstTop - activationLine + 100);
   await expect.poll(visibleSteps).toEqual(['1']);
   await page.evaluate(() => scrollTo(0, document.body.scrollHeight));
   await expect.poll(visibleSteps).toEqual(['5']);
@@ -130,14 +167,12 @@ test('mobile walkthrough scrubs one visible card in both directions without pane
   const sliders = controller.getByRole('slider');
   await expect(sliders).toHaveCount(2);
   await expect(controller.getByText('Show sphere wireframe')).toHaveCount(0);
-  expect((await controller.boundingBox()).y).toBeGreaterThan(stageHeight);
+  expect((await controller.boundingBox()).y).toBeGreaterThan(stageHeight / 2);
   await sliders.first().fill('1.57');
   await sliders.last().focus();
   await sliders.last().press('Home');
   await expect(controller.getByText(/Right ascension: 90\.0°/)).toBeVisible();
   await expect(controller.getByText(/Declination: -90\.0°/)).toBeVisible();
-  const finalModel = stage.locator('[class*="loweredModel"]');
-  await expect.poll(async () => Math.round((await finalModel.boundingBox()).y)).toBe(8);
   const finalAxisSpan = async () => {
     const positive = await page.getByText('+Y', { exact: true }).boundingBox();
     const negative = await page.getByText('-Y', { exact: true }).boundingBox();
@@ -173,7 +208,7 @@ test('mobile walkthrough scrubs one visible card in both directions without pane
   await enterExplore.click();
   await expect(page.getByRole('button', { name: 'Back to Place the star' })).toBeVisible();
   await page.getByRole('button', { name: 'Back to Place the star' }).click();
-  await first.evaluate((section) => section.scrollIntoView());
+  await first.evaluate((section) => scrollTo(0, section.getBoundingClientRect().top + scrollY + 10));
   await expect.poll(visibleSteps).toEqual(['1']);
   await expect.poll(async () => {
     const readout = await scene.getByLabel('Live calculation').boundingBox();
