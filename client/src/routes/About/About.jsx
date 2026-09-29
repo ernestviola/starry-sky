@@ -3,6 +3,7 @@ import declinationDiagram from '../../assets/IMG_4205.jpeg';
 import rightAscensionDiagram from '../../assets/IMG_4206.jpeg';
 import StarMapModel from '../../components/StarMapModel/StarMapModel.jsx';
 import styles from './about.module.css';
+import { mobileAngles } from './mobileAngles.js';
 
 const StepCard = ({ children }) => (
   <div className={styles.stepCard}>{children}</div>
@@ -13,9 +14,57 @@ const AboutWalkthrough = ({ isMobile }) => {
   const [focusedStep, setFocusedStep] = useState(0);
   const [showControllerPanel, setShowControllerPanel] = useState(false);
   const [controllerStep, setControllerStep] = useState(1);
+  const [scrollAngles, setScrollAngles] = useState(() => mobileAngles(0));
   const walkthrough = useRef(null);
 
   useEffect(() => {
+    if (isMobile) {
+      const cards = [
+        ...walkthrough.current.querySelectorAll(`.${styles.storyStep}`),
+      ];
+      const stage = walkthrough.current.querySelector(`.${styles.modelStage}`);
+      let frame;
+      const update = () => {
+        const stageRect = stage.getBoundingClientRect();
+        const line = stageRect.bottom;
+        const current =
+          stageRect.top <= 0
+            ? cards.findLast(
+                (section) => section.getBoundingClientRect().top <= line,
+              )
+            : null;
+        const number = current ? Number(current.dataset.derivationStep) : 0;
+        const progress = (section) =>
+          Math.max(
+            0,
+            Math.min(
+              1,
+              (line - section.getBoundingClientRect().top) /
+                section.offsetHeight,
+            ),
+          );
+        setFocusedStep(number);
+        setStep(number);
+        setScrollAngles(
+          mobileAngles(
+            number,
+            number >= 1 && number <= 4 ? progress(cards[number - 1]) : 0,
+          ),
+        );
+      };
+      const schedule = () => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(update);
+      };
+      schedule();
+      window.addEventListener('scroll', schedule, { passive: true });
+      window.addEventListener('resize', schedule);
+      return () => {
+        cancelAnimationFrame(frame);
+        window.removeEventListener('scroll', schedule);
+        window.removeEventListener('resize', schedule);
+      };
+    }
     const root = document.documentElement;
     const previousSnapType = root.style.scrollSnapType;
     if (!isMobile) root.style.scrollSnapType = 'none';
@@ -58,7 +107,8 @@ const AboutWalkthrough = ({ isMobile }) => {
       const viewportHeight = window.innerHeight;
       stepCards.forEach((section, index) => {
         const cardTop = section.firstElementChild.getBoundingClientRect().top;
-        const fadeIn = (viewportHeight * 0.75 - cardTop) / (viewportHeight * 0.25);
+        const fadeIn =
+          (viewportHeight * 0.75 - cardTop) / (viewportHeight * 0.25);
         const fadeOut = cardTop / (viewportHeight * 0.25);
         section.style.setProperty(
           '--reveal',
@@ -121,6 +171,9 @@ const AboutWalkthrough = ({ isMobile }) => {
             showControls={showControllerPanel}
             showNavigation={false}
             presentation
+            scrollAngles={isMobile ? scrollAngles : undefined}
+            renderControls={!isMobile}
+            allowOrbit={!isMobile}
           />
         </div>
         <div className={styles.story}>

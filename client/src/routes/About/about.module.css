@@ -168,6 +168,7 @@
 
 @media (max-width: 900px) {
   .about {
+    --mobile-model-height: 52svh;
     padding: 10rem var(--about-gutter) var(--space-6);
   }
 
@@ -188,19 +189,33 @@
   }
 
   .modelStage {
-    position: relative;
+    position: sticky;
+    top: 0;
     order: 1;
-    height: clamp(27rem, 78svh, 42rem);
+    z-index: 1;
+    height: var(--mobile-model-height);
+    background: var(--color-background);
   }
 
   .storyStep {
     order: 2;
+    height: 100svh;
+    min-height: 0;
+    padding: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
   }
 
-  .aboutHeader,
-  .storyStep {
+  .storyStep.activeStep {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .aboutHeader {
     min-height: 0;
-    padding: 0 0;
+    padding: 0;
     opacity: 1;
   }
 
@@ -210,9 +225,23 @@
   }
 
   .stepCard {
-    position: relative;
+    position: fixed;
     top: auto;
+    right: var(--about-gutter);
+    bottom: max(var(--space-4), env(safe-area-inset-bottom));
+    left: var(--about-gutter);
+    width: auto;
+    max-height: calc(100svh - var(--mobile-model-height) - var(--space-4) - var(--space-4));
+    overflow-y: auto;
     padding: var(--space-4);
+  }
+
+  .stepCard h2 {
+    font-size: 2.2rem;
+  }
+
+  .stepCard::after {
+    display: none;
   }
 
   .notebookDiagrams figcaption {

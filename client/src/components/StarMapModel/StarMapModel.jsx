@@ -312,8 +312,8 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
   return null;
 };
 
-const ModelGrid = ({ gridSize }) => {
-  const lineSize = gridSize / 2;
+const ModelAxes = () => {
+  const lineSize = 1.5;
   return (
     <>
       <color attach='background' args={['#0b0c16']} />
@@ -337,7 +337,7 @@ const ModelGrid = ({ gridSize }) => {
       <Html position={[0, -(lineSize + 0.1), 0]}>
         <div className={styles.axisLabel}>-Y</div>
       </Html>
-      <Html position={[0, lineSize + 0.5, 0]}>
+      <Html position={[0, lineSize + 0.1, 0]}>
         <div className={styles.axisLabel}>+Y</div>
       </Html>
       <Line
@@ -580,11 +580,15 @@ const StarMapModel = ({
   stacked = false,
   showControls = true,
   presentation = false,
+  scrollAngles,
+  renderControls = true,
+  allowOrbit = true,
 }) => {
-  const gridSize = 4;
   const starRadius = 1;
-  const [declinationAngle, setDeclinationAngle] = useState(Math.PI / 6);
-  const [rightAscensionAngle, setRightAscensionAngle] = useState(Math.PI / 4);
+  const [savedDeclination, setDeclinationAngle] = useState(Math.PI / 6);
+  const [savedRightAscension, setRightAscensionAngle] = useState(Math.PI / 4);
+  const declinationAngle = scrollAngles?.declination ?? savedDeclination;
+  const rightAscensionAngle = scrollAngles?.rightAscension ?? savedRightAscension;
   const [showSphere, setShowSphere] = useState(true);
   const [canvasReady, setCanvasReady] = useState(false);
   const [selectedStep, setSelectedStep] = useState(1);
@@ -625,7 +629,7 @@ const StarMapModel = ({
         }
       >
         <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} />
-        <ModelGrid gridSize={gridSize} />
+        <ModelAxes />
         <PointLabels starPos={starPos} showLabels={showAllLabels} />
         {(step === 0 || step <= 2 || step === 5) && (
           <Declination
@@ -655,22 +659,24 @@ const StarMapModel = ({
           <Star starPos={starPos} showLabel={showAllLabels} />
         )}
         {showSphere && <CelestialSphere />}
-        <OrbitControls enabled={step === 0 || step === 5} enableZoom={false} />
+        <OrbitControls enabled={allowOrbit && (step === 0 || step === 5)} enableZoom={false} />
       </Canvas>
-      <Controls
-        starPos={starPos}
-        starRadius={starRadius}
-        declinationAngle={declinationAngle}
-        setDeclinationAngle={setDeclinationAngle}
-        rightAscensionAngle={rightAscensionAngle}
-        setRightAscensionAngle={setRightAscensionAngle}
-        step={controlsStep}
-        setStep={setStep}
-        showNavigation={showNavigation}
-        showSphere={showSphere}
-        setShowSphere={setShowSphere}
-        hidden={!showControls}
-      />
+      {renderControls && (
+        <Controls
+          starPos={starPos}
+          starRadius={starRadius}
+          declinationAngle={declinationAngle}
+          setDeclinationAngle={setDeclinationAngle}
+          rightAscensionAngle={rightAscensionAngle}
+          setRightAscensionAngle={setRightAscensionAngle}
+          step={controlsStep}
+          setStep={setStep}
+          showNavigation={showNavigation}
+          showSphere={showSphere}
+          setShowSphere={setShowSphere}
+          hidden={!showControls}
+        />
+      )}
     </div>
   );
 };
