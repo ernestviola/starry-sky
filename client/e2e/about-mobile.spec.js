@@ -152,13 +152,16 @@ test('mobile walkthrough scrubs one visible card in both directions without pane
   await expect(page.locator('[class*="axisLabel"]')).toHaveCount(6);
   const panel = page.locator('[data-derivation-step="5"] [class*="stepCard"]');
   const enterExplore = panel.getByRole('button', { name: 'Explore the model' });
+  await expect(enterExplore).toHaveText('→');
   await expect(page.locator('[class*="controllerParent"]')).toHaveCount(0);
   await enterExplore.click();
   await expect(panel).toBeHidden();
   await expect(page.locator('[data-mode="explore"]')).toBeVisible();
   await expect(sceneLabels).toHaveCount(3);
   await expect.poll(() => page.evaluate(() => document.documentElement.style.overflow)).toBe('hidden');
-  await expect(page.getByRole('button', { name: 'Back to Place the star' })).toBeFocused();
+  const backToStar = page.getByRole('button', { name: 'Back to Place the star' });
+  await expect(backToStar).toHaveText('←');
+  await expect(backToStar).toBeFocused();
   const controller = page.locator('[class*="controllerParent"]');
   await expect(controller).toBeVisible();
   await expect(controller.getByText('Combine the coordinates')).toBeVisible();

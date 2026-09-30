@@ -303,9 +303,13 @@
   }
 
   .exploreButton,
-  .explorePanel > button {
+  .exploreHeader button {
+    display: grid;
+    width: var(--touch-target-min);
+    min-width: var(--touch-target-min);
     min-height: var(--touch-target-min);
-    padding: var(--space-2) var(--space-4);
+    place-items: center;
+    padding: 0;
     border: var(--border-width) solid var(--color-accent);
     border-radius: var(--radius-button);
     background: var(--color-panel-raised);
@@ -313,9 +317,21 @@
     cursor: pointer;
   }
 
+  .stepHeading,
+  .exploreHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .stepHeading h2,
+  .exploreHeader h2 {
+    margin: 0;
+  }
+
   .exploreButton {
-    width: 100%;
-    margin-top: var(--space-4);
+    flex: 0 0 auto;
   }
 
   .explorePanel {
@@ -329,16 +345,18 @@
     background: var(--color-background);
   }
 
-  .explorePanel > button {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    width: 100%;
+  .exploreHeader {
     margin-bottom: var(--space-3);
   }
 
+  .exploreButton,
+  .exploreHeader button {
+    font-size: var(--font-size-xl);
+    line-height: 1;
+  }
+
   .exploreButton:focus-visible,
-  .explorePanel > button:focus-visible {
+  .exploreHeader button:focus-visible {
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
   }

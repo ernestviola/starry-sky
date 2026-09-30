@@ -254,13 +254,18 @@ const AboutWalkthrough = ({ isMobile }) => {
               finalCamera={isMobile ? mobileFinalCamera : undefined}
             />
           </div>
-          {isMobile && (
-            <div className={styles.explorePanel} hidden={!exploring}>
-              <button ref={backButton} type='button' onClick={exitExplore}>Back to Place the star</button>
-              <div ref={setControlsContainer} />
-            </div>
-          )}
         </div>
+        {isMobile && (
+          <div className={styles.explorePanel} hidden={!exploring}>
+            <div className={styles.exploreHeader}>
+              <h2>Place the star</h2>
+              <button ref={backButton} type='button' aria-label='Back to Place the star' onClick={exitExplore}>
+                <span aria-hidden='true'>←</span>
+              </button>
+            </div>
+            <div ref={setControlsContainer} />
+          </div>
+        )}
         <div className={styles.story}>
           <section data-derivation-step='0' className={styles.aboutHeader}>
             <h1>About Starry Sky</h1>
@@ -421,22 +426,25 @@ const AboutWalkthrough = ({ isMobile }) => {
             className={`${stepClass(5)} ${exploring ? styles.exploringStep : ''}`}
           >
             <StepCard>
-              <h2>Place the star</h2>
+              <div className={styles.stepHeading}>
+                <h2>Place the star</h2>
+                {isMobile && (
+                  <button
+                    ref={exploreButton}
+                    type='button'
+                    className={styles.exploreButton}
+                    aria-label='Explore the model'
+                    onClick={() => setExploring(true)}
+                  >
+                    <span aria-hidden='true'>→</span>
+                  </button>
+                )}
+              </div>
               <p>
                 Substituting h = cos(Dec) gives the final unit-sphere
                 coordinates. Repeating this calculation for every catalog entry
                 places the stars around the viewer.
               </p>
-              {isMobile && (
-                <button
-                  ref={exploreButton}
-                  type='button'
-                  className={styles.exploreButton}
-                  onClick={() => setExploring(true)}
-                >
-                  Explore the model
-                </button>
-              )}
             </StepCard>
           </section>
         </div>
