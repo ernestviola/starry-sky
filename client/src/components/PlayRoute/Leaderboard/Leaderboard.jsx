@@ -17,6 +17,7 @@ const Leaderboard = ({
   setRefreshLeaderboard,
 }) => {
   const [globalLoading, setGlobalLoading] = useState(false);
+  const [globalError, setGlobalError] = useState(false);
 
   const [globalLeaderboardData, setGlobalLeaderboardData] = useState({
     leaderboard: [],
@@ -35,6 +36,7 @@ const Leaderboard = ({
 
   const loadGlobal = async (page, leaderboardId) => {
     setGlobalLoading(true);
+    setGlobalError(false);
 
     try {
       const url = new URL(
@@ -58,6 +60,7 @@ const Leaderboard = ({
       const data = await response.json();
       setGlobalLeaderboardData(data);
     } catch (error) {
+      setGlobalError(true);
     } finally {
       setGlobalLoading(false);
     }
@@ -65,6 +68,7 @@ const Leaderboard = ({
 
   const loadLocal = async (page, leaderboardId) => {
     setGlobalLoading(true);
+    setGlobalError(false);
 
     try {
       const url = new URL(
@@ -81,20 +85,30 @@ const Leaderboard = ({
       const data = await response.json();
       setGlobalLeaderboardData(data);
     } catch (error) {
+      setGlobalError(true);
     } finally {
       setGlobalLoading(false);
     }
   };
 
   return (
-    <Dialog ref={ref} className={styles.leaderboard}>
-      <h1>Leaderboard</h1>
+    <Dialog
+      ref={ref}
+      className={styles.leaderboard}
+      aria-labelledby='leaderboard-title'
+    >
+      <h1 id='leaderboard-title'>Leaderboard</h1>
+      <div className={styles.header}>
+        <h3>Rank</h3>
+        <h3>Name</h3>
+        <h3>Time</h3>
+      </div>
       <div className={styles.rankings}>
-        <div className={styles.header}>
-          <h3>Rank</h3>
-          <h3>Name</h3>
-          <h3>Time</h3>
-        </div>
+        {globalError && (
+          <p className={styles.error} role="alert">
+            Unable to load leaderboard.
+          </p>
+        )}
 
         {globalLeaderboardData.leaderboard.map((entry) => {
           return (
@@ -111,6 +125,7 @@ const Leaderboard = ({
       </div>
       <div className={styles.pager}>
         <button
+          type='button'
           aria-label='Previous page'
           disabled={globalLeaderboardData.page === 1}
           onClick={() => {
@@ -122,6 +137,7 @@ const Leaderboard = ({
         </button>
         <div>{globalLeaderboardData.page}</div>
         <button
+          type='button'
           aria-label='Next page'
           disabled={!globalLeaderboardData.hasNext}
           onClick={() => {
@@ -133,7 +149,12 @@ const Leaderboard = ({
         </button>
       </div>
 
-      <button className={styles.retry} title='retry' onClick={handleStartGame}>
+      <button
+        type='button'
+        className={styles.retry}
+        title='retry'
+        onClick={handleStartGame}
+      >
         Retry <BiRefresh className={styles.icon} />
       </button>
     </Dialog>

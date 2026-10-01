@@ -115,15 +115,15 @@ a {
 
 @media (prefers-reduced-motion: no-preference) {
   ::view-transition-old(page) {
-    animation: page-exit 300ms ease-out both;
+    animation: page-exit var(--duration-normal) ease-out both;
   }
 
   ::view-transition-new(page) {
-    animation: page-enter 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: page-enter var(--duration-enter) cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   ::view-transition-old(game-status) {
-    animation: game-status-exit 300ms ease-out both;
+    animation: game-status-exit var(--duration-normal) ease-out both;
   }
 
   ::view-transition-new(game-status) {
@@ -131,16 +131,16 @@ a {
   }
 
   ::view-transition-old(about-content) {
-    animation: about-exit 300ms ease-out both;
+    animation: about-exit var(--duration-normal) ease-out both;
   }
 
   ::view-transition-new(about-content) {
-    animation: about-enter 450ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation: about-enter var(--duration-enter) cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
   ::view-transition-old(walkthrough-controller),
   ::view-transition-old(wireframe-control) {
-    animation: panel-exit 300ms ease-out both;
+    animation: panel-exit var(--duration-normal) ease-out both;
   }
 
   ::view-transition-new(walkthrough-controller),

@@ -2,6 +2,17 @@
   min-height: 100svh;
 }
 
+.aboutLayout {
+  /* Leave roughly 32rem for the model between the two panels. */
+  --about-gutter: clamp(var(--page-gutter-mobile), calc(50vw - 44rem), 14rem);
+}
+
+@media (max-width: 900px) {
+  .aboutLayout {
+    --about-gutter: var(--page-gutter-mobile);
+  }
+}
+
 .mapLayer {
   position: fixed;
   inset: 0;

@@ -60,8 +60,27 @@ const useStarHover = ({
     return () => clearTimeout(timeout);
   }, [starsDictionary, viewedFrames]);
 
+  const pickStar = useCallback(
+    (pointerPosition) => {
+      if (!raycastPointsRef.current) return null;
+
+      raycasterRef.current.setFromCamera(pointerPosition, camera);
+      const intersections = raycasterRef.current.intersectObject(
+        raycastPointsRef.current,
+      );
+      if (intersections.length === 0) return null;
+
+      const closest = intersections.reduce((best, current) =>
+        current.distanceToRay < best.distanceToRay ? current : best,
+      );
+
+      return raycastIndexToIdRef.current.get(closest.index) ?? null;
+    },
+    [camera],
+  );
+
   const detectHoveredStar = useCallback(() => {
-    if (setHoveredStarId === null || !raycastPointsRef.current) return null;
+    if (setHoveredStarId === null) return null;
     if (pointer.x === pointerXRef.current && pointer.y === pointerYRef.current) {
       return hoveredStarId;
     }
@@ -69,26 +88,12 @@ const useStarHover = ({
     pointerXRef.current = pointer.x;
     pointerYRef.current = pointer.y;
 
-    raycasterRef.current.setFromCamera(pointer, camera);
-    const intersections = raycasterRef.current.intersectObject(
-      raycastPointsRef.current,
-    );
-
-    if (intersections.length === 0) {
-      setHoveredStarId(null);
-      return null;
-    }
-
-    const closest = intersections.reduce((best, current) =>
-      current.distanceToRay < best.distanceToRay ? current : best,
-    );
-
-    const starId = raycastIndexToIdRef.current.get(closest.index) ?? null;
+    const starId = pickStar(pointer);
     setHoveredStarId(starId);
     return starId;
-  }, [camera, hoveredStarId, pointer, setHoveredStarId]);
+  }, [hoveredStarId, pickStar, pointer, setHoveredStarId]);
 
-  return detectHoveredStar;
+  return { detectHoveredStar, pickStar };
 };
 
 export default useStarHover;

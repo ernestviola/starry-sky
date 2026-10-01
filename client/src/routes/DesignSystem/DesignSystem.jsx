@@ -68,16 +68,45 @@ const DesignSystem = () => (
           <div className={styles.spacing}><i /><i /><i /><i /><i /></div>
           <p className={styles.data}>space-1 → space-5</p>
         </div>
+        <div className={styles.example}>
+          <span className={styles.label}>Touch targets</span>
+          <div className={styles.actions}>
+            <button>Primary</button>
+            <button className={styles.secondary}>Secondary</button>
+          </div>
+          <p className={styles.body}>Controls use the shared 44px minimum.</p>
+        </div>
       </div>
     </section>
 
     <section className={styles.section}>
       <h2>Responsive handoff</h2>
-      <p className={styles.body}>
-        Keep these tokens as the shared source when the mobile system is
-        translated. Recompose layouts for touch and smaller screens without
-        introducing a second set of colors, type, or spacing values.
-      </p>
+      <div className={styles.responsiveRules}>
+        <div>
+          <span className={styles.label}>Mobile geometry</span>
+          <ul className={styles.body}>
+            <li>Use compact token gutters with safe-area-aware page edges.</li>
+            <li>Stack cards and grids into one column; keep actions touch-sized.</li>
+            <li>Scale type through the responsive tokens, never a new visual language.</li>
+          </ul>
+        </div>
+        <div>
+          <span className={styles.label}>Composition</span>
+          <p className={styles.body}>
+            Prefer a bottom sheet for contextual, touch-driven content that
+            should stay attached to the current screen. Use an overlay when
+            the content is brief, spatially anchored, and must not interrupt
+            the surrounding task.
+          </p>
+        </div>
+        <div>
+          <span className={styles.label}>Motion</span>
+          <p className={styles.body}>
+            Motion uses shared duration tokens and becomes instant when the
+            user prefers reduced motion.
+          </p>
+        </div>
+      </div>
     </section>
   </div>
 );

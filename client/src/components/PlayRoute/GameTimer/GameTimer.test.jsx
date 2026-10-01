@@ -5,7 +5,7 @@ import GameTimer from './GameTimer.jsx';
 test('displays the completed game time', () => {
   render(<GameTimer totalTime={2500} />);
 
-  expect(screen.getByText('2.50s')).toBeInTheDocument();
+  expect(screen.getByText('Time: 2.50s')).toBeInTheDocument();
 });
 
 test('game timer is absent when it has no start time', () => {
@@ -36,8 +36,8 @@ test('total time count increases', () => {
 
   const secondTime = screen.getByRole('timer').textContent;
 
-  expect(firstTime).toBe('1.00s');
-  expect(secondTime).toBe('2.00s');
+  expect(firstTime).toBe('Time: 1.00s');
+  expect(secondTime).toBe('Time: 2.00s');
 });
 
 test('does the component unmount correctly', () => {

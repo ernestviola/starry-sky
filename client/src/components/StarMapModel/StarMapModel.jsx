@@ -1,41 +1,61 @@
 import { useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { Grid, OrbitControls, Line, Html } from '@react-three/drei';
+import { OrbitControls, Line, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import styles from './starMapModel.module.css';
 
-const RightAscension = ({ starPos, showZ, highlight }) => (
+const RightAscension = ({ starPos, showZ, highlight, showAllLabels }) => (
   <>
     <Line
       points={[
         [0, 0, 0],
         [starPos[0], 0, starPos[2]],
       ]}
-      color={highlight === 'h' || highlight === 'all' ? 'gold' : 'deepskyblue'}
+      color={highlight === 'h' || highlight === 'all' ? 'gold' : '#56B4E9'}
     />
     <Line
       points={[
         [0, 0, 0],
         [0, 0, starPos[2]],
       ]}
-      color={highlight === 'z' || highlight === 'all' ? 'gold' : 'deepskyblue'}
+      color={highlight === 'z' || highlight === 'all' ? 'gold' : '#56B4E9'}
     />
     <Line
       points={[
         [0, 0, starPos[2]],
         [starPos[0], 0, starPos[2]],
       ]}
-      color={highlight === 'x' || highlight === 'all' ? 'gold' : 'deepskyblue'}
+      color={highlight === 'x' || highlight === 'all' ? 'gold' : '#56B4E9'}
     />
-    <Html position={[starPos[0] / 2, 0, starPos[2] / 2]}>
-      <div className={`${styles.sceneLabel} ${highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}`}>h</div>
-    </Html>
-    <Html position={[starPos[0] / 2, 0, starPos[2]]}>
-      <div className={`${styles.sceneLabel} ${highlight === 'x' || highlight === 'all' ? styles.highlightLabel : ''}`}>x</div>
-    </Html>
-    {showZ && (
+    {(showAllLabels ||
+      highlight === 'h' ||
+      highlight === 'x' ||
+      highlight === 'all') && (
+      <Html position={[starPos[0] / 2, 0, starPos[2] / 2]}>
+        <div
+          className={`${styles.sceneLabel} ${highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}`}
+        >
+          h
+        </div>
+      </Html>
+    )}
+    {(showAllLabels || highlight === 'x' || highlight === 'all') && (
+      <Html position={[starPos[0] / 2, 0, starPos[2]]}>
+        <div
+          className={`${styles.sceneLabel} ${highlight === 'x' || highlight === 'all' ? styles.highlightLabel : ''}`}
+        >
+          x
+        </div>
+      </Html>
+    )}
+    {showZ && (showAllLabels || highlight === 'z' || highlight === 'all') && (
       <Html position={[0, 0, starPos[2] / 2]}>
-        <div className={`${styles.sceneLabel} ${highlight === 'z' || highlight === 'all' ? styles.highlightLabel : ''}`}>z</div>
+        <div
+          className={`${styles.sceneLabel} ${highlight === 'z' || highlight === 'all' ? styles.highlightLabel : ''}`}
+        >
+          z
+        </div>
       </Html>
     )}
     <mesh>
@@ -60,7 +80,7 @@ const RightAscension = ({ starPos, showZ, highlight }) => (
         />
       </bufferGeometry>
       <meshStandardMaterial
-        color='blue'
+        color='#56B4E9'
         side={THREE.DoubleSide}
         transparent
         opacity={0.4}
@@ -70,40 +90,58 @@ const RightAscension = ({ starPos, showZ, highlight }) => (
   </>
 );
 
-const Declination = ({ starPos, showHorizontalRadius, highlight }) => {
+const Declination = ({
+  starPos,
+  showHorizontalRadius,
+  highlight,
+  showAllLabels,
+}) => {
   return (
     <>
-      <Html position={[starPos[0] / 2, starPos[1] / 2, starPos[2] / 2]}>
-        <div className={styles.sceneLabel}>r = 1</div>
-      </Html>
-      <Html position={[starPos[0], starPos[1] / 2, starPos[2]]}>
-        <div className={`${styles.sceneLabel} ${highlight === 'y' || highlight === 'all' ? styles.highlightLabel : ''}`}>y</div>
-      </Html>
-      {showHorizontalRadius && (
-        <Html position={[starPos[0] / 2, 0, starPos[2] / 2]}>
-          <div className={`${styles.sceneLabel} ${highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}`}>h</div>
+      {showAllLabels && (
+        <Html position={[starPos[0] / 2, starPos[1] / 2, starPos[2] / 2]}>
+          <div className={styles.sceneLabel}>r = 1</div>
         </Html>
       )}
+      {(showAllLabels || highlight === 'y' || highlight === 'all') && (
+        <Html position={[starPos[0], starPos[1] / 2, starPos[2]]}>
+          <div
+            className={`${styles.sceneLabel} ${styles.heightLabel} ${highlight === 'y' || highlight === 'all' ? styles.highlightLabel : ''}`}
+          >
+            y
+          </div>
+        </Html>
+      )}
+      {showHorizontalRadius &&
+        (showAllLabels || highlight === 'h' || highlight === 'all') && (
+          <Html position={[starPos[0] / 2, 0, starPos[2] / 2]}>
+            <div
+              className={`${styles.sceneLabel} ${highlight === 'h' || highlight === 'all' ? styles.highlightLabel : ''}`}
+            >
+              h
+            </div>
+          </Html>
+        )}
       <Line
         points={[
           [0, 0, 0],
           [starPos[0], starPos[1], starPos[2]],
         ]}
-        color='purple'
+        color='#D55E00'
       />
       <Line
         points={[
           [0, 0, 0],
           [starPos[0], 0, starPos[2]],
         ]}
-        color={highlight === 'h' || highlight === 'all' ? 'gold' : 'purple'}
+        color={highlight === 'h' || highlight === 'all' ? 'gold' : '#D55E00'}
       />
       <Line
         points={[
           [starPos[0], 0, starPos[2]],
           [starPos[0], starPos[1], starPos[2]],
         ]}
-        color={highlight === 'y' || highlight === 'all' ? 'gold' : 'purple'}
+        color={highlight === 'y' || highlight === 'all' ? 'gold' : '#D55E00'}
       />
 
       <mesh>
@@ -128,7 +166,7 @@ const Declination = ({ starPos, showHorizontalRadius, highlight }) => {
           />
         </bufferGeometry>
         <meshStandardMaterial
-          color='purple'
+          color='#D55E00'
           side={THREE.DoubleSide}
           transparent
           opacity={0.4}
@@ -173,17 +211,37 @@ const AngleArcs = ({
     <>
       {showRightAscension && (
         <>
-          <Line points={raPoints} color={highlight === 'ra' || highlight === 'all' ? 'gold' : 'deepskyblue'} lineWidth={2} />
+          <Line
+            points={raPoints}
+            color={
+              highlight === 'ra' || highlight === 'all' ? 'gold' : '#56B4E9'
+            }
+            lineWidth={2}
+          />
           <Html position={raLabel}>
-            <div className={`${styles.sceneLabel} ${styles.arcLabel} ${highlight === 'ra' || highlight === 'all' ? styles.highlightLabel : ''}`}>RA</div>
+            <div
+              className={`${styles.sceneLabel} ${styles.raLabel} ${highlight === 'ra' || highlight === 'all' ? styles.highlightLabel : ''}`}
+            >
+              RA
+            </div>
           </Html>
         </>
       )}
       {showDeclination && (
         <>
-          <Line points={decPoints} color={highlight === 'dec' || highlight === 'all' ? 'gold' : 'orchid'} lineWidth={2} />
+          <Line
+            points={decPoints}
+            color={
+              highlight === 'dec' || highlight === 'all' ? 'gold' : '#D55E00'
+            }
+            lineWidth={2}
+          />
           <Html position={decLabel}>
-            <div className={`${styles.sceneLabel} ${styles.arcLabel} ${highlight === 'dec' || highlight === 'all' ? styles.highlightLabel : ''}`}>Dec</div>
+            <div
+              className={`${styles.sceneLabel} ${styles.decLabel} ${highlight === 'dec' || highlight === 'all' ? styles.highlightLabel : ''}`}
+            >
+              Dec
+            </div>
           </Html>
         </>
       )}
@@ -191,12 +249,16 @@ const AngleArcs = ({
   );
 };
 
-const CameraRig = ({ step, rightAscensionAngle }) => {
-  const { camera } = useThree();
+const CameraRig = ({ step, rightAscensionAngle, declinationCamera, overheadCamera, finalCamera }) => {
+  const { camera, size } = useThree();
   const transition = useRef({
     key: '',
     start: new THREE.Spherical(),
     target: new THREE.Spherical(),
+    startAim: new THREE.Vector3(),
+    aim: new THREE.Vector3(),
+    targetAim: new THREE.Vector3(),
+    startOffset: 0,
     elapsed: 0,
   });
   const views = {
@@ -215,7 +277,14 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
     4: [0, 3, 0.01],
     5: [1, 1.5, 3],
   };
-  const position = new THREE.Vector3(...views[step]);
+  const view = declinationCamera && (step === 1 || step === 2)
+    ? declinationCamera
+    : overheadCamera && (step === 3 || step === 4)
+      ? overheadCamera
+      : finalCamera && step === 5
+        ? finalCamera
+        : { position: views[step], target: [0, 0, 0] };
+  const position = new THREE.Vector3(...view.position);
   const duration =
     { 0: 1.2, 1: 0.8, 2: 0.8, 3: 1.2, 4: 0.8, 5: 1 }[step] ?? 1.2;
   const viewKey = String(step);
@@ -225,46 +294,49 @@ const CameraRig = ({ step, rightAscensionAngle }) => {
       key: viewKey,
       start: new THREE.Spherical().setFromVector3(camera.position),
       target: new THREE.Spherical().setFromVector3(position),
+      startAim: transition.current.aim.clone(),
+      aim: transition.current.aim.clone(),
+      targetAim: new THREE.Vector3(...view.target),
+      startOffset: camera.view?.enabled ? camera.view.offsetY : 0,
       elapsed: 0,
     };
   }
 
   useFrame((_, delta) => {
-    if (transition.current.elapsed >= duration) return;
-
-    transition.current.elapsed = Math.min(
-      transition.current.elapsed + delta,
-      duration,
-    );
-    const progress = THREE.MathUtils.smoothstep(
-      transition.current.elapsed / duration,
-      0,
-      1,
-    );
-    const { start, target } = transition.current;
-    camera.position.setFromSpherical(
-      new THREE.Spherical(
-        THREE.MathUtils.lerp(start.radius, target.radius, progress),
-        THREE.MathUtils.lerp(start.phi, target.phi, progress),
-        THREE.MathUtils.lerp(start.theta, target.theta, progress),
-      ),
-    );
-    camera.lookAt(0, 0, 0);
+    const motion = transition.current;
+    const moving = motion.elapsed < duration;
+    if (moving) motion.elapsed = Math.min(motion.elapsed + delta, duration);
+    const progress = THREE.MathUtils.smoothstep(motion.elapsed / duration, 0, 1);
+    if (moving) {
+      const { start, target, startAim, aim, targetAim } = motion;
+      camera.position.setFromSpherical(
+        new THREE.Spherical(
+          THREE.MathUtils.lerp(start.radius, target.radius, progress),
+          THREE.MathUtils.lerp(start.phi, target.phi, progress),
+          THREE.MathUtils.lerp(start.theta, target.theta, progress),
+        ),
+      );
+      aim.copy(startAim).lerp(targetAim, progress);
+      camera.lookAt(aim);
+    }
+    const offset = THREE.MathUtils.lerp(motion.startOffset, (view.offsetY ?? 0) * size.height, progress);
+    if (offset > 0.01) {
+      if (camera.view?.offsetY !== offset || camera.view.fullHeight !== size.height) {
+        camera.setViewOffset(size.width, size.height, 0, offset, size.width, size.height);
+      }
+    } else if (camera.view?.enabled) {
+      camera.clearViewOffset();
+    }
   });
 
   return null;
 };
 
-const ModelGrid = ({ gridSize }) => {
-  const lineSize = gridSize / 2;
+const ModelAxes = () => {
+  const lineSize = 1.5;
   return (
     <>
       <color attach='background' args={['#0b0c16']} />
-      <Grid
-        args={[gridSize, gridSize, gridSize]}
-        side={THREE.DoubleSide}
-        cellSize={0.5}
-      />
       <ambientLight intensity={0.6} />
       <directionalLight position={[5, 5, -5]} intensity={1} />
       {/* x axis */}
@@ -279,13 +351,13 @@ const ModelGrid = ({ gridSize }) => {
           [-lineSize, 0, 0],
           [lineSize, 0, 0],
         ]}
-        color='red'
+        color='#758096'
       />
       {/* y axis */}
       <Html position={[0, -(lineSize + 0.1), 0]}>
         <div className={styles.axisLabel}>-Y</div>
       </Html>
-      <Html position={[0, lineSize + 0.5, 0]}>
+      <Html position={[0, lineSize + 0.1, 0]}>
         <div className={styles.axisLabel}>+Y</div>
       </Html>
       <Line
@@ -293,7 +365,7 @@ const ModelGrid = ({ gridSize }) => {
           [0, -lineSize, 0],
           [0, lineSize, 0],
         ]}
-        color='green'
+        color='#758096'
       />
 
       {/* z axis */}
@@ -308,13 +380,13 @@ const ModelGrid = ({ gridSize }) => {
           [0, 0, -lineSize],
           [0, 0, lineSize],
         ]}
-        color='blue'
+        color='#758096'
       />
     </>
   );
 };
 
-const Star = ({ starPos }) => {
+const Star = ({ starPos, showLabel }) => {
   return (
     <>
       <mesh position={[starPos[0], starPos[1], starPos[2]]}>
@@ -327,11 +399,13 @@ const Star = ({ starPos }) => {
           depthWrite={false}
         />
       </mesh>
-      <Html position={[starPos[0], starPos[1], starPos[2]]}>
-        <div className={styles.sceneLabel}>
-          Star [{starPos.map((coordinate) => coordinate.toFixed(2)).join(', ')}]
-        </div>
-      </Html>
+      {showLabel && (
+        <Html position={[starPos[0], starPos[1], starPos[2]]}>
+          <div className={styles.sceneLabel}>
+            {`Star [${starPos.map((coordinate) => coordinate.toFixed(2)).join(', ')}]`}
+          </div>
+        </Html>
+      )}
     </>
   );
 };
@@ -361,6 +435,10 @@ const Controls = ({
   showNavigation,
   showSphere,
   setShowSphere,
+  showWireframeControl,
+  compact = false,
+  action,
+  hidden = false,
 }) => {
   const degrees = (angle) => THREE.MathUtils.radToDeg(angle).toFixed(1);
   const horizontalRadius = starRadius * Math.cos(declinationAngle);
@@ -370,94 +448,109 @@ const Controls = ({
     'Find the horizontal radius, h',
     'Find x',
     'Find z',
-    'Combine the coordinates',
+    compact ? 'Combine coordinates' : 'Combine the coordinates',
   ][step];
 
   return (
     <>
-      <div className={styles.controllerParent}>
-        <div className={`${styles.controlsContainer} ${step === 0 ? styles.panelEnter : ''}`}>
-          <div className={styles.stepTitle}>{stage}</div>
-        {(step === 0 || step >= 3) && (
-          <label>
-            Right ascension: {degrees(rightAscensionAngle)}°
-            <input
-              type='range'
-              min={0}
-              max={Math.PI * 2}
-              step={0.01}
-              value={rightAscensionAngle}
-              onChange={(e) => setRightAscensionAngle(Number(e.target.value))}
-            />
-          </label>
-        )}
-        {(step <= 2 || step === 5) && (
-          <label>
-            Declination: {degrees(declinationAngle)}°
-            <input
-              type='range'
-              min={-Math.PI / 2}
-              max={Math.PI / 2}
-              step={0.01}
-              value={declinationAngle}
-              onChange={(e) => setDeclinationAngle(Number(e.target.value))}
-            />
-          </label>
-        )}
-        {step === 1 && (
-          <>
-            <div className={styles.equation}>Given: r = 1</div>
-            <div className={styles.equation}>sin(Dec) = y / r</div>
-            <div className={styles.equation}>sin(Dec) = y / 1</div>
-            <div className={styles.equation}>
-              y = sin(Dec) = {starPos[1].toFixed(2)}
-            </div>
-          </>
-        )}
-        {step === 2 && (
-          <>
-            <div className={styles.equation}>cos(Dec) = h / r</div>
-            <div className={styles.equation}>cos(Dec) = h / 1</div>
-            <div className={styles.equation}>
-              h = cos(Dec) = {horizontalRadius.toFixed(2)}
-            </div>
-          </>
-        )}
-        {step === 3 && (
-          <>
-            <div className={styles.equation}>
-              Given: h = {horizontalRadius.toFixed(2)}
-            </div>
-            <div className={styles.equation}>sin(RA) = x / h</div>
-            <div className={styles.equation}>
-              x = h sin(RA) = {starPos[0].toFixed(2)}
-            </div>
-          </>
-        )}
-        {step === 4 && (
-          <>
-            <div className={styles.equation}>
-              Given: h = {horizontalRadius.toFixed(2)}
-            </div>
-            <div className={styles.equation}>cos(RA) = z / h</div>
-            <div className={styles.equation}>
-              z = h cos(RA) = {starPos[2].toFixed(2)}
-            </div>
-          </>
-        )}
-        {step === 5 && (
-          <>
-            <div className={styles.equation}>
-              x = cos(Dec) sin(RA) = {starPos[0].toFixed(2)}
-            </div>
-            <div className={styles.equation}>
-              y = sin(Dec) = {starPos[1].toFixed(2)}
-            </div>
-            <div className={styles.equation}>
-              z = cos(Dec) cos(RA) = {starPos[2].toFixed(2)}
-            </div>
-          </>
-        )}
+      <div
+        className={`${styles.controllerParent} ${compact ? styles.inlineControls : ''} ${hidden ? styles.controlsHidden : ''}`}
+        aria-hidden={hidden}
+        inert={hidden}
+      >
+        <div
+          className={`${styles.controlsContainer} ${step === 0 ? styles.panelEnter : ''}`}
+        >
+          <div className={styles.controlsHeading}>
+            <div className={styles.stepTitle}>{stage}</div>
+            {action}
+          </div>
+          {(step === 0 || step >= 3) && (
+            <label>
+              <span className={styles.angleLabel}>
+                <span>Right ascension:</span>{' '}
+                <span>{degrees(rightAscensionAngle)}°</span>
+              </span>
+              <input
+                type='range'
+                min={0}
+                max={Math.PI * 2}
+                step={0.01}
+                value={rightAscensionAngle}
+                onChange={(e) => setRightAscensionAngle(Number(e.target.value))}
+              />
+            </label>
+          )}
+          {(step <= 2 || step === 5) && (
+            <label>
+              <span className={styles.angleLabel}>
+                <span>Declination:</span>{' '}
+                <span>{degrees(declinationAngle)}°</span>
+              </span>
+              <input
+                type='range'
+                min={-Math.PI / 2}
+                max={Math.PI / 2}
+                step={0.01}
+                value={declinationAngle}
+                onChange={(e) => setDeclinationAngle(Number(e.target.value))}
+              />
+            </label>
+          )}
+          {step === 1 && (
+            <>
+              <div className={styles.equation}>Given: r = 1</div>
+              <div className={styles.equation}>sin(Dec) = y / r</div>
+              <div className={styles.equation}>sin(Dec) = y / 1</div>
+              <div className={styles.equation}>
+                y = sin(Dec) = {starPos[1].toFixed(2)}
+              </div>
+            </>
+          )}
+          {step === 2 && (
+            <>
+              <div className={styles.equation}>cos(Dec) = h / r</div>
+              <div className={styles.equation}>cos(Dec) = h / 1</div>
+              <div className={styles.equation}>
+                h = cos(Dec) = {horizontalRadius.toFixed(2)}
+              </div>
+            </>
+          )}
+          {step === 3 && (
+            <>
+              <div className={styles.equation}>
+                Given: h = {horizontalRadius.toFixed(2)}
+              </div>
+              <div className={styles.equation}>sin(RA) = x / h</div>
+              <div className={styles.equation}>
+                x = h sin(RA) = {starPos[0].toFixed(2)}
+              </div>
+            </>
+          )}
+          {step === 4 && (
+            <>
+              <div className={styles.equation}>
+                Given: h = {horizontalRadius.toFixed(2)}
+              </div>
+              <div className={styles.equation}>cos(RA) = z / h</div>
+              <div className={styles.equation}>
+                z = h cos(RA) = {starPos[2].toFixed(2)}
+              </div>
+            </>
+          )}
+          {step === 5 && !compact && (
+            <>
+              <div className={styles.equation}>
+                x = cos(Dec) sin(RA) = {starPos[0].toFixed(2)}
+              </div>
+              <div className={styles.equation}>
+                y = sin(Dec) = {starPos[1].toFixed(2)}
+              </div>
+              <div className={styles.equation}>
+                z = cos(Dec) cos(RA) = {starPos[2].toFixed(2)}
+              </div>
+            </>
+          )}
           {showNavigation && (
             <div className={styles.stepNavigation}>
               <button disabled={step === 1} onClick={() => setStep(step - 1)}>
@@ -469,35 +562,43 @@ const Controls = ({
             </div>
           )}
         </div>
-        <div className={styles.wireframeParent}>
-          <div className={`${styles.controlsContainer} ${step === 0 ? styles.panelEnter : ''}`}>
-            <label className={styles.toggle}>
-              <input
-                type='checkbox'
-                checked={showSphere}
-                onChange={(event) => setShowSphere(event.target.checked)}
-              />
-              Show sphere wireframe
-            </label>
+        {showWireframeControl && (
+          <div className={styles.wireframeParent}>
+            <div
+              className={`${styles.controlsContainer} ${step === 0 ? styles.panelEnter : ''}`}
+            >
+              <label className={styles.toggle}>
+                <input
+                  type='checkbox'
+                  checked={showSphere}
+                  onChange={(event) => setShowSphere(event.target.checked)}
+                />
+                Show sphere wireframe
+              </label>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );
 };
 
-const PointLabels = ({ starPos }) => (
+const PointLabels = ({ starPos, showLabels }) => (
   <>
-    <Html position={[0, 0, 0]}>
-      <div className={styles.sceneLabel}>Origin</div>
-    </Html>
+    {showLabels && (
+      <Html position={[0, 0, 0]}>
+        <div className={styles.sceneLabel}>Origin</div>
+      </Html>
+    )}
     <mesh position={[0, 0, 0]}>
       <sphereGeometry args={[0.02, 32, 32]} />
       <meshStandardMaterial color='black' />
     </mesh>
-    <Html position={[starPos[0], 0, starPos[2]]}>
-      <div className={styles.sceneLabel}>XZ projection</div>
-    </Html>
+    {showLabels && (
+      <Html position={[starPos[0], 0, starPos[2]]}>
+        <div className={styles.sceneLabel}>XZ projection</div>
+      </Html>
+    )}
     <mesh position={[starPos[0], 0, starPos[2]]}>
       <sphereGeometry args={[0.02, 32, 32]} />
       <meshStandardMaterial color='black' />
@@ -507,20 +608,32 @@ const PointLabels = ({ starPos }) => (
 
 const StarMapModel = ({
   step: controlledStep,
+  controlsStep: controlledControlsStep,
   onStepChange,
   showNavigation = true,
   stacked = false,
   showControls = true,
   presentation = false,
+  scrollAngles,
+  renderControls = true,
+  showWireframeControl = true,
+  controlsContainer,
+  controlsAction,
+  allowOrbit = true,
+  declinationCamera,
+  overheadCamera,
+  finalCamera,
 }) => {
-  const gridSize = 4;
   const starRadius = 1;
-  const [declinationAngle, setDeclinationAngle] = useState(Math.PI / 6);
-  const [rightAscensionAngle, setRightAscensionAngle] = useState(Math.PI / 4);
+  const [savedDeclination, setDeclinationAngle] = useState(Math.PI / 6);
+  const [savedRightAscension, setRightAscensionAngle] = useState(Math.PI / 4);
+  const declinationAngle = scrollAngles?.declination ?? savedDeclination;
+  const rightAscensionAngle = scrollAngles?.rightAscension ?? savedRightAscension;
   const [showSphere, setShowSphere] = useState(true);
   const [canvasReady, setCanvasReady] = useState(false);
   const [selectedStep, setSelectedStep] = useState(1);
   const step = controlledStep ?? selectedStep;
+  const controlsStep = controlledControlsStep ?? step;
   const setStep = (nextStep) => {
     if (controlledStep === undefined) setSelectedStep(nextStep);
     onStepChange?.(nextStep);
@@ -538,6 +651,27 @@ const StarMapModel = ({
     4: { rightAscension: 'z', arc: 'ra' },
   };
   const highlight = highlights[step] ?? {};
+  const showAllLabels = step === 0;
+  const showStarLabel = step === 0 || step === 5;
+  const controls = renderControls && (
+    <Controls
+      starPos={starPos}
+      starRadius={starRadius}
+      declinationAngle={declinationAngle}
+      setDeclinationAngle={setDeclinationAngle}
+      rightAscensionAngle={rightAscensionAngle}
+      setRightAscensionAngle={setRightAscensionAngle}
+      step={controlsStep}
+      setStep={setStep}
+      showNavigation={showNavigation}
+      showSphere={showSphere}
+      setShowSphere={setShowSphere}
+      showWireframeControl={showWireframeControl}
+      action={controlsAction}
+      compact={Boolean(controlsContainer)}
+      hidden={!showControls}
+    />
+  );
 
   return (
     <div
@@ -548,16 +682,21 @@ const StarMapModel = ({
       <Canvas
         camera={{ position: [-1.8, 0.51, 1.8] }}
         className={`${styles.canvas} ${canvasReady ? styles.canvasReady : ''}`}
-        onCreated={() => requestAnimationFrame(() => requestAnimationFrame(() => setCanvasReady(true)))}
+        onCreated={() =>
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => setCanvasReady(true)),
+          )
+        }
       >
-        <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} />
-        <ModelGrid gridSize={gridSize} />
-        <PointLabels starPos={starPos} />
+        <CameraRig step={step} rightAscensionAngle={rightAscensionAngle} declinationCamera={declinationCamera} overheadCamera={overheadCamera} finalCamera={finalCamera} />
+        <ModelAxes />
+        <PointLabels starPos={starPos} showLabels={showAllLabels} />
         {(step === 0 || step <= 2 || step === 5) && (
           <Declination
             starPos={starPos}
             showHorizontalRadius={step === 0 || step >= 2}
             highlight={highlight.declination}
+            showAllLabels={showAllLabels}
           />
         )}
         {(step === 0 || step >= 3) && (
@@ -565,6 +704,7 @@ const StarMapModel = ({
             starPos={starPos}
             showZ={step === 0 || step >= 4}
             highlight={highlight.rightAscension}
+            showAllLabels={showAllLabels}
           />
         )}
         <AngleArcs
@@ -575,25 +715,15 @@ const StarMapModel = ({
           showDeclination={step === 0 || step <= 2 || step === 5}
           highlight={highlight.arc}
         />
-        {(step === 0 || step <= 2 || step === 5) && <Star starPos={starPos} />}
+        {(step === 0 || step <= 2 || step === 5) && (
+          <Star starPos={starPos} showLabel={showStarLabel} />
+        )}
         {showSphere && <CelestialSphere />}
-        <OrbitControls enabled={step === 0 || step === 5} enableZoom={false} />
+        {allowOrbit && (
+          <OrbitControls enabled={step === 0 || step === 5} enableZoom={step === 5} />
+        )}
       </Canvas>
-      {showControls && (
-        <Controls
-          starPos={starPos}
-          starRadius={starRadius}
-          declinationAngle={declinationAngle}
-          setDeclinationAngle={setDeclinationAngle}
-          rightAscensionAngle={rightAscensionAngle}
-          setRightAscensionAngle={setRightAscensionAngle}
-          step={step}
-          setStep={setStep}
-          showNavigation={showNavigation}
-          showSphere={showSphere}
-          setShowSphere={setShowSphere}
-        />
-      )}
+      {controlsContainer ? createPortal(controls, controlsContainer) : controls}
     </div>
   );
 };

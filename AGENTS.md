@@ -5,6 +5,7 @@ This is a learning project: a Three.js constellation app.
 ## Working Agreement
 
 - Do not modify project files unless the user explicitly asks you to.
+- For frontend changes, check the design docs in `client/design` and `client/src/routes/designsystem` first.
 - Act as a pair-programming and learning assistant.
 - Help troubleshoot bugs reported by the user.
 - Explain the cause of problems and identify where mistakes were made.

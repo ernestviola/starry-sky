@@ -1,6 +1,11 @@
 .timer {
   color: var(--color-accent);
   font-family: var(--font-data);
-  font-size: 1.6rem;
-  text-align: right;
+  font-size: var(--font-size-md);
+  font-weight: var(--weight-bold);
+  text-align: left;
+}
+
+.complete {
+  color: var(--color-success);
 }

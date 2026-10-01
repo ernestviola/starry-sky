@@ -1,16 +1,31 @@
 .about {
-  padding: 10rem var(--page-gutter) 4rem;
+  padding: 10rem var(--about-gutter) 0;
+  overflow: clip;
   view-transition-name: about-content;
 }
 
 .about h1,
-.about > p {
+.aboutHeader > p {
   position: relative;
   z-index: 2;
 }
 
+.aboutHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0 var(--about-gutter);
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--color-panel) 75%, transparent) 8%,
+    color-mix(in srgb, var(--color-panel) 75%, transparent) 92%,
+    transparent
+  );
+}
+
 .about h1 {
-  font-size: 4.2rem;
+  font-size: var(--font-size-display);
 }
 
 .about h2 {
@@ -20,12 +35,7 @@
 
 .about p {
   margin-top: var(--space-3);
-  font-size: 1.6rem;
-}
-
-.inspiration,
-.earlyDrafts {
-  max-width: 70ch;
+  font-size: var(--font-size-md);
 }
 
 .walkthrough {
@@ -46,57 +56,76 @@
   height: 100svh;
 }
 
+.modelFrame {
+  height: 100%;
+}
+
 .story {
   z-index: 1;
   pointer-events: none;
 }
 
-.storyIntro {
-  display: flex;
-  min-height: 100svh;
-  align-items: flex-start;
-  padding: 5rem var(--page-gutter) var(--space-8);
-}
-
 .introCard {
-  width: min(100%, 60ch);
   pointer-events: auto;
-}
-
-.introCard h2 {
-  margin-top: 0;
 }
 
 .storyStep {
   display: flex;
   min-height: 100svh;
-  align-items: end;
-  padding: var(--space-8) var(--page-gutter);
-  opacity: 0.2;
-  transform: translateY(1.6rem);
-  transition:
-    opacity 300ms ease,
-    transform 300ms ease;
+  align-items: flex-start;
+  padding: 25svh var(--about-gutter) var(--space-8);
+  opacity: var(--reveal, 0);
 }
 
-.activeStep {
-  opacity: 1;
-  transform: translateY(0);
+.storyStep {
+  scroll-snap-align: start;
 }
 
-.storyStep:last-child {
-  margin-bottom: 100svh;
+@media (prefers-reduced-motion: reduce) {
+  .storyStep {
+    opacity: 0;
+  }
+
+  .storyStep.activeStep {
+    opacity: 1;
+  }
 }
 
 .stepCard {
-  position: relative;
+  position: sticky;
+  top: 25svh;
+  align-self: flex-start;
   z-index: 1;
   width: min(100%, 52ch);
   padding: var(--space-5);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius-card);
-  background: rgb(6 7 13 / 90%);
+  background: var(--color-panel);
   box-shadow: var(--shadow-panel);
+}
+
+.stepCard::after {
+  position: absolute;
+  z-index: 2;
+  inset: calc(-1 * var(--border-width));
+  content: '';
+  pointer-events: none;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    var(--color-accent) 0deg calc(var(--border-progress) * 180deg),
+    transparent 0deg calc(360deg - var(--border-progress) * 180deg),
+    var(--color-accent) 0deg
+  );
+  padding: var(--border-width);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
 }
 
 .stepCard h2 {
@@ -106,11 +135,6 @@
 
 .stepCard p {
   max-width: 60ch;
-}
-
-.earlyDrafts {
-  max-width: none;
-  margin-top: var(--space-8);
 }
 
 .diagramFrame {
@@ -134,7 +158,7 @@
 
 .notebookDiagrams {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: var(--space-4);
   margin-top: var(--space-5);
 }
@@ -142,23 +166,312 @@
 .notebookDiagrams figcaption {
   margin-top: var(--space-2);
   color: var(--color-text-subtle);
-  font-size: 1.3rem;
+  font-size: var(--font-size-sm);
 }
 
-@media (max-width: 700px) {
+.desktopExploreAction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 22rem;
+  min-height: var(--touch-target-min);
+  margin: var(--space-4) auto 0;
+  padding: var(--space-1) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-button);
+  background: transparent;
+  color: var(--color-text-primary);
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: var(--weight-bold);
+  line-height: 2rem;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.desktopExploreAction > span {
+  animation: exploration-action-enter var(--duration-slow) var(--ease-standard) both;
+}
+
+@keyframes exploration-action-enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--action-enter-offset));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desktopExploreAction > span {
+    animation: none;
+  }
+}
+
+.directionArrow {
+  color: var(--color-accent);
+  font-size: 2.8rem;
+  font-weight: 400;
+  line-height: 2.8rem;
+}
+
+.desktopExploreAction:hover .directionArrow {
+  color: var(--color-accent-hover);
+}
+
+.desktopExploring .modelStage {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  background: var(--color-background);
+}
+
+.desktopExploring .story {
+  visibility: hidden;
+}
+
+.desktopEntryAction,
+.desktopReturnAction {
+  position: fixed;
+  left: 50%;
+  z-index: 4;
+  margin: 0;
+  transform: translateX(-50%);
+}
+
+.desktopEntryAction {
+  --action-enter-offset: calc(-1 * var(--space-4));
+  bottom: var(--space-8);
+}
+
+.desktopReturnAction {
+  --action-enter-offset: var(--space-4);
+  top: var(--space-8);
+}
+
+@media (max-width: 900px) {
+  .about {
+    --mobile-model-height: 52svh;
+    padding: 10rem var(--about-gutter) var(--space-6);
+  }
+
+  .walkthrough {
+    display: flex;
+    width: 100vw;
+    margin: 0 0 0 calc(50% - 50vw);
+    flex-direction: column;
+  }
+
+  .story {
+    display: contents;
+    pointer-events: auto;
+  }
+
+  .aboutHeader {
+    order: 1;
+    position: relative;
+    z-index: 1;
+  }
+
+  .modelStage {
+    position: sticky;
+    top: 0;
+    order: 0;
+    z-index: 0;
+    height: 100svh;
+    margin: -10rem 0 calc(-100svh + 10rem);
+    background: var(--color-background);
+    pointer-events: none;
+  }
+
+  .exploringStage {
+    z-index: 2;
+    pointer-events: auto;
+  }
+
+  .exploringStage canvas {
+    touch-action: none;
+  }
+
+  .mobileSceneInfo {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .liveCalculation {
+    position: absolute;
+    top: 18svh;
+    right: var(--space-2);
+    display: grid;
+    gap: var(--space-2);
+    width: min(36%, 18rem);
+    color: var(--color-text-body);
+    font-family: var(--font-data);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-data);
+  }
+
+  .liveCalculation strong {
+    color: var(--color-text-primary);
+    font-weight: var(--weight-bold);
+  }
+
+  .overheadSceneInfo {
+    position: absolute;
+    z-index: 2;
+    top: var(--space-4);
+    left: var(--about-gutter);
+    width: min(45%, 18rem);
+    pointer-events: none;
+  }
+
+  .overheadSceneInfo .liveCalculation {
+    position: static;
+    width: auto;
+  }
+
   .storyStep {
-    padding: var(--space-6) var(--space-4);
+    position: relative;
+    z-index: 1;
+    order: 2;
+    height: 100svh;
+    min-height: 0;
+    padding: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .storyStep.activeStep {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .aboutHeader {
+    min-height: 0;
+    opacity: 1;
+  }
+
+  .introCard,
+  .stepCard {
+    width: 100%;
   }
 
   .stepCard {
+    position: fixed;
+    top: auto;
+    right: var(--about-gutter);
+    bottom: max(var(--space-4), env(safe-area-inset-bottom));
+    left: var(--about-gutter);
+    width: auto;
+    max-height: calc(
+      100svh - var(--mobile-model-height) - var(--space-4) - var(--space-4)
+    );
+    overflow-y: auto;
     padding: var(--space-4);
   }
 
   .stepCard h2 {
-    font-size: 2.4rem;
+    font-size: 2.2rem;
   }
 
-  .notebookDiagrams {
-    grid-template-columns: 1fr;
+  .explorePanel[hidden] {
+    display: none;
+  }
+
+  .exploreButton,
+  .exploreBackButton {
+    display: grid;
+    width: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    place-items: center;
+    padding: 0;
+    border: var(--border-width) solid var(--color-accent);
+    border-radius: var(--radius-button);
+    background: var(--color-panel-raised);
+    color: var(--color-text-primary);
+    cursor: pointer;
+  }
+
+  .stepHeading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .stepHeading h2 {
+    margin: 0;
+  }
+
+  .exploreButton,
+  .exploreBackButton {
+    flex: 0 0 auto;
+  }
+
+  .desktopEntryAction {
+    bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  }
+
+  .desktopReturnAction {
+    top: max(var(--space-4), env(safe-area-inset-top));
+  }
+
+  .explorePanel {
+    position: fixed;
+    z-index: 3;
+    right: var(--about-gutter);
+    bottom: max(var(--space-4), env(safe-area-inset-bottom));
+    left: var(--about-gutter);
+    max-height: calc(
+      100svh - var(--mobile-model-height) - var(--space-4) - var(--space-4)
+    );
+    overflow: visible;
+    background: transparent;
+  }
+
+  .explorePanel > div {
+    margin-bottom: 0;
+  }
+
+  .explorePanel > div > div {
+    max-height: calc(
+      100svh - var(--mobile-model-height) - var(--space-4) - var(--space-4)
+    );
+    overflow-y: auto;
+    padding: var(--space-3);
+    border-color: var(--color-border);
+    box-shadow: var(--shadow-panel);
+  }
+
+  .exploreButton,
+  .exploreBackButton {
+    font-size: var(--font-size-xl);
+    line-height: 1;
+  }
+
+  .exploreButton:focus-visible,
+  .exploreBackButton:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  .stepEquation {
+    display: none;
+  }
+
+  .stepCard::after {
+    display: none;
+  }
+
+  .notebookDiagrams figcaption {
+    font-size: var(--font-size-xs);
   }
 }
