@@ -106,7 +106,7 @@ const Declination = ({
       {(showAllLabels || highlight === 'y' || highlight === 'all') && (
         <Html position={[starPos[0], starPos[1] / 2, starPos[2]]}>
           <div
-            className={`${styles.sceneLabel} ${highlight === 'y' || highlight === 'all' ? styles.highlightLabel : ''}`}
+            className={`${styles.sceneLabel} ${styles.heightLabel} ${highlight === 'y' || highlight === 'all' ? styles.highlightLabel : ''}`}
           >
             y
           </div>
@@ -437,6 +437,7 @@ const Controls = ({
   setShowSphere,
   showWireframeControl,
   compact = false,
+  action,
   hidden = false,
 }) => {
   const degrees = (angle) => THREE.MathUtils.radToDeg(angle).toFixed(1);
@@ -447,7 +448,7 @@ const Controls = ({
     'Find the horizontal radius, h',
     'Find x',
     'Find z',
-    'Combine the coordinates',
+    compact ? 'Combine coordinates' : 'Combine the coordinates',
   ][step];
 
   return (
@@ -460,10 +461,16 @@ const Controls = ({
         <div
           className={`${styles.controlsContainer} ${step === 0 ? styles.panelEnter : ''}`}
         >
-          <div className={styles.stepTitle}>{stage}</div>
+          <div className={styles.controlsHeading}>
+            <div className={styles.stepTitle}>{stage}</div>
+            {action}
+          </div>
           {(step === 0 || step >= 3) && (
             <label>
-              Right ascension: {degrees(rightAscensionAngle)}°
+              <span className={styles.angleLabel}>
+                <span>Right ascension:</span>{' '}
+                <span>{degrees(rightAscensionAngle)}°</span>
+              </span>
               <input
                 type='range'
                 min={0}
@@ -476,7 +483,10 @@ const Controls = ({
           )}
           {(step <= 2 || step === 5) && (
             <label>
-              Declination: {degrees(declinationAngle)}°
+              <span className={styles.angleLabel}>
+                <span>Declination:</span>{' '}
+                <span>{degrees(declinationAngle)}°</span>
+              </span>
               <input
                 type='range'
                 min={-Math.PI / 2}
@@ -608,6 +618,7 @@ const StarMapModel = ({
   renderControls = true,
   showWireframeControl = true,
   controlsContainer,
+  controlsAction,
   allowOrbit = true,
   declinationCamera,
   overheadCamera,
@@ -656,6 +667,7 @@ const StarMapModel = ({
       showSphere={showSphere}
       setShowSphere={setShowSphere}
       showWireframeControl={showWireframeControl}
+      action={controlsAction}
       compact={Boolean(controlsContainer)}
       hidden={!showControls}
     />
@@ -708,7 +720,7 @@ const StarMapModel = ({
         )}
         {showSphere && <CelestialSphere />}
         {allowOrbit && (
-          <OrbitControls enabled={step === 0 || step === 5} enableZoom={false} />
+          <OrbitControls enabled={step === 0 || step === 5} enableZoom={step === 5} />
         )}
       </Canvas>
       {controlsContainer ? createPortal(controls, controlsContainer) : controls}

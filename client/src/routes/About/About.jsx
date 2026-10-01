@@ -5,6 +5,10 @@ import StarMapModel from '../../components/StarMapModel/StarMapModel.jsx';
 import styles from './about.module.css';
 import { mobileAngles } from './mobileAngles.js';
 
+const desktopDeclinationCamera = {
+  position: [-2.6, 1.4, 1.1],
+  target: [0, 0, 0],
+};
 const mobileDeclinationCamera = {
   position: [-4.2, 0.7, 1.8],
   target: [0, -0.9, 1.45],
@@ -18,7 +22,10 @@ const mobileFinalCamera = {
   position: [0.85, 1.3, 2.6],
   target: [0, 0, 0],
 };
-const declinationTitles = ['Find y with declination', 'Find the horizontal radius, h'];
+const declinationTitles = [
+  'Find y with declination',
+  'Find the horizontal radius, h',
+];
 
 const StepCard = ({ children }) => (
   <div className={styles.stepCard}>{children}</div>
@@ -38,11 +45,11 @@ const AboutWalkthrough = ({ isMobile }) => {
 
   const exitExplore = () => {
     setExploring(false);
-    requestAnimationFrame(() => exploreButton.current?.focus());
+    requestAnimationFrame(() => exploreButton.current?.focus({ preventScroll: true }));
   };
 
   useEffect(() => {
-    if (!isMobile || !exploring) return;
+    if (!exploring) return;
     const root = document.documentElement;
     const previousOverflow = root.style.overflow;
     root.style.overflow = 'hidden';
@@ -194,11 +201,22 @@ const AboutWalkthrough = ({ isMobile }) => {
     };
   }, [isMobile]);
 
+  const finalCard = (
+    <StepCard>
+      <h2>Find z</h2>
+      <p>
+        The adjacent side of the same right-ascension triangle is z = h
+        cos(RA). We now have all three Cartesian coordinates and can
+        finally place the star.
+      </p>
+    </StepCard>
+  );
+
   const stepClass = (number) =>
     `${styles.storyStep} ${focusedStep === number ? styles.activeStep : ''}`;
   return (
     <div
-      className={styles.about}
+      className={`${styles.about} ${!isMobile && exploring ? styles.desktopExploring : ''}`}
       data-walkthrough={isMobile ? 'mobile' : 'desktop'}
       data-mode={exploring ? 'explore' : 'walkthrough'}
     >
@@ -209,62 +227,97 @@ const AboutWalkthrough = ({ isMobile }) => {
         >
           {isMobile && (focusedStep === 1 || focusedStep === 2) && (
             <div className={styles.mobileSceneInfo}>
-              <div className={styles.liveCalculation} aria-label='Live calculation'>
-                <span>Dec {Math.round(scrollAngles.declination * 180 / Math.PI)}°</span>
-                <span>{focusedStep === 1 ? 'y = sin(Dec)' : 'h = cos(Dec)'}</span>
+              <div
+                className={styles.liveCalculation}
+                aria-label='Live calculation'
+              >
+                <span>
+                  Dec {Math.round((scrollAngles.declination * 180) / Math.PI)}°
+                </span>
+                <span>
+                  {focusedStep === 1 ? 'y = sin(Dec)' : 'h = cos(Dec)'}
+                </span>
                 <strong>
-                  {focusedStep === 1 ? 'y' : 'h'} = {' '}
+                  {focusedStep === 1 ? 'y' : 'h'} ={' '}
                   {(focusedStep === 1
                     ? Math.sin(scrollAngles.declination)
-                    : Math.cos(scrollAngles.declination)).toFixed(2)}
+                    : Math.cos(scrollAngles.declination)
+                  ).toFixed(2)}
                 </strong>
               </div>
             </div>
           )}
           {isMobile && (focusedStep === 3 || focusedStep === 4) && (
             <div className={styles.overheadSceneInfo}>
-              <div className={styles.liveCalculation} aria-label='Live calculation'>
-                <span>RA {Math.round(scrollAngles.rightAscension * 180 / Math.PI)}°</span>
-                <span>{focusedStep === 3 ? 'x = h sin(RA)' : 'z = h cos(RA)'}</span>
+              <div
+                className={styles.liveCalculation}
+                aria-label='Live calculation'
+              >
+                <span>
+                  RA {Math.round((scrollAngles.rightAscension * 180) / Math.PI)}
+                  °
+                </span>
+                <span>
+                  {focusedStep === 3 ? 'x = h sin(RA)' : 'z = h cos(RA)'}
+                </span>
                 <strong>
                   {focusedStep === 3 ? 'x' : 'z'} ={' '}
-                  {(Math.cos(scrollAngles.declination) * (focusedStep === 3
-                    ? Math.sin(scrollAngles.rightAscension)
-                    : Math.cos(scrollAngles.rightAscension))).toFixed(2)}
+                  {(
+                    Math.cos(scrollAngles.declination) *
+                    (focusedStep === 3
+                      ? Math.sin(scrollAngles.rightAscension)
+                      : Math.cos(scrollAngles.rightAscension))
+                  ).toFixed(2)}
                 </strong>
               </div>
             </div>
           )}
-          <div
-            className={styles.modelFrame}
-          >
+          <div className={styles.modelFrame}>
             <StarMapModel
-              step={step}
-              controlsStep={isMobile ? step : controllerStep}
-              showControls={isMobile ? exploring : showControllerPanel}
+              step={exploring ? 5 : step}
+              controlsStep={exploring ? 5 : isMobile ? step : controllerStep}
+              showControls={exploring || (!isMobile && showControllerPanel)}
               showNavigation={false}
               presentation
               scrollAngles={isMobile && step !== 5 ? scrollAngles : undefined}
-              renderControls={isMobile ? exploring : true}
+              renderControls={isMobile ? exploring : exploring || step > 0}
               showWireframeControl={!isMobile}
               controlsContainer={isMobile ? controlsContainer : undefined}
-              allowOrbit={!isMobile || exploring}
-              declinationCamera={isMobile ? mobileDeclinationCamera : undefined}
+              allowOrbit={exploring}
+              declinationCamera={isMobile ? mobileDeclinationCamera : desktopDeclinationCamera}
               overheadCamera={isMobile ? mobileOverheadCamera : undefined}
               finalCamera={isMobile ? mobileFinalCamera : undefined}
             />
           </div>
         </div>
         {isMobile && (
-          <div className={styles.explorePanel} hidden={!exploring}>
-            <div className={styles.exploreHeader}>
-              <h2>Place the star</h2>
-              <button ref={backButton} type='button' aria-label='Back to Place the star' onClick={exitExplore}>
-                <span aria-hidden='true'>←</span>
-              </button>
-            </div>
-            <div ref={setControlsContainer} />
-          </div>
+          <div
+            className={styles.explorePanel}
+            hidden={!exploring}
+            ref={setControlsContainer}
+          />
+        )}
+        {!exploring && focusedStep === (isMobile ? 5 : 4) && (
+          <button
+            ref={exploreButton}
+            type='button'
+            className={`${styles.desktopExploreAction} ${styles.desktopEntryAction}`}
+            onClick={() => setExploring(true)}
+          >
+            <span className={styles.directionArrow} aria-hidden='true'>↓</span>
+            <span>Explore The Model</span>
+          </button>
+        )}
+        {exploring && (
+          <button
+            ref={backButton}
+            type='button'
+            className={`${styles.desktopExploreAction} ${styles.desktopReturnAction}`}
+            onClick={exitExplore}
+          >
+            <span>Back to Walkthrough</span>
+            <span className={styles.directionArrow} aria-hidden='true'>↑</span>
+          </button>
         )}
         <div className={styles.story}>
           <section data-derivation-step='0' className={styles.aboutHeader}>
@@ -276,13 +329,18 @@ const AboutWalkthrough = ({ isMobile }) => {
             <div className={styles.introCard}>
               <h2>Inspiration</h2>
               <p>
-                So, I&apos;m in the middle of The Odin Project. After leaving
-                tech to travel abroad for a year, I decided it was time to
-                upskill, and I&apos;ve always been interested in full-stack
-                development.
-              </p>
-              <p>
-                I&apos;m currently working through one of their projects,{' '}
+                After leaving tech to travel abroad for a year and coming back
+                to the industry radically changing, I decided it was time to
+                upskill. I’ve always been interested in full stack development,
+                so after a bit of searching I found{' '}
+                <a
+                  href='https://www.theodinproject.com/'
+                  target='_blank'
+                  rel='noreferrer'
+                >
+                  The Odin Project
+                </a>
+                . I&apos;m currently working through one of their projects,{' '}
                 <a
                   href='https://www.theodinproject.com/lessons/nodejs-where-s-waldo-a-photo-tagging-app'
                   target='_blank'
@@ -290,25 +348,36 @@ const AboutWalkthrough = ({ isMobile }) => {
                 >
                   The Where&apos;s Waldo tagging app
                 </a>
-                . I took the searching aspect of the project and pointed it
-                towards space.
+                .
               </p>
               <p>
-                I&apos;ve always been interested in space, and I&apos;ve thought
-                for a while now that it&apos;s disappointing to be in a city and
-                not be able to look up and observe the stars. Light pollution is
-                a major problem, and I wanted to make something that reminds
-                people about the beauty of the night sky.
+                There were mainly two features that were required from this app:
+                a leaderboard to record user scores and object detection via a
+                mouse pointer. Having gone through a number of previous projects
+                already I decided for this one I wanted to do something
+                different.
               </p>
               <p>
-                Thus, I built Starry Sky: a star-searching app to help people
-                become more familiar with what might be invisible, but is always
-                around us.
+                I’ve always loved watching the night sky and trying to guess
+                which ones were which, being with friends or family pointing up
+                at what I thought was the North Star (Polaris) or guessing at
+                which set of stars was the Little Dipper.
+              </p>
+              <p>
+                But being from the city, I don’t get that opportunity often. So
+                I thought to myself wouldn’t it be fun to remind people of
+                what’s always around them even if it’s not always visible? Thus,
+                I created Starry Sky, a way for people to reconnect with the
+                stars.
               </p>
               <h2>Challenges</h2>
               <p>
-                I was a bit ambitious with this project. During my initial
-                research, I found the{' '}
+                Admittedly I was a bit ambitious with this project. I knew what
+                I wanted, a Three.js simulation where users could explore the
+                constellations like they were looking up at them.
+              </p>
+              <p>
+                But first I needed data, I eventually found the{' '}
                 <a
                   href='https://codeberg.org/astronexus/hyg'
                   target='_blank'
@@ -316,19 +385,51 @@ const AboutWalkthrough = ({ isMobile }) => {
                 >
                   HYG Star Database
                 </a>
-                , which had the exact data I needed for the simulation.
+                , a collection of stars and their attributes combined from three
+                different star catalogues (Hipparcos, Yale, and Gliese). I was
+                lucky to find that It had exactly what I needed, it contained
+                the angles used to calculate the position of the stars in
+                relation to the earth on the celestial sphere.
               </p>
               <p>
-                Astronomers use an equivalent of latitude and longitude to map
-                the celestial sphere: declination and right ascension. With
-                those angles, I had a plan. I would use a unit sphere and
-                calculate the x, y, and z coordinates of each star relative to
-                its origin.
+                Have you ever seen The Truman Show? Well I want you to imagine
+                there’s a large dome above you, you can’t see the start or end
+                of the dome but the sky is painted on it. In fact imagine the
+                dome actually covers the entire earth, in fact that dome no
+                longer has walls, and what is a dome with no walls? A sphere!
               </p>
               <p>
-                But how was I going to do that? Geometry. You can see me try to
-                figure it out with pen and paper before turning the model into
-                my first Three.js project.
+                The celestial sphere is essentially that, it’s a construct that
+                we created to help us visualize where celestial objects are
+                placed in the sky.
+              </p>
+              <p>
+                We can take some angles and use those as directions to get to
+                where we should place a celestial object. We call these angles
+                the{' '}
+                <a
+                  href='https://en.wikipedia.org/wiki/Declination'
+                  target='_blank'
+                  rel='noreferrer'
+                >
+                  declination
+                </a>{' '}
+                and{' '}
+                <a
+                  href='https://en.wikipedia.org/wiki/Right_ascension'
+                  target='_blank'
+                  rel='noreferrer'
+                >
+                  right ascension
+                </a>
+                .
+              </p>
+              <p>
+                So you get how the celestial sphere works now, but here comes
+                the first challenge. How do we actually represent these
+                celestial objects on a Three.js canvas? Geometry that’s how!
+                Below you can see me trying to figure out exactly how to do
+                this.
               </p>
               <div className={styles.notebookDiagrams}>
                 <figure>
@@ -355,8 +456,8 @@ const AboutWalkthrough = ({ isMobile }) => {
                 </figure>
               </div>
               <p>
-                I won&apos;t lie: I struggled with this. But we got there
-                eventually. Follow along and I&apos;ll show you how the good old
+                I won&apos;t lie, I struggled with this. But we got there
+                eventually! Follow along and I&apos;ll show you how the good old
                 SOHCAHTOA from high-school mathematics can translate angles into
                 points in a Cartesian coordinate system.
               </p>
@@ -376,12 +477,6 @@ const AboutWalkthrough = ({ isMobile }) => {
               <p>
                 Since we know an angle and one side, we can calculate the side
                 we&apos;re interested in: the distance y away from the equator.
-              </p>
-              <p className={styles.stepEquation}>
-                sin(Dec) = opposite / hypotenuse
-                <br />
-                sin(Dec) = y / 1
-                <br />y = sin(Dec)
               </p>
             </StepCard>
           </section>
@@ -411,42 +506,12 @@ const AboutWalkthrough = ({ isMobile }) => {
           </section>
 
           <section data-derivation-step='4' className={stepClass(4)}>
-            <StepCard>
-              <h2>Find z</h2>
-              <p>
-                The adjacent side of the same right-ascension triangle is z = h
-                cos(RA). We now have all three Cartesian coordinates for the
-                star.
-              </p>
-            </StepCard>
+            {finalCard}
           </section>
 
-          <section
-            data-derivation-step='5'
-            className={`${stepClass(5)} ${exploring ? styles.exploringStep : ''}`}
-          >
-            <StepCard>
-              <div className={styles.stepHeading}>
-                <h2>Place the star</h2>
-                {isMobile && (
-                  <button
-                    ref={exploreButton}
-                    type='button'
-                    className={styles.exploreButton}
-                    aria-label='Explore the model'
-                    onClick={() => setExploring(true)}
-                  >
-                    <span aria-hidden='true'>→</span>
-                  </button>
-                )}
-              </div>
-              <p>
-                Substituting h = cos(Dec) gives the final unit-sphere
-                coordinates. Repeating this calculation for every catalog entry
-                places the stars around the viewer.
-              </p>
-            </StepCard>
-          </section>
+          {isMobile && (
+            <section data-derivation-step='5' className={stepClass(5)} />
+          )}
         </div>
       </section>
     </div>

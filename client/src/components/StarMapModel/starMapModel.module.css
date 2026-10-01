@@ -12,6 +12,7 @@
 }
 
 .canvas {
+  isolation: isolate;
   width: 100%;
   aspect-ratio: 1;
   min-height: 30rem;
@@ -108,7 +109,19 @@
   padding: var(--space-3);
 }
 
+.inlineControls .controlsContainer > label {
+  display: grid;
+  grid-template-columns: 12.6rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.inlineControls .angleLabel > span {
+  display: block;
+}
+
 .inlineControls input[type='range'] {
+  min-width: 0;
   min-height: var(--touch-target-min);
 }
 
@@ -203,6 +216,10 @@
   color: #d55e00;
 }
 
+.heightLabel {
+  transform: translateX(-100%);
+}
+
 .highlightLabel {
   border-color: gold;
   color: gold;
@@ -225,6 +242,13 @@
   .presentation .panelEnter {
     animation: none;
   }
+}
+
+.controlsHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
 }
 
 .stepTitle {
