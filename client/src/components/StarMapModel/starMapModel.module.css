@@ -12,6 +12,7 @@
 }
 
 .canvas {
+  isolation: isolate;
   width: 100%;
   aspect-ratio: 1;
   min-height: 30rem;
@@ -48,15 +49,37 @@
 .presentation .controllerParent {
   position: absolute;
   top: 25%;
-  right: var(--page-gutter);
+  right: var(--about-gutter, var(--page-gutter));
   bottom: auto;
-  transform: translateY(-50%);
   z-index: 2;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  width: min(22rem, calc(100vw - (2 * var(--page-gutter))));
+  width: min(22rem, calc(100vw - (2 * var(--about-gutter, var(--page-gutter)))));
   view-transition-name: walkthrough-controller;
+  transition:
+    opacity var(--duration-slow) var(--ease-standard),
+    transform var(--duration-slow) var(--ease-standard);
+}
+
+.presentation .controllerParent.controlsHidden {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateX(4rem);
+  transition:
+    opacity var(--duration-slow) var(--ease-standard),
+    transform var(--duration-slow) var(--ease-standard),
+    visibility 0s linear var(--duration-slow);
+}
+
+.presentation .controllerParent:not(.controlsHidden) {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity var(--duration-slow) var(--ease-standard),
+    transform var(--duration-slow) var(--ease-standard),
+    visibility 0s;
 }
 
 .presentation .panelEnter {
@@ -73,6 +96,37 @@
 
 .controllerParent {
   margin: 0;
+}
+
+.inlineControls {
+  position: static;
+  width: 100%;
+  margin-bottom: var(--space-4);
+}
+
+.inlineControls .controlsContainer {
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+
+.inlineControls .controlsContainer > label {
+  display: grid;
+  grid-template-columns: 12.6rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.inlineControls .angleLabel > span {
+  display: block;
+}
+
+.inlineControls input[type='range'] {
+  min-width: 0;
+  min-height: var(--touch-target-min);
+}
+
+.controllerParent.controlsHidden {
+  visibility: hidden;
 }
 
 .controlsContainer {
@@ -154,8 +208,16 @@
   user-select: none;
 }
 
-.arcLabel {
-  color: var(--color-accent);
+.raLabel {
+  color: #56b4e9;
+}
+
+.decLabel {
+  color: #d55e00;
+}
+
+.heightLabel {
+  transform: translateX(-100%);
 }
 
 .highlightLabel {
@@ -180,6 +242,13 @@
   .presentation .panelEnter {
     animation: none;
   }
+}
+
+.controlsHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
 }
 
 .stepTitle {
