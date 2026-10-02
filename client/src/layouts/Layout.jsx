@@ -9,6 +9,7 @@ const Layout = () => {
     hoveredStarId,
     setHoveredStarId,
     setSelectedStarId,
+    starClickFeedback,
     handleClick,
     handleInteraction,
   } = useStarMap();
@@ -26,6 +27,7 @@ const Layout = () => {
             hoveredStarId={hoveredStarId}
             setHoveredStarId={setHoveredStarId}
             setSelectedStarId={setSelectedStarId}
+            starClickFeedback={starClickFeedback}
             handleClick={handleClick}
             handleInteraction={handleInteraction}
             enableHover={pathname !== '/'}

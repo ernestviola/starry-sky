@@ -29,6 +29,27 @@ const pointerFromEvent = (canvas, event) => {
   );
 };
 
+export const getStarClickIndicatorColor = (status) => {
+  if (status === 'correct') return '#8fe3b0';
+  if (status === 'incorrect') return '#ff8f9f';
+  return '#fff';
+};
+
+export const getStarClickIndicatorOpacity = (
+  expiresAt,
+  now = performance.now(),
+  duration = 300,
+) => {
+  if (expiresAt === null || expiresAt === undefined) return 1;
+  if (duration <= 0) return 0;
+  const remaining = THREE.MathUtils.clamp(
+    (expiresAt - now) / duration,
+    0,
+    1,
+  );
+  return remaining * remaining;
+};
+
 export const CanvasClick = ({ handleClick, handleInteraction, pickStar }) => {
   const { gl } = useThree();
 
@@ -79,6 +100,7 @@ const Star3dObjects = ({
   pendingStars = [],
   consumePendingStars = null,
   setSelectedStarId = null,
+  starClickFeedback = null,
   handleClick = null,
   handleInteraction = null,
 }) => {
@@ -284,10 +306,11 @@ const Star3dObjects = ({
     }
 
     if (indicatorRingMeshRef.current) {
-      if (starId === null) {
+      const indicatorStarId = starClickFeedback?.starId ?? starId;
+      if (indicatorStarId === null || indicatorStarId === undefined) {
         indicatorRingMeshRef.current.position.set(0, 0, 0);
       } else {
-        const index = idToIndexRef.current.get(starId);
+        const index = idToIndexRef.current.get(indicatorStarId);
         if (index !== undefined) {
           const positions = positionRef.current;
           indicatorRingMeshRef.current.position.set(
@@ -304,6 +327,16 @@ const Star3dObjects = ({
         camera.fov / 100,
         camera.fov / 100,
       );
+      indicatorRingMeshRef.current.material.color.set(
+        getStarClickIndicatorColor(starClickFeedback?.status),
+      );
+      indicatorRingMeshRef.current.material.opacity = starClickFeedback
+        ? getStarClickIndicatorOpacity(
+            starClickFeedback.expiresAt,
+            performance.now(),
+            starClickFeedback.duration,
+          )
+        : 1;
     }
     visitedStarManager(starId);
   });

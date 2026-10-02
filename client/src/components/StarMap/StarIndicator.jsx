@@ -8,6 +8,7 @@ const StarIndicator = ({ indicatorRef }) => {
         color='#fff'
         side={THREE.DoubleSide}
         depthTest={false}
+        transparent
       />
     </mesh>
   );
