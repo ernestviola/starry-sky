@@ -6,6 +6,10 @@ import StarPoints from './StarPoints.jsx';
 import StarIndicator from './StarIndicator.jsx';
 import useStarHover from './hooks/useStarHover.js';
 import { getStarPosition } from './starPosition.js';
+import {
+  getStarClickIndicatorColor,
+  getStarClickIndicatorOpacity,
+} from './starClickIndicator.js';
 
 const MAX_STARS = 120000;
 const MAG_EXPONENT = 1.5;
@@ -27,27 +31,6 @@ const pointerFromEvent = (canvas, event) => {
     ((event.clientX - rect.left) / rect.width) * 2 - 1,
     -((event.clientY - rect.top) / rect.height) * 2 + 1,
   );
-};
-
-export const getStarClickIndicatorColor = (status) => {
-  if (status === 'correct') return '#8fe3b0';
-  if (status === 'incorrect') return '#ff8f9f';
-  return '#fff';
-};
-
-export const getStarClickIndicatorOpacity = (
-  expiresAt,
-  now = performance.now(),
-  duration = 300,
-) => {
-  if (expiresAt === null || expiresAt === undefined) return 1;
-  if (duration <= 0) return 0;
-  const remaining = THREE.MathUtils.clamp(
-    (expiresAt - now) / duration,
-    0,
-    1,
-  );
-  return remaining * remaining;
 };
 
 export const CanvasClick = ({ handleClick, handleInteraction, pickStar }) => {

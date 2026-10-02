@@ -1,10 +1,10 @@
 import { fireEvent, render } from '@testing-library/react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { CanvasClick } from './Star3dObjects.jsx';
 import {
-  CanvasClick,
   getStarClickIndicatorColor,
   getStarClickIndicatorOpacity,
-} from './Star3dObjects.jsx';
+} from './starClickIndicator.js';
 
 const mapMock = vi.hoisted(() => ({ canvas: null }));
 
