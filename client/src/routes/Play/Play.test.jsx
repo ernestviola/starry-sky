@@ -3,18 +3,24 @@ import { MemoryRouter, Route, Routes, useNavigate } from 'react-router';
 import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import Play from './Play.jsx';
 
-const mapMock = vi.hoisted(() => ({ interactionHandler: null }));
+const mapMock = vi.hoisted(() => ({ interactionHandler: null, clickHandler: null, setStarClickFeedback: vi.fn() }));
 
 vi.mock('../../contexts/StarMapContext.jsx', () => ({
   useStarMap: () => ({
     hoveredStarId: null,
-    registerClickHandler: vi.fn(() => vi.fn()),
+    registerClickHandler: vi.fn((handler) => {
+      mapMock.clickHandler = handler;
+      return () => {
+        if (mapMock.clickHandler === handler) mapMock.clickHandler = null;
+      };
+    }),
     registerInteractionHandler: vi.fn((handler) => {
       mapMock.interactionHandler = handler;
       return () => {
         if (mapMock.interactionHandler === handler) mapMock.interactionHandler = null;
       };
     }),
+    setStarClickFeedback: mapMock.setStarClickFeedback,
   }),
 }));
 
@@ -73,6 +79,8 @@ afterAll(() => {
 beforeEach(() => {
   vi.clearAllMocks();
   mapMock.interactionHandler = null;
+  mapMock.clickHandler = null;
+  mapMock.setStarClickFeedback.mockClear();
   vi.stubEnv('VITE_STAR_API', 'http://api.test/');
   vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false })));
 });
@@ -173,5 +181,44 @@ describe('Play dialog flow', () => {
 
     expect(screen.getByRole('heading', { name: 'Find The Stars!' })).toBeInTheDocument();
     expect(HTMLDialogElement.prototype.close).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('Play star click feedback', () => {
+  test('sets red model feedback for an incorrect star and green model feedback for a target star', async () => {
+    const token = `eyJhbGciOiJub25lIn0.${btoa(
+      JSON.stringify({
+        startTime: 1000,
+        starsToFind: [
+          { id: 'target-1', proper: 'Vega' },
+          { id: 'target-2', proper: 'Altair' },
+        ],
+      }),
+    )}.signature`;
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ token }),
+    }));
+
+    render(<Play />);
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    expect(await screen.findByTestId('search-list-state')).toHaveTextContent('expanded');
+
+    act(() => mapMock.clickHandler('unrelated-star'));
+    expect(mapMock.setStarClickFeedback).toHaveBeenLastCalledWith(expect.objectContaining({
+      starId: 'unrelated-star',
+      status: 'incorrect',
+      expiresAt: expect.any(Number),
+      duration: expect.any(Number),
+    }));
+
+    act(() => mapMock.clickHandler('target-1'));
+    expect(mapMock.setStarClickFeedback).toHaveBeenLastCalledWith(expect.objectContaining({
+      starId: 'target-1',
+      status: 'correct',
+      expiresAt: expect.any(Number),
+      duration: expect.any(Number),
+    }));
+    expect(screen.getByText('1/2 FOUND')).toBeInTheDocument();
   });
 });

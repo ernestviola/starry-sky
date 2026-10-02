@@ -11,6 +11,7 @@ import useSheetDrag from './useSheetDrag.js';
 import GameStart from '../../components/PlayRoute/GameStart/GameStart.jsx';
 import SubmitScore from '../../components/PlayRoute/SubmitScore/SubmitScore.jsx';
 import dialogStyles from '../../components/PlayRoute/Dialog/dialog.module.css';
+import { getMotionDuration } from '../../utils/motion.js';
 
 const noopRegisterInteractionHandler = () => () => {};
 
@@ -20,6 +21,7 @@ const Play = () => {
     selectedStarId,
     registerClickHandler,
     registerInteractionHandler = noopRegisterInteractionHandler,
+    setStarClickFeedback,
   } = useStarMap();
   const [gameStartTime, setGameStartTime] = useState(null);
   const [gameTotalTime, setGameTotalTime] = useState(null);
@@ -41,6 +43,9 @@ const Play = () => {
   const dialogSubmitScoreRef = useRef();
   const dialogLeaderboardRef = useRef();
   const dialogHowToPlayRef = useRef();
+  const clickFeedbackTimeoutRef = useRef(null);
+
+  useEffect(() => () => window.clearTimeout(clickFeedbackTimeoutRef.current), []);
 
   useEffect(() => {
     const preventEscape = (event) => {
@@ -72,6 +77,8 @@ const Play = () => {
       setLoading(true);
       setGameTotalTime(null);
       setGameFinishedToken(null);
+      window.clearTimeout(clickFeedbackTimeoutRef.current);
+      setStarClickFeedback?.(null);
       const url = new URL(`${import.meta.env.VITE_STAR_API}api/game/start`);
       const response = await fetch(url.toString(), {
         method: 'POST',
@@ -120,14 +127,27 @@ const Play = () => {
   };
 
   const handleStarClick = (starId = selectedStarId) => {
-    if (starId !== null && starId !== undefined && starsFoundDictionary[starId] !== undefined) {
-      setStarsFoundDictionary((prev) => {
-        const starToUpdate = prev[starId];
-        starToUpdate.found = true;
-        const foundStars = { ...prev, [starId]: starToUpdate };
-        return foundStars;
-      });
-    }
+    if (!gameStarted || starId === null || starId === undefined) return;
+
+    const isTargetStar = starsFoundDictionary[starId] !== undefined;
+    const feedbackDuration = getMotionDuration('--duration-slow');
+    setStarClickFeedback?.({
+      starId,
+      status: isTargetStar ? 'correct' : 'incorrect',
+      expiresAt: performance.now() + feedbackDuration,
+      duration: feedbackDuration,
+    });
+    window.clearTimeout(clickFeedbackTimeoutRef.current);
+    clickFeedbackTimeoutRef.current = window.setTimeout(
+      () => setStarClickFeedback?.(null),
+      feedbackDuration,
+    );
+    if (!isTargetStar) return;
+
+    setStarsFoundDictionary((prev) => ({
+      ...prev,
+      [starId]: { ...prev[starId], found: true },
+    }));
   };
 
   useEffect(() => {

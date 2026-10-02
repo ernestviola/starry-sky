@@ -193,6 +193,7 @@ const StarMap = ({
   hoveredStarId,
   setHoveredStarId,
   setSelectedStarId,
+  starClickFeedback,
   handleClick,
   handleInteraction = () => {},
   enableHover = true,
@@ -344,6 +345,7 @@ const StarMap = ({
           pendingStars={pendingStars}
           consumePendingStars={consumePendingStars}
           setSelectedStarId={setSelectedStarId}
+          starClickFeedback={starClickFeedback}
           handleClick={handleClick}
           handleInteraction={handleInteraction}
         />
