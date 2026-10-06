@@ -1,0 +1,354 @@
+{
+  "Air Pump": {
+    "name": "Antlia",
+    "abbreviation": "Ant"
+  },
+  "Altar": {
+    "name": "Ara",
+    "abbreviation": "Ara"
+  },
+  "Archer": {
+    "name": "Sagittarius",
+    "abbreviation": "Sgr"
+  },
+  "Arrow": {
+    "name": "Sagitta",
+    "abbreviation": "Sge"
+  },
+  "Berenice's Hair": {
+    "name": "Coma Berenices",
+    "abbreviation": "Com"
+  },
+  "Bird of Paradise": {
+    "name": "Apus",
+    "abbreviation": "Aps"
+  },
+  "Bull": {
+    "name": "Taurus",
+    "abbreviation": "Tau"
+  },
+  "Carpenter's Square": {
+    "name": "Norma",
+    "abbreviation": "Nor"
+  },
+  "Centaur": {
+    "name": "Centaurus",
+    "abbreviation": "Cen"
+  },
+  "Chained Maiden": {
+    "name": "Andromeda",
+    "abbreviation": "And"
+  },
+  "Chameleon": {
+    "name": "Chamaeleon",
+    "abbreviation": "Cha"
+  },
+  "Charioteer": {
+    "name": "Auriga",
+    "abbreviation": "Aur"
+  },
+  "Clock": {
+    "name": "Horologium",
+    "abbreviation": "Hor"
+  },
+  "Crab": {
+    "name": "Cancer",
+    "abbreviation": "Cnc"
+  },
+  "Crane": {
+    "name": "Grus",
+    "abbreviation": "Gru"
+  },
+  "Crow": {
+    "name": "Corvus",
+    "abbreviation": "Crv"
+  },
+  "Cup": {
+    "name": "Crater",
+    "abbreviation": "Crt"
+  },
+  "Dolphin": {
+    "name": "Delphinus",
+    "abbreviation": "Del"
+  },
+  "Dove": {
+    "name": "Columba",
+    "abbreviation": "Col"
+  },
+  "Drafting Compass": {
+    "name": "Circinus",
+    "abbreviation": "Cir"
+  },
+  "Dragon": {
+    "name": "Draco",
+    "abbreviation": "Dra"
+  },
+  "Eagle": {
+    "name": "Aquila",
+    "abbreviation": "Aql"
+  },
+  "Engraving Tool": {
+    "name": "Caelum",
+    "abbreviation": "Cae"
+  },
+  "Female Water Snake": {
+    "name": "Hydra",
+    "abbreviation": "Hya"
+  },
+  "Fishes": {
+    "name": "Pisces",
+    "abbreviation": "Psc"
+  },
+  "Fly": {
+    "name": "Musca",
+    "abbreviation": "Mus"
+  },
+  "Flying Fish": {
+    "name": "Volans",
+    "abbreviation": "Vol"
+  },
+  "Fox": {
+    "name": "Vulpecula",
+    "abbreviation": "Vul"
+  },
+  "Furnace": {
+    "name": "Fornax",
+    "abbreviation": "For"
+  },
+  "Giraffe": {
+    "name": "Camelopardalis",
+    "abbreviation": "Cam"
+  },
+  "Great Bear": {
+    "name": "Ursa Major",
+    "abbreviation": "UMa"
+  },
+  "Great Dog": {
+    "name": "Canis Major",
+    "abbreviation": "CMa"
+  },
+  "Hare": {
+    "name": "Lepus",
+    "abbreviation": "Lep"
+  },
+  "Hercules": {
+    "name": "Hercules",
+    "abbreviation": "Her"
+  },
+  "Herdsman": {
+    "name": "Boötes",
+    "abbreviation": "Boo"
+  },
+  "Hero": {
+    "name": "Perseus",
+    "abbreviation": "Per"
+  },
+  "Hunter": {
+    "name": "Orion",
+    "abbreviation": "Ori"
+  },
+  "Hunting Dogs": {
+    "name": "Canes Venatici",
+    "abbreviation": "CVn"
+  },
+  "Indian": {
+    "name": "Indus",
+    "abbreviation": "Ind"
+  },
+  "Keel": {
+    "name": "Carina",
+    "abbreviation": "Car"
+  },
+  "King": {
+    "name": "Cepheus",
+    "abbreviation": "Cep"
+  },
+  "Lesser Dog": {
+    "name": "Canis Minor",
+    "abbreviation": "CMi"
+  },
+  "Lesser Lion": {
+    "name": "Leo Minor",
+    "abbreviation": "LMi"
+  },
+  "Lion": {
+    "name": "Leo",
+    "abbreviation": "Leo"
+  },
+  "Little Bear": {
+    "name": "Ursa Minor",
+    "abbreviation": "UMi"
+  },
+  "Little Horse": {
+    "name": "Equuleus",
+    "abbreviation": "Equ"
+  },
+  "Lizard": {
+    "name": "Lacerta",
+    "abbreviation": "Lac"
+  },
+  "Lynx": {
+    "name": "Lynx",
+    "abbreviation": "Lyn"
+  },
+  "Lyre": {
+    "name": "Lyra",
+    "abbreviation": "Lyr"
+  },
+  "Magnetic Compass": {
+    "name": "Pyxis",
+    "abbreviation": "Pyx"
+  },
+  "Maiden": {
+    "name": "Virgo",
+    "abbreviation": "Vir"
+  },
+  "Male Water Snake": {
+    "name": "Hydrus",
+    "abbreviation": "Hyi"
+  },
+  "Microscope": {
+    "name": "Microscopium",
+    "abbreviation": "Mic"
+  },
+  "Northern Crown": {
+    "name": "Corona Borealis",
+    "abbreviation": "CrB"
+  },
+  "Octant": {
+    "name": "Octans",
+    "abbreviation": "Oct"
+  },
+  "Painter's Easel": {
+    "name": "Pictor",
+    "abbreviation": "Pic"
+  },
+  "Peacock": {
+    "name": "Pavo",
+    "abbreviation": "Pav"
+  },
+  "Phoenix": {
+    "name": "Phoenix",
+    "abbreviation": "Phe"
+  },
+  "Ram": {
+    "name": "Aries",
+    "abbreviation": "Ari"
+  },
+  "Reticle": {
+    "name": "Reticulum",
+    "abbreviation": "Ret"
+  },
+  "River": {
+    "name": "Eridanus",
+    "abbreviation": "Eri"
+  },
+  "Sails": {
+    "name": "Vela",
+    "abbreviation": "Vel"
+  },
+  "Scales": {
+    "name": "Libra",
+    "abbreviation": "Lib"
+  },
+  "Scorpion": {
+    "name": "Scorpius",
+    "abbreviation": "Sco"
+  },
+  "Sculptor": {
+    "name": "Sculptor",
+    "abbreviation": "Scl"
+  },
+  "Sea Goat": {
+    "name": "Capricornus",
+    "abbreviation": "Cap"
+  },
+  "Sea Monster": {
+    "name": "Cetus",
+    "abbreviation": "Cet"
+  },
+  "Seated Queen": {
+    "name": "Cassiopeia",
+    "abbreviation": "Cas"
+  },
+  "Serpent": {
+    "name": "Serpens",
+    "abbreviation": "Ser"
+  },
+  "Serpent Bearer": {
+    "name": "Ophiuchus",
+    "abbreviation": "Oph"
+  },
+  "Sextant": {
+    "name": "Sextans",
+    "abbreviation": "Sex"
+  },
+  "Shield": {
+    "name": "Scutum",
+    "abbreviation": "Sct"
+  },
+  "Southern Cross": {
+    "name": "Crux",
+    "abbreviation": "Cru"
+  },
+  "Southern Crown": {
+    "name": "Corona Australis",
+    "abbreviation": "CrA"
+  },
+  "Southern Fish": {
+    "name": "Piscis Austrinus",
+    "abbreviation": "PsA"
+  },
+  "Southern Triangle": {
+    "name": "Triangulum Australe",
+    "abbreviation": "TrA"
+  },
+  "Stern": {
+    "name": "Puppis",
+    "abbreviation": "Pup"
+  },
+  "Swan": {
+    "name": "Cygnus",
+    "abbreviation": "Cyg"
+  },
+  "Swordfish": {
+    "name": "Dorado",
+    "abbreviation": "Dor"
+  },
+  "Table": {
+    "name": "Mensa",
+    "abbreviation": "Men"
+  },
+  "Telescope": {
+    "name": "Telescopium",
+    "abbreviation": "Tel"
+  },
+  "Toucan": {
+    "name": "Tucana",
+    "abbreviation": "Tuc"
+  },
+  "Triangle": {
+    "name": "Triangulum",
+    "abbreviation": "Tri"
+  },
+  "Twins": {
+    "name": "Gemini",
+    "abbreviation": "Gem"
+  },
+  "Unicorn": {
+    "name": "Monoceros",
+    "abbreviation": "Mon"
+  },
+  "Water Bearer": {
+    "name": "Aquarius",
+    "abbreviation": "Aqr"
+  },
+  "Winged Horse": {
+    "name": "Pegasus",
+    "abbreviation": "Peg"
+  },
+  "Wolf": {
+    "name": "Lupus",
+    "abbreviation": "Lup"
+  }
+}

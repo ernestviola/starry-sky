@@ -64,6 +64,7 @@ const StarDetails = ({
   const starId = selectedStarId ?? displayedStarId;
   const starData = starId ? starsDictionary[starId] : null;
   if (!starData) return null;
+  const identifier = starData.hip ? ['HIP', starData.hip] : ['ID', starData.id];
 
   if (selectedStarId) {
     return (
@@ -76,11 +77,11 @@ const StarDetails = ({
         >
           ×
         </button>
-        <p className={styles.data}>HIP: {starData.hip}</p>
+        <p className={styles.data}><span>{identifier[0]}</span>{identifier[1]}</p>
         {starData.proper && (
-          <p className={styles.data}>NAME: {starData.proper}</p>
+          <p className={styles.data}><span>NAME</span>{starData.proper}</p>
         )}
-        <p className={styles.data}>MAG: {starData.mag}</p>
+        <p className={styles.data}><span>MAG</span>{starData.mag ?? '—'}</p>
       </aside>
     );
   }
@@ -93,11 +94,11 @@ const StarDetails = ({
       }`}
       style={{ left: mousePosition.x, top: mousePosition.y }}
     >
-      <p className={styles.data}>HIP: {starData.hip}</p>
+      <p className={styles.data}><span>{identifier[0]}</span>{identifier[1]}</p>
       {starData.proper && (
-        <p className={styles.data}>NAME: {starData.proper}</p>
+        <p className={styles.data}><span>NAME</span>{starData.proper}</p>
       )}
-      <p className={styles.data}>MAG: {starData.mag}</p>
+      <p className={styles.data}><span>MAG</span>{starData.mag ?? '—'}</p>
     </div>
   );
 };

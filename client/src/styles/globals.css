@@ -122,6 +122,14 @@ a {
     animation: page-enter var(--duration-enter) cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
+  ::view-transition-old(explore-search) {
+    animation: explore-search-exit var(--duration-normal) var(--ease-standard) both;
+  }
+
+  ::view-transition-new(explore-search) {
+    animation: explore-search-enter var(--duration-enter) var(--ease-standard) both;
+  }
+
   ::view-transition-old(game-status) {
     animation: game-status-exit var(--duration-normal) ease-out both;
   }
@@ -159,6 +167,30 @@ a {
     to {
       opacity: 0;
       transform: translateX(-2rem);
+    }
+  }
+
+  @keyframes explore-search-enter {
+    from {
+      opacity: 0;
+      transform: translateY(-2.4rem);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes explore-search-exit {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    to {
+      opacity: 0;
+      transform: translateY(-2.4rem);
     }
   }
 
@@ -210,5 +242,12 @@ a {
       opacity: 0;
       transform: translateX(4rem);
     }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(explore-search),
+  ::view-transition-new(explore-search) {
+    animation: none;
   }
 }
