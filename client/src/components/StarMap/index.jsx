@@ -1,7 +1,7 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Line, Html, Grid, CameraControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 
 import { ang2vec, query_disc_inclusive_ring } from '@hscmap/healpix';
 import { nside } from './config.js';
@@ -166,18 +166,25 @@ const MapInteraction = ({ handleInteraction }) => {
   return null;
 };
 
-const SmoothCameraTarget = ({ controlsRef, zenith, focusDirection }) => {
+const SmoothCameraTarget = ({
+  controlsRef,
+  zenith,
+  focusDirection,
+  focusSequence,
+  onFocusSettled,
+}) => {
+  const { camera } = useThree();
   const previousZenithRef = useRef(null);
 
   useEffect(() => {
     const zenithChanged = previousZenithRef.current !== zenith;
     previousZenithRef.current = zenith;
-    if (!focusDirection && !zenithChanged) return;
+    if (focusDirection || !zenithChanged) return;
 
     const controls = controlsRef.current;
     if (!controls) return;
 
-    const direction = focusDirection ?? { x: zenith[0], y: zenith[1], z: zenith[2] };
+    const direction = { x: zenith[0], y: zenith[1], z: zenith[2] };
     const target = new THREE.Vector3(direction.x, direction.y, direction.z)
       .normalize()
       .multiplyScalar(0.01);
@@ -192,6 +199,38 @@ const SmoothCameraTarget = ({ controlsRef, zenith, focusDirection }) => {
       true,
     );
   }, [controlsRef, zenith, focusDirection]);
+
+  useEffect(() => {
+    if (!focusDirection) return undefined;
+
+    const controls = controlsRef.current;
+    if (!controls) return undefined;
+
+    const direction = new THREE.Vector3(
+      focusDirection.x,
+      focusDirection.y,
+      focusDirection.z,
+    ).normalize();
+    const target = direction.clone().multiplyScalar(0.01);
+    const reducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+    let cancelled = false;
+
+    controls
+      .setLookAt(0, 0, 0, target.x, target.y, target.z, !reducedMotion)
+      .then(() => {
+        if (cancelled) return;
+        const cameraDirection = camera.getWorldDirection(new THREE.Vector3()).normalize();
+        if (cameraDirection.dot(direction) > 0.999) {
+          onFocusSettled?.(focusSequence);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [camera, controlsRef, focusDirection, focusSequence, onFocusSettled]);
 
   return null;
 };
@@ -234,10 +273,15 @@ const StarMap = ({
   const [viewedFrames, setViewedFrames] = useState(new Set());
   const [zenith, setZenith] = useState([0, 0, 0.1]);
   const [searchFocusDirection, setSearchFocusDirection] = useState(null);
+  const [searchFocusSequence, setSearchFocusSequence] = useState(0);
+  const [completedSearchFocusSequence, setCompletedSearchFocusSequence] = useState(0);
   const { setStarsDictionary, setConstellationLinesDictionary } = useStarData();
 
   const orbitControlRef = useRef();
   const pendingFrameIdsRef = useRef(new Set());
+  const handleSearchFocusSettled = useCallback((sequence) => {
+    setCompletedSearchFocusSequence(sequence);
+  }, []);
 
   useEffect(() => {
     if (!searchTarget) {
@@ -253,6 +297,7 @@ const StarMap = ({
         [searchTarget.star.id]: searchTarget.star,
       }));
       setSearchFocusDirection({ x, y, z });
+      setSearchFocusSequence((sequence) => sequence + 1);
       return undefined;
     }
 
@@ -400,6 +445,8 @@ const StarMap = ({
           controlsRef={orbitControlRef}
           zenith={zenith}
           focusDirection={searchFocusDirection}
+          focusSequence={searchFocusSequence}
+          onFocusSettled={handleSearchFocusSettled}
         />
         <ConstellationAnglesBasedOnCamera setDec={setDec} setRa={setRa} />
         <ZenithTargetDirection zenith={zenith} />
@@ -416,6 +463,8 @@ const StarMap = ({
           setSelectedStarId={setSelectedStarId}
           starClickFeedback={starClickFeedback}
           searchTarget={searchTarget}
+          searchFocusSequence={searchFocusSequence}
+          completedSearchFocusSequence={completedSearchFocusSequence}
           handleClick={handleClick}
           handleInteraction={handleInteraction}
         />

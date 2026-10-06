@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import StarPoints from './StarPoints.jsx';
 import StarIndicator from './StarIndicator.jsx';
+import SearchTargetTransition from './SearchTargetTransition.jsx';
 import useStarHover from './hooks/useStarHover.js';
 import { getStarPosition } from './starPosition.js';
 import {
@@ -24,21 +25,6 @@ const STAR_COLOR_STOPS = [
   { t: 0.6, color: new THREE.Color(1.0, 0.9, 0.7) },
   { t: 1.0, color: new THREE.Color(1.0, 0.5, 0.3) },
 ];
-
-const makeGlowTexture = () => {
-  const canvas = document.createElement('canvas');
-  canvas.width = 128;
-  canvas.height = 128;
-  const context = canvas.getContext('2d');
-  const gradient = context.createRadialGradient(64, 64, 2, 64, 64, 64);
-  gradient.addColorStop(0, 'rgba(244, 238, 228, 0.95)');
-  gradient.addColorStop(0.13, 'rgba(194, 141, 255, 0.8)');
-  gradient.addColorStop(0.48, 'rgba(194, 141, 255, 0.24)');
-  gradient.addColorStop(1, 'rgba(194, 141, 255, 0)');
-  context.fillStyle = gradient;
-  context.fillRect(0, 0, 128, 128);
-  return new THREE.CanvasTexture(canvas);
-};
 
 const pointerFromEvent = (canvas, event) => {
   const rect = canvas.getBoundingClientRect();
@@ -102,6 +88,8 @@ const Star3dObjects = ({
   handleClick = null,
   handleInteraction = null,
   searchTarget = null,
+  searchFocusSequence = 0,
+  completedSearchFocusSequence = 0,
 }) => {
   // currently processed star
   const nextIndexRef = useRef(0);
@@ -141,15 +129,11 @@ const Star3dObjects = ({
 
   const indicatorRingMeshRef = useRef();
   const starMaterialRef = useRef();
-  const searchGlowRef = useRef();
   const shouldFadeInRef = useRef(false);
   const initialStarsLoadedRef = useRef(false);
   const fadingStarIndicesRef = useRef(new Set());
   const starBufferInitializedRef = useRef(false);
   const uniforms = useMemo(() => ({ globalOpacity: { value: 0 } }), []);
-  const glowTexture = useMemo(() => makeGlowTexture(), []);
-
-  useEffect(() => () => glowTexture.dispose(), [glowTexture]);
 
   useEffect(() => {
     if (enableHover) return;
@@ -190,15 +174,21 @@ const Star3dObjects = ({
 
     let changed = false;
     const color = new THREE.Color();
-    const focusedStar = searchTarget?.type === 'star' ? searchTarget.star : null;
+    const focusedStar =
+      searchTarget?.type === 'star' ? searchTarget.star : null;
     const starsToProcess = starBufferInitializedRef.current
       ? [...pendingStars, ...(focusedStar ? [focusedStar] : [])]
-      : [...Object.values(starsDictionary), ...pendingStars, ...(focusedStar ? [focusedStar] : [])];
+      : [
+          ...Object.values(starsDictionary),
+          ...pendingStars,
+          ...(focusedStar ? [focusedStar] : []),
+        ];
     starBufferInitializedRef.current = true;
 
     for (const star of starsToProcess) {
       if (idToIndex.has(star.id)) continue;
-      if (!Number.isFinite(star.decrad) || !Number.isFinite(star.rarad)) continue;
+      if (!Number.isFinite(star.decrad) || !Number.isFinite(star.rarad))
+        continue;
 
       const index = nextIndexRef.current;
       if (index >= MAX_STARS) {
@@ -304,7 +294,8 @@ const Star3dObjects = ({
   };
 
   useFrame((_, delta) => {
-    const starId = enableHover && pointerOverCanvasRef.current ? detectHoveredStar() : null;
+    const starId =
+      enableHover && pointerOverCanvasRef.current ? detectHoveredStar() : null;
 
     if (shouldFadeInRef.current && starMaterialRef.current) {
       const opacity = starMaterialRef.current.uniforms.globalOpacity;
@@ -325,7 +316,8 @@ const Star3dObjects = ({
 
     if (indicatorRingMeshRef.current) {
       const indicatorStarId = starClickFeedback?.starId ?? starId;
-      indicatorRingMeshRef.current.visible = indicatorStarId !== null && indicatorStarId !== undefined;
+      indicatorRingMeshRef.current.visible =
+        indicatorStarId !== null && indicatorStarId !== undefined;
       if (indicatorStarId === null || indicatorStarId === undefined) {
         indicatorRingMeshRef.current.visible = false;
       } else {
@@ -359,12 +351,8 @@ const Star3dObjects = ({
           )
         : 1;
     }
-    if (searchGlowRef.current) {
-      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const pulse = reducedMotion ? 0.72 : 0.65 + 0.12 * Math.sin(performance.now() / 450);
-      searchGlowRef.current.material.opacity = pulse;
-    }
     visitedStarManager(starId);
+
   });
 
   const TouchStarSelection = () => {
@@ -413,11 +401,12 @@ const Star3dObjects = ({
     return null;
   };
 
-  const focusedPosition = searchTarget?.type === 'star' &&
+  const focusedPosition =
+    searchTarget?.type === 'star' &&
     Number.isFinite(searchTarget.star?.decrad) &&
     Number.isFinite(searchTarget.star?.rarad)
-    ? getStarPosition(searchTarget.star.decrad, searchTarget.star.rarad)
-    : null;
+      ? getStarPosition(searchTarget.star.decrad, searchTarget.star.rarad)
+      : null;
 
   return (
     <>
@@ -428,23 +417,11 @@ const Star3dObjects = ({
         pickStar={pickStar}
       />
       {enableHover && <StarIndicator indicatorRef={indicatorRingMeshRef} />}
-
-      {focusedPosition && (
-          <sprite
-            ref={searchGlowRef}
-            position={[focusedPosition.x, focusedPosition.y, focusedPosition.z]}
-            scale={[0.075, 0.075, 1]}
-            renderOrder={1}
-          >
-            <spriteMaterial
-              map={glowTexture}
-              color='#ffffff'
-              transparent
-              depthTest={false}
-              blending={THREE.AdditiveBlending}
-            />
-          </sprite>
-        )}
+      <SearchTargetTransition
+        position={focusedPosition}
+        sequence={searchFocusSequence}
+        completedSequence={completedSearchFocusSequence}
+      />
 
       <StarPoints
         positionRef={positionRef}
