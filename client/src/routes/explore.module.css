@@ -172,9 +172,24 @@
   position: absolute;
 }
 
-.constellationDotOne { top: 0.1rem; left: 0.2rem; width: 0.4rem; height: 0.4rem; }
-.constellationDotTwo { top: 0.7rem; left: 1.2rem; width: 0.5rem; height: 0.5rem; }
-.constellationDotThree { top: 1.5rem; left: 0.5rem; width: 0.4rem; height: 0.4rem; }
+.constellationDotOne {
+  top: 0.1rem;
+  left: 0.2rem;
+  width: 0.4rem;
+  height: 0.4rem;
+}
+.constellationDotTwo {
+  top: 0.7rem;
+  left: 1.2rem;
+  width: 0.5rem;
+  height: 0.5rem;
+}
+.constellationDotThree {
+  top: 1.5rem;
+  left: 0.5rem;
+  width: 0.4rem;
+  height: 0.4rem;
+}
 
 .resultCopy {
   display: flex;
@@ -218,16 +233,25 @@
   cursor: pointer;
 }
 
-.loadMore:hover { background: var(--color-panel-raised); }
-.loadMore:disabled { opacity: 0.6; cursor: wait; }
+.loadMore:hover {
+  background: var(--color-panel-raised);
+}
+.loadMore:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
 
 @media (max-width: 700px) {
   .searchPanel {
-    top: 11.2rem;
+    top: 9rem;
     width: calc(100vw - 3.2rem);
     gap: 1.6rem;
   }
 
-  .searchControl { height: 5rem; }
-  .results { max-height: min(49rem, calc(100svh - 20rem)); }
+  .searchControl {
+    height: 5rem;
+  }
+  .results {
+    max-height: min(49rem, calc(100svh - 20rem));
+  }
 }
