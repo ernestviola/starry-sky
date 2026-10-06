@@ -4,6 +4,12 @@ import rightAscensionDiagram from '../../assets/IMG_4206.jpeg';
 import StarMapModel from '../../components/StarMapModel/StarMapModel.jsx';
 import styles from './about.module.css';
 import { mobileAngles } from './mobileAngles.js';
+import {
+  BiDownArrow,
+  BiSolidDownArrow,
+  BiUpArrow,
+  BiSolidUpArrow,
+} from 'react-icons/bi';
 
 const desktopDeclinationCamera = {
   position: [-2.6, 1.4, 1.1],
@@ -304,8 +310,11 @@ const AboutWalkthrough = ({ isMobile }) => {
             className={`${styles.desktopExploreAction} ${styles.desktopEntryAction}`}
             onClick={() => setExploring(true)}
           >
-            <span className={styles.directionArrow} aria-hidden='true'>↓</span>
             <span>Explore The Model</span>
+            <span className={styles.directionArrow} aria-hidden='true'>
+              <BiDownArrow className={styles.arrowOutline} />
+              <BiSolidDownArrow className={styles.arrowSolid} />
+            </span>
           </button>
         )}
         {exploring && (
@@ -315,8 +324,11 @@ const AboutWalkthrough = ({ isMobile }) => {
             className={`${styles.desktopExploreAction} ${styles.desktopReturnAction}`}
             onClick={exitExplore}
           >
+            <span className={styles.directionArrow} aria-hidden='true'>
+              <BiUpArrow className={styles.arrowOutline} />
+              <BiSolidUpArrow className={styles.arrowSolid} />
+            </span>
             <span>Back to Walkthrough</span>
-            <span className={styles.directionArrow} aria-hidden='true'>↑</span>
           </button>
         )}
         <div className={styles.story}>
