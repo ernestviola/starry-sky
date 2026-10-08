@@ -90,8 +90,6 @@
 @media (max-width: 700px) {
   .hero {
     top: 10rem;
-    width: calc(100% - (2 * var(--space-4)));
-    margin-inline: var(--space-4);
     min-height: clamp(24rem, 62svh, 40rem);
   }
 
@@ -111,12 +109,5 @@
   .heroActions a {
     align-self: flex-start;
     min-height: 4.4rem;
-  }
-}
-
-@media (min-width: 701px) and (max-width: 1100px) {
-  .hero {
-    width: min(40rem, calc(100% - (2 * var(--space-5))));
-    margin-inline: var(--space-5);
   }
 }
