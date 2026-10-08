@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { BiSearch } from 'react-icons/bi';
 import { useStarMap } from '../contexts/StarMapContext.jsx';
 import { useStarData } from '../contexts/StarDataContext.jsx';
 import StarDetails from '../components/StarDetails/index.jsx';
@@ -203,7 +204,7 @@ const Explore = () => {
       <section ref={searchPanelRef} className={styles.searchPanel} aria-label='Search the star catalog'>
         <label className={styles.visuallyHidden} htmlFor='explore-search'>Search stars and constellations</label>
         <div className={styles.searchControl}>
-          <span className={styles.searchIcon} aria-hidden='true' />
+          <BiSearch className={styles.searchIcon} aria-hidden='true' />
           <input
             ref={inputRef}
             id='explore-search'

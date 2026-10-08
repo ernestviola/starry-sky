@@ -51,9 +51,7 @@
   flex: 0 0 2rem;
   width: 2rem;
   height: 2rem;
-  background: var(--color-accent);
-  -webkit-mask: url('../assets/search.svg') center / contain no-repeat;
-  mask: url('../assets/search.svg') center / contain no-repeat;
+  color: var(--color-accent);
 }
 
 .searchControl input {

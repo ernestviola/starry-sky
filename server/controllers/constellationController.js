@@ -1,6 +1,5 @@
 import { prisma } from '../libs/prisma.js';
 import { query, validationResult, matchedData } from 'express-validator';
-import constellationAliases from '../data/constellationAliases.json' with { type: 'json' };
 
 const constellationController = {};
 const SEARCH_PAGE_SIZE = 3;
@@ -20,32 +19,40 @@ constellationController.search = [
 
     try {
       const { q, offset = 0 } = matchedData(req);
-      // The stored line names are English descriptions; users also search by IAU name or abbreviation.
-      const aliasMatches = Object.entries(constellationAliases)
-        .filter(([, alias]) =>
-          alias.name.toLowerCase().includes(q.toLowerCase()) ||
-          alias.abbreviation.toLowerCase().includes(q.toLowerCase()))
-        .map(([englishName]) => englishName);
-      const constellations = await prisma.constellation.findMany({
-        where: {
-          OR: [
-            { constellationName: { contains: q, mode: 'insensitive' } },
-            { byname: { contains: q, mode: 'insensitive' } },
-            { constellationName: { in: aliasMatches } },
-          ],
-        },
-        select: { constellationName: true, byname: true },
-        distinct: ['constellationName'],
-        orderBy: { constellationName: 'asc' },
-        skip: offset,
-        take: SEARCH_PAGE_SIZE + 1,
-      });
+      const [catalog, alternateNames] = await Promise.all([
+        prisma.constellationCatalog.findMany({
+          orderBy: { iauName: 'asc' },
+        }),
+        prisma.constellation.findMany({
+          where: { byname: { contains: q, mode: 'insensitive' } },
+          select: { constellationName: true, byname: true },
+          distinct: ['constellationName'],
+        }),
+      ]);
+      const alternateNamesBySource = new Map(
+        alternateNames.map(({ constellationName, byname }) => [
+          constellationName,
+          byname,
+        ]),
+      );
+      const normalizedQuery = q.toLocaleLowerCase();
+      const matches = catalog.filter((constellation) =>
+        [
+          constellation.iauName,
+          constellation.abbreviation,
+          constellation.sourceName,
+        ].some((name) => name.toLocaleLowerCase().includes(normalizedQuery)) ||
+        alternateNamesBySource.has(constellation.sourceName),
+      );
+      const constellations = matches.slice(offset, offset + SEARCH_PAGE_SIZE + 1);
 
       return res.status(200).json({
         success: true,
         constellations: constellations.slice(0, SEARCH_PAGE_SIZE).map((constellation) => ({
-          ...constellation,
-          ...constellationAliases[constellation.constellationName],
+          constellationName: constellation.sourceName,
+          byname: alternateNamesBySource.get(constellation.sourceName) ?? null,
+          name: constellation.iauName,
+          abbreviation: constellation.abbreviation,
         })),
         hasMore: constellations.length > SEARCH_PAGE_SIZE,
       });
