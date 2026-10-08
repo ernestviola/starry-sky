@@ -12,6 +12,7 @@ const Layout = () => {
     starClickFeedback,
     handleClick,
     handleInteraction,
+    searchTarget,
   } = useStarMap();
   const { pathname } = useLocation();
   const normalizedPathname = pathname.replace(/\/+$/, '') || '/';
@@ -28,6 +29,7 @@ const Layout = () => {
             setHoveredStarId={setHoveredStarId}
             setSelectedStarId={setSelectedStarId}
             starClickFeedback={starClickFeedback}
+            searchTarget={searchTarget}
             handleClick={handleClick}
             handleInteraction={handleInteraction}
             enableHover={pathname !== '/'}

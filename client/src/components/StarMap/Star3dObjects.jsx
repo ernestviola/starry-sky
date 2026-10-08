@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import StarPoints from './StarPoints.jsx';
 import StarIndicator from './StarIndicator.jsx';
+import SearchTargetTransition from './SearchTargetTransition.jsx';
 import useStarHover from './hooks/useStarHover.js';
 import { getStarPosition } from './starPosition.js';
 import {
@@ -86,6 +87,9 @@ const Star3dObjects = ({
   starClickFeedback = null,
   handleClick = null,
   handleInteraction = null,
+  searchTarget = null,
+  searchFocusSequence = 0,
+  completedSearchFocusSequence = 0,
 }) => {
   // currently processed star
   const nextIndexRef = useRef(0);
@@ -109,7 +113,19 @@ const Star3dObjects = ({
   // maps for quick lookup
   const idToIndexRef = useRef(new Map());
 
-  const { pointer, camera } = useThree();
+  const { pointer, camera, gl } = useThree();
+  const pointerOverCanvasRef = useRef(false);
+
+  useEffect(() => {
+    if (!enableHover) return undefined;
+    const trackPointerSurface = (event) => {
+      const overCanvas = event.target === gl.domElement;
+      if (pointerOverCanvasRef.current && !overCanvas) setHoveredStarId?.(null);
+      pointerOverCanvasRef.current = overCanvas;
+    };
+    window.addEventListener('pointermove', trackPointerSurface);
+    return () => window.removeEventListener('pointermove', trackPointerSurface);
+  }, [enableHover, gl, setHoveredStarId]);
 
   const indicatorRingMeshRef = useRef();
   const starMaterialRef = useRef();
@@ -158,13 +174,21 @@ const Star3dObjects = ({
 
     let changed = false;
     const color = new THREE.Color();
+    const focusedStar =
+      searchTarget?.type === 'star' ? searchTarget.star : null;
     const starsToProcess = starBufferInitializedRef.current
-      ? pendingStars
-      : [...Object.values(starsDictionary), ...pendingStars];
+      ? [...pendingStars, ...(focusedStar ? [focusedStar] : [])]
+      : [
+          ...Object.values(starsDictionary),
+          ...pendingStars,
+          ...(focusedStar ? [focusedStar] : []),
+        ];
     starBufferInitializedRef.current = true;
 
     for (const star of starsToProcess) {
       if (idToIndex.has(star.id)) continue;
+      if (!Number.isFinite(star.decrad) || !Number.isFinite(star.rarad))
+        continue;
 
       const index = nextIndexRef.current;
       if (index >= MAX_STARS) {
@@ -226,7 +250,7 @@ const Star3dObjects = ({
     if (pendingStars.length > 0) {
       consumePendingStars?.(pendingStars.length);
     }
-  }, [starsDictionary, pendingStars, consumePendingStars]);
+  }, [starsDictionary, pendingStars, consumePendingStars, searchTarget]);
 
   const visitedStarManager = (starId) => {
     const visitedStars = visitedStarsRef.current;
@@ -239,6 +263,7 @@ const Star3dObjects = ({
       const MIN_SIZE = 25;
 
       const index = idToIndex.get(starId);
+      if (index === undefined) return;
 
       const calculatedSize = sizes[index] * MAX_SCALER;
 
@@ -269,7 +294,8 @@ const Star3dObjects = ({
   };
 
   useFrame((_, delta) => {
-    const starId = enableHover ? detectHoveredStar() : null;
+    const starId =
+      enableHover && pointerOverCanvasRef.current ? detectHoveredStar() : null;
 
     if (shouldFadeInRef.current && starMaterialRef.current) {
       const opacity = starMaterialRef.current.uniforms.globalOpacity;
@@ -290,8 +316,10 @@ const Star3dObjects = ({
 
     if (indicatorRingMeshRef.current) {
       const indicatorStarId = starClickFeedback?.starId ?? starId;
+      indicatorRingMeshRef.current.visible =
+        indicatorStarId !== null && indicatorStarId !== undefined;
       if (indicatorStarId === null || indicatorStarId === undefined) {
-        indicatorRingMeshRef.current.position.set(0, 0, 0);
+        indicatorRingMeshRef.current.visible = false;
       } else {
         const index = idToIndexRef.current.get(indicatorStarId);
         if (index !== undefined) {
@@ -302,6 +330,8 @@ const Star3dObjects = ({
             positions[index * 3 + 2],
           );
           indicatorRingMeshRef.current.lookAt(camera.position);
+        } else {
+          indicatorRingMeshRef.current.visible = false;
         }
       }
 
@@ -322,6 +352,7 @@ const Star3dObjects = ({
         : 1;
     }
     visitedStarManager(starId);
+
   });
 
   const TouchStarSelection = () => {
@@ -370,6 +401,13 @@ const Star3dObjects = ({
     return null;
   };
 
+  const focusedPosition =
+    searchTarget?.type === 'star' &&
+    Number.isFinite(searchTarget.star?.decrad) &&
+    Number.isFinite(searchTarget.star?.rarad)
+      ? getStarPosition(searchTarget.star.decrad, searchTarget.star.rarad)
+      : null;
+
   return (
     <>
       {setSelectedStarId && <TouchStarSelection />}
@@ -379,6 +417,11 @@ const Star3dObjects = ({
         pickStar={pickStar}
       />
       {enableHover && <StarIndicator indicatorRef={indicatorRingMeshRef} />}
+      <SearchTargetTransition
+        position={focusedPosition}
+        sequence={searchFocusSequence}
+        completedSequence={completedSearchFocusSequence}
+      />
 
       <StarPoints
         positionRef={positionRef}

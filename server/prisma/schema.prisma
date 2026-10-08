@@ -46,24 +46,9 @@ model HygStar {
   var                String?
   var_min            Float?
   var_max            Float?
-  constellationLines ConstellationLine[]
   constellations     Constellation[]
 
   @@map("hyg_stars")
-}
-
-model ConstellationLine {
-  id            Int      @id @default(autoincrement())
-  constellation String
-  segmentIndex  Int
-  pointIndex    Int
-  rarad         Float
-  decrad        Float
-  starId        Int?
-  healpixId     Int?
-  star          HygStar? @relation(fields: [starId], references: [id])
-
-  @@map("constellation_lines")
 }
 
 model Constellation {
@@ -77,6 +62,12 @@ model Constellation {
   star              HygStar? @relation(fields: [hip], references: [hip])
 
   @@unique([constellationName, lineIndex, pointIndex])
+}
+
+model ConstellationCatalog {
+  abbreviation String @id
+  iauName      String @unique
+  sourceName   String @unique
 }
 
 model Leaderboard {

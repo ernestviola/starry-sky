@@ -1,15 +1,17 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Line, Html, Grid, CameraControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 
 import { ang2vec, query_disc_inclusive_ring } from '@hscmap/healpix';
 import { nside } from './config.js';
 
 import Star3dObjects from './Star3dObjects.jsx';
 import ConstellationLines from './ConstellationLines.jsx';
+import { getStarPosition } from './starPosition.js';
 import useStarFrameLoader from './hooks/useStarFrameLoader.js';
 import useConstellationFrameLoader from './hooks/useConstellationFrameLoader.js';
+import { useStarData } from '../../contexts/StarDataContext.jsx';
 
 const ZenithTargetDirection = ({ zenith }) => {
   return (
@@ -164,27 +166,71 @@ const MapInteraction = ({ handleInteraction }) => {
   return null;
 };
 
-const SmoothCameraTarget = ({ controlsRef, zenith }) => {
+const SmoothCameraTarget = ({
+  controlsRef,
+  zenith,
+  focusDirection,
+  focusSequence,
+  onFocusSettled,
+}) => {
   const { camera } = useThree();
+  const previousZenithRef = useRef(null);
 
   useEffect(() => {
+    const zenithChanged = previousZenithRef.current !== zenith;
+    previousZenithRef.current = zenith;
+    if (focusDirection || !zenithChanged) return;
+
     const controls = controlsRef.current;
     if (!controls) return;
 
-    const target = new THREE.Vector3(zenith[0], zenith[1], zenith[2])
+    const direction = { x: zenith[0], y: zenith[1], z: zenith[2] };
+    const target = new THREE.Vector3(direction.x, direction.y, direction.z)
       .normalize()
       .multiplyScalar(0.01);
 
     controls.setLookAt(
-      camera.position.x,
-      camera.position.y,
-      camera.position.z,
+      0,
+      0,
+      0,
       target.x,
       target.y,
       target.z,
       true,
     );
-  }, [camera, controlsRef, zenith]);
+  }, [controlsRef, zenith, focusDirection]);
+
+  useEffect(() => {
+    if (!focusDirection) return undefined;
+
+    const controls = controlsRef.current;
+    if (!controls) return undefined;
+
+    const direction = new THREE.Vector3(
+      focusDirection.x,
+      focusDirection.y,
+      focusDirection.z,
+    ).normalize();
+    const target = direction.clone().multiplyScalar(0.01);
+    const reducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches;
+    let cancelled = false;
+
+    controls
+      .setLookAt(0, 0, 0, target.x, target.y, target.z, !reducedMotion)
+      .then(() => {
+        if (cancelled) return;
+        const cameraDirection = camera.getWorldDirection(new THREE.Vector3()).normalize();
+        if (cameraDirection.dot(direction) > 0.999) {
+          onFocusSettled?.(focusSequence);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [camera, controlsRef, focusDirection, focusSequence, onFocusSettled]);
 
   return null;
 };
@@ -194,6 +240,7 @@ const StarMap = ({
   setHoveredStarId,
   setSelectedStarId,
   starClickFeedback,
+  searchTarget = null,
   handleClick,
   handleInteraction = () => {},
   enableHover = true,
@@ -225,9 +272,72 @@ const StarMap = ({
 
   const [viewedFrames, setViewedFrames] = useState(new Set());
   const [zenith, setZenith] = useState([0, 0, 0.1]);
+  const [searchFocusDirection, setSearchFocusDirection] = useState(null);
+  const [searchFocusSequence, setSearchFocusSequence] = useState(0);
+  const [completedSearchFocusSequence, setCompletedSearchFocusSequence] = useState(0);
+  const { setStarsDictionary, setConstellationLinesDictionary } = useStarData();
 
   const orbitControlRef = useRef();
   const pendingFrameIdsRef = useRef(new Set());
+  const handleSearchFocusSettled = useCallback((sequence) => {
+    setCompletedSearchFocusSequence(sequence);
+  }, []);
+
+  useEffect(() => {
+    if (!searchTarget) {
+      setSearchFocusDirection(null);
+      return undefined;
+    }
+
+    if (searchTarget.type === 'star') {
+      const { decrad, rarad } = searchTarget.star;
+      const { x, y, z } = getStarPosition(decrad, rarad);
+      setStarsDictionary((previous) => ({
+        ...previous,
+        [searchTarget.star.id]: searchTarget.star,
+      }));
+      setSearchFocusDirection({ x, y, z });
+      setSearchFocusSequence((sequence) => sequence + 1);
+      return undefined;
+    }
+
+    setSearchFocusDirection(null);
+    const controller = new AbortController();
+    const fetchConstellation = async () => {
+      try {
+        const url = new URL(
+          `${import.meta.env.VITE_STAR_API}api/constellations/lookup/${encodeURIComponent(searchTarget.name)}`,
+        );
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok) throw new Error('Could not load constellation lines.');
+        const data = await response.json();
+        setConstellationLinesDictionary((previous) => {
+          const next = { ...previous };
+          for (const line of data.constellationLines) next[line.id] = line;
+          return next;
+        });
+
+        const center = new THREE.Vector3();
+        const seen = new Set();
+        for (const line of data.constellationLines) {
+          if (!line.star) continue;
+          const pointKey = `${line.star.rarad}:${line.star.decrad}`;
+          if (seen.has(pointKey)) continue;
+          seen.add(pointKey);
+          const point = getStarPosition(line.star.decrad, line.star.rarad);
+          center.add(new THREE.Vector3(point.x, point.y, point.z));
+        }
+        if (seen.size > 0) {
+          center.normalize();
+          setSearchFocusDirection({ x: center.x, y: center.y, z: center.z });
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) console.error(error);
+      }
+    };
+    fetchConstellation();
+    return () => controller.abort();
+  }, [searchTarget, setStarsDictionary, setConstellationLinesDictionary]);
 
   useEffect(() => {
     const milliSecInADay = 1000 * 60 * 60 * 24;
@@ -331,7 +441,13 @@ const StarMap = ({
           minDistance={0.01}
           maxDistance={0.01}
         />
-        <SmoothCameraTarget controlsRef={orbitControlRef} zenith={zenith} />
+        <SmoothCameraTarget
+          controlsRef={orbitControlRef}
+          zenith={zenith}
+          focusDirection={searchFocusDirection}
+          focusSequence={searchFocusSequence}
+          onFocusSettled={handleSearchFocusSettled}
+        />
         <ConstellationAnglesBasedOnCamera setDec={setDec} setRa={setRa} />
         <ZenithTargetDirection zenith={zenith} />
         <FovZoomControls />
@@ -346,11 +462,15 @@ const StarMap = ({
           consumePendingStars={consumePendingStars}
           setSelectedStarId={setSelectedStarId}
           starClickFeedback={starClickFeedback}
+          searchTarget={searchTarget}
+          searchFocusSequence={searchFocusSequence}
+          completedSearchFocusSequence={completedSearchFocusSequence}
           handleClick={handleClick}
           handleInteraction={handleInteraction}
         />
         <ConstellationLines
           constellationLinesDictionary={constellationLinesDictionary}
+          highlightedConstellationName={searchTarget?.type === 'constellation' ? searchTarget.name : null}
         />
         <MapInteraction handleInteraction={handleInteraction} />
       </Canvas>
