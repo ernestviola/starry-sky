@@ -19,9 +19,7 @@ const Layout = () => {
   const showStarMap = !['/about', '/design-system'].includes(normalizedPathname);
 
   return (
-    <div
-      className={`${styles.layout} ${normalizedPathname === '/about' ? styles.aboutLayout : ''}`}
-    >
+    <div className={styles.layout}>
       {showStarMap && (
         <div className={styles.mapLayer}>
           <StarMap

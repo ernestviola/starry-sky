@@ -1,5 +1,5 @@
 .about {
-  padding: 10rem var(--about-gutter) 0;
+  padding: 10rem var(--page-gutter) 0;
   overflow: clip;
   view-transition-name: about-content;
 }
@@ -11,17 +11,36 @@
 }
 
 .aboutHeader {
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  padding: 0 var(--about-gutter);
+  align-items: stretch;
+  text-align: left;
+  width: min(90ch, calc(100vw - (2 * var(--page-gutter))));
+  margin-inline: auto;
+  padding: 0;
+  font-size: var(--font-size-md);
+}
+
+.aboutHeader::before {
+  position: absolute;
+  z-index: -1;
+  inset: -2rem -2.4rem;
+  content: '';
+  pointer-events: none;
   background: linear-gradient(
     to bottom,
     transparent,
-    color-mix(in srgb, var(--color-panel) 75%, transparent) 8%,
-    color-mix(in srgb, var(--color-panel) 75%, transparent) 92%,
+    color-mix(in srgb, var(--color-panel) 60%, transparent) 8%,
+    color-mix(in srgb, var(--color-panel) 60%, transparent) 92%,
     transparent
   );
+  filter: blur(2.4rem);
+}
+
+.introCard {
+  width: 100%;
 }
 
 .about h1 {
@@ -36,6 +55,11 @@
 .about p {
   margin-top: var(--space-3);
   font-size: var(--font-size-md);
+}
+
+.aboutHeader > p,
+.introCard p {
+  line-height: 1.65;
 }
 
 .walkthrough {
@@ -73,7 +97,7 @@
   display: flex;
   min-height: 100svh;
   align-items: flex-start;
-  padding: 25svh var(--about-gutter) var(--space-8);
+  padding: 25svh var(--page-gutter) var(--space-8);
   opacity: var(--reveal, 0);
 }
 
@@ -288,7 +312,7 @@
 @media (max-width: 900px) {
   .about {
     --mobile-model-height: 52svh;
-    padding: 10rem var(--about-gutter) var(--space-6);
+    padding: 10rem var(--page-gutter) var(--space-6);
   }
 
   .walkthrough {
@@ -358,7 +382,7 @@
     position: absolute;
     z-index: 2;
     top: var(--space-4);
-    left: var(--about-gutter);
+    left: var(--page-gutter);
     width: min(45%, 18rem);
     pointer-events: none;
   }
@@ -399,9 +423,9 @@
   .stepCard {
     position: fixed;
     top: auto;
-    right: var(--about-gutter);
+    right: var(--page-gutter);
     bottom: max(var(--space-4), env(safe-area-inset-bottom));
-    left: var(--about-gutter);
+    left: var(--page-gutter);
     width: auto;
     max-height: calc(
       100svh - var(--mobile-model-height) - var(--space-4) - var(--space-4)
@@ -460,9 +484,9 @@
   .explorePanel {
     position: fixed;
     z-index: 3;
-    right: var(--about-gutter);
+    right: var(--page-gutter);
     bottom: max(var(--space-4), env(safe-area-inset-bottom));
-    left: var(--about-gutter);
+    left: var(--page-gutter);
     max-height: calc(
       100svh - var(--mobile-model-height) - var(--space-4) - var(--space-4)
     );
