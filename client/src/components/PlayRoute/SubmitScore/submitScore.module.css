@@ -5,22 +5,32 @@
   gap: var(--space-3);
 }
 
-.score {
+.scoreForm .score {
   color: var(--color-accent);
   font-family: var(--font-data);
-  font-size: 1.6rem;
+  font-size: 3.2rem;
+  line-height: 4.4rem;
 }
 
-.nameLabel {
-  font-size: 1.6rem;
+.scoreForm .submitButton { width: 100%; }
+
+.nameInput::placeholder {
+  color: var(--color-text-subtle);
+  opacity: 1;
 }
 
 .nameInput {
   width: 100%;
+  font-size: max(16px, var(--font-size-md));
   min-height: var(--touch-target-min);
   padding: var(--space-2);
   border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius-button);
   background: var(--color-background);
   color: var(--color-text-primary);
+}
+
+/* Keep the pending and ready form the same height, including its live status. */
+.requestStatus {
+  min-block-size: 1.5em;
 }

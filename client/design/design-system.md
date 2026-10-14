@@ -60,7 +60,7 @@ Mobile geometry uses the shared `--page-gutter-mobile`, `--page-edge-start`, and
 
 Every interactive element must have:
 
-- Visible keyboard focus
+- Visible keyboard focus using the warm-white `--color-focus` outline and violet `--focus-ring`, including dialogs and custom button roles
 - Adequate contrast
 - A usable disabled state
 - A touch target of at least 44px on mobile (`--touch-target-min`)
@@ -78,6 +78,14 @@ dialog.show();
 Do not replace this with `showModal()` unless the interaction is genuinely blocking. Modeless dialogs preserve navbar interaction and allow users to navigate to another route while the dialog is open.
 
 This rule applies to desktop dialogs and mobile sheets unless a future interaction explicitly requires a blocking confirmation or safety flow.
+
+### Play flow and layers
+
+Only the current Play phase exposes a panel: start, instructions, gameplay, finishing, score submission, or leaderboard. Gameplay controls yield to the result panel as soon as every star is found. Map clicks cannot change a completed game or reopen submission. A request in progress disables its action and reports status; failures preserve entered data and offer a retry.
+
+Contextual Play dialogs share one surface, responsive typography, rounded corners and outer gutters on mobile, and a 700px sheet breakpoint. Their final position must work independently of animation, including reduced motion. Dialogs sit above the gameplay panel, and primary navigation remains available above contextual content. Escape handling stays local so navigation can close normally.
+
+The leaderboard reserves a viewport-sized table area across loading, errors, and different page lengths. Status messages use that same area. Column headings stay aligned in the scrolling table; pagination and replay stay centered in a stacked footer that stays in place.
 
 ## Responsive principles
 
@@ -111,34 +119,26 @@ The timer and the "Stars to find" list are one component. They share one source 
 
 ### Layout
 
-- **Mobile:** a bottom sheet pinned to the page edges. The whole header is the toggle, with a grab handle above it and a chevron that rotates when open.
-- **Desktop:** a floating panel (340px wide) anchored top-right under the navbar and aligned to the page gutter. No grab handle; a 44px chevron button toggles the list.
-- Both use `--color-panel`, a `--color-accent` border, `--radius-card`, and `--shadow-overlay` with `--shadow-accent`.
+- **Desktop:** a compact floating panel (220px wide) anchored top-right below the navbar. The star list always stays open; there is no collapse arrow or automatic collapse on map interaction.
+- **Mobile:** a floating bottom panel inset by the shared 16px page gutters and device safe areas. A grab handle and the whole header toggle the list; no separate arrow. The first map interaction collapses it once per game. Keyboard Enter and Space also toggle the header.
+- On screens from 480–700px, gameplay panels cap at 340px; Play dialogs cap at 400px. Center inset panels rather than stretching them across a compact tablet. Narrow phones retain fluid widths and 16px gutters.
+- Both use the standard neutral panel border, rounded corners, panel background and overlay shadow. Play dialogs use the same neutral border and mobile outer spacing.
 
-### Header (always visible, open or closed)
+### Content
 
-1. **Timer:** Space Mono, bold, `--color-accent`. It turns `--color-success` and stops when every star is found.
-2. **Status:** an eyebrow label (`MISSING`, or `COMPLETE` when done) over the name of the first unfound star, in list order.
-3. **Progress:** a thin bar with the count (`0/2 FOUND`) to its right.
+- A compact timer and a single found count (0/2, without the word found) share one header row. The compact timer uses Space Grotesk bold at 24px; the count uses Space Mono.
+- Unfound stars appear first; found stars move to the bottom, preserving relative order within each group. A simple list shows each star name, with no cards, catalog IDs, dots or status tags. Found names become subdued and struck through; screen readers receive the found state as text.
+- Remove the missing-star block, progress bar and repeated list heading/count.
+- Star rows have a 28px minimum height and wrap long names. Desktop lists scroll at 360px; mobile lists are capped so the map remains visible.
+- Collapsed mobile panels preview only the first unfound star, left-aligned below the timer and count. Mobile collapse changes the list height inside the panel, preserving its border and bottom gutter. Hidden content is inert, and the header exposes expanded state and list association. Motion respects reduced-motion preferences.
 
-Rules:
+### Submit time
 
-- **Stars have no order.** Nothing may suggest a "next" star: no accent highlight on a single row, no "next" label. The header name is only the first unfound star in list order and changes as soon as it is found.
-- **The star name must never be cut off.** The name gets its own line with no prefix. If a name cannot fit, step the font size down instead of truncating.
-- **Header text never wraps.** Each header line stays on one line.
+Option C is selected: a 32px Space Mono result with 44px line height, a Name placeholder with an accessible Name label, and a full-width Submit action. Keep validation, nickname autocomplete, and the 12-character limit. Reserve the same live-status area while calculating, ready, and saving to avoid moving the panel.
 
-### Expanded list
+### Leaderboard
 
-- Each row shows the star name (Inter) and its catalog ID (Space Mono, `--color-text-subtle`). No magnitude.
-- Unfound rows: `--color-text-primary` name, `--color-border-strong` border, a `TO FIND` tag in `--color-text-subtle`.
-- Found rows: dimmed to `--color-text-subtle`, `--color-border` border, a `FOUND` tag and dot in `--color-success`.
-- Rows are at least 56px tall. On desktop the list scrolls inside a 360px max height instead of growing the panel. On mobile, cap the open sheet at roughly 40% of the viewport and scroll the list inside it so the map stays visible.
-- The timer keeps running while the list is open.
-
-### Accessibility
-
-- The toggle exposes `aria-expanded` and `aria-controls` pointing at the list.
-- The chevron rotation and progress-bar width animate with `--duration-normal` and `--ease-standard`, and become instant under `prefers-reduced-motion`.
+Option A is the selected footer: centered pagination, followed by a centered Play again text action. Reserve table space across full, short, loading and failed pages so the panel and footer do not jump.
 
 ## Decision rule
 

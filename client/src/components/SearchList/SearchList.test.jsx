@@ -46,7 +46,7 @@ test('given a star was found we should mark it as found', () => {
   const star = screen.getByText('Sirius');
 
   expect(star).toBeInTheDocument();
-  expect(star).toHaveClass(styles.found);
+  expect(star.closest('li')).toHaveClass(styles.found);
 });
 
 test('updates when a star is found', () => {
@@ -61,7 +61,7 @@ test('updates when a star is found', () => {
 
   const star = screen.getByText('Sirius');
 
-  expect(star).not.toHaveClass(styles.found);
+  expect(star.closest('li')).not.toHaveClass(styles.found);
 
   rerender(
     <SearchList
@@ -74,5 +74,17 @@ test('updates when a star is found', () => {
     />,
   );
 
-  expect(star).toHaveClass(styles.found);
+  expect(star.closest('li')).toHaveClass(styles.found);
+});
+
+
+test('moves found targets below unfound targets while preserving group order', () => {
+  render(<SearchList items={{
+    a: { name: 'Polaris', found: true },
+    b: { name: 'Sirius', found: false },
+    c: { name: 'Vega', found: true },
+    d: { name: 'Deneb', found: false },
+  }} />);
+  expect(screen.getAllByRole('listitem').map(row => row.firstChild.textContent))
+    .toEqual(['Sirius', 'Deneb', 'Polaris', 'Vega']);
 });

@@ -5,8 +5,6 @@ import { useStarData } from '../../contexts/StarDataContext.jsx';
 
 const StarDetails = ({
   hoveredStarId,
-  selectedStarId,
-  setSelectedStarId,
 }) => {
   const { starsDictionary } = useStarData();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -48,7 +46,6 @@ const StarDetails = ({
   }, []);
 
   useEffect(() => {
-    if (selectedStarId) return;
     if (hoveredStarId && isPointerOverMap) {
       setDisplayedStarId(hoveredStarId);
       setIsExiting(false);
@@ -59,32 +56,12 @@ const StarDetails = ({
     setIsExiting(true);
     const timeout = setTimeout(() => setDisplayedStarId(null), 180);
     return () => clearTimeout(timeout);
-  }, [hoveredStarId, isPointerOverMap, displayedStarId, selectedStarId]);
+  }, [hoveredStarId, isPointerOverMap, displayedStarId]);
 
-  const starId = selectedStarId ?? displayedStarId;
+  const starId = displayedStarId;
   const starData = starId ? starsDictionary[starId] : null;
   if (!starData) return null;
   const identifier = starData.hip ? ['HIP', starData.hip] : ['ID', starData.id];
-
-  if (selectedStarId) {
-    return (
-      <aside className={styles.selectedContainer} aria-label='Selected star'>
-        <button
-          className={styles.dismiss}
-          type='button'
-          aria-label='Dismiss star details'
-          onClick={() => setSelectedStarId(null)}
-        >
-          ×
-        </button>
-        <p className={styles.data}><span>{identifier[0]}</span>{identifier[1]}</p>
-        {starData.proper && (
-          <p className={styles.data}><span>NAME</span>{starData.proper}</p>
-        )}
-        <p className={styles.data}><span>MAG</span>{starData.mag ?? '—'}</p>
-      </aside>
-    );
-  }
 
   return (
     <div

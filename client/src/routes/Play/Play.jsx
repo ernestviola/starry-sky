@@ -1,6 +1,5 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { jwtDecode } from 'jwt-decode';
-import { BiChevronDown } from 'react-icons/bi';
 import { useStarMap } from '../../contexts/StarMapContext.jsx';
 import GameTimer from '../../components/PlayRoute/GameTimer/GameTimer.jsx';
 import Leaderboard from '../../components/PlayRoute/Leaderboard/Leaderboard.jsx';
@@ -10,299 +9,184 @@ import styles from './play.module.css';
 import useSheetDrag from './useSheetDrag.js';
 import GameStart from '../../components/PlayRoute/GameStart/GameStart.jsx';
 import SubmitScore from '../../components/PlayRoute/SubmitScore/SubmitScore.jsx';
-import dialogStyles from '../../components/PlayRoute/Dialog/dialog.module.css';
 import { getMotionDuration } from '../../utils/motion.js';
 
 const noopRegisterInteractionHandler = () => () => {};
 
 const Play = () => {
-  const [loading, setLoading] = useState(false);
-  const {
-    selectedStarId,
-    registerClickHandler,
+  const { selectedStarId, registerClickHandler,
     registerInteractionHandler = noopRegisterInteractionHandler,
-    setStarClickFeedback,
-  } = useStarMap();
+    setStarClickFeedback } = useStarMap();
+  // Only the current phase owns a panel and accepts its associated actions.
+  const [phase, setPhase] = useState('start');
+  const gameStarted = phase === 'playing';
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [gameStartTime, setGameStartTime] = useState(null);
   const [gameTotalTime, setGameTotalTime] = useState(null);
-  const [gameStarted, setGameStarted] = useState(false);
   const [gameToken, setGameToken] = useState(null);
   const [gameFinishedToken, setGameFinishedToken] = useState(null);
   const [name, setName] = useState('');
   const [leaderboardId, setLeaderboardId] = useState(null);
-  const [refreshLeaderboard, setRefreshLeaderboard] = useState(false);
   const [starsFoundDictionary, setStarsFoundDictionary] = useState({});
   const [searchListExpanded, setSearchListExpanded] = useState(true);
   const [hasAutoCollapsedSearchList, setHasAutoCollapsedSearchList] = useState(false);
-  const sheet = useSheetDrag({
-    expanded: searchListExpanded,
-    setExpanded: setSearchListExpanded,
-  });
-
+  const sheet = useSheetDrag({ expanded: searchListExpanded, setExpanded: setSearchListExpanded, visible: gameStarted });
   const dialogGameStartRef = useRef();
   const dialogSubmitScoreRef = useRef();
   const dialogLeaderboardRef = useRef();
   const dialogHowToPlayRef = useRef();
+  const requestPendingRef = useRef(false);
+  const requestControllerRef = useRef(null);
   const clickFeedbackTimeoutRef = useRef(null);
 
-  useEffect(() => () => window.clearTimeout(clickFeedbackTimeoutRef.current), []);
+  useEffect(() => () => {
+    requestControllerRef.current?.abort();
+    window.clearTimeout(clickFeedbackTimeoutRef.current);
+    setStarClickFeedback?.(null);
+  }, [setStarClickFeedback]);
 
   useEffect(() => {
-    const preventEscape = (event) => {
-      if (
-        event.key === 'Escape' &&
-        (dialogGameStartRef.current?.open ||
-          dialogSubmitScoreRef.current?.open ||
-          dialogLeaderboardRef.current?.open)
-      ) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    };
-
-    window.addEventListener('keydown', preventEscape, true);
-
-    return () => {
-      window.removeEventListener('keydown', preventEscape, true);
-    };
-  }, []);
-
-  useEffect(() => {
-    dialogGameStartRef.current.show();
-    // dialogLeaderboardRef.current.showModal();
-  }, []);
+    const refs = { start: dialogGameStartRef, instructions: dialogHowToPlayRef,
+      finishing: dialogSubmitScoreRef, score: dialogSubmitScoreRef,
+      leaderboard: dialogLeaderboardRef };
+    const dialog = refs[phase]?.current;
+    if (dialog && !dialog.open) dialog.show();
+  }, [phase]);
 
   const handleStartGame = async () => {
+    if (requestPendingRef.current) return;
+    requestPendingRef.current = true;
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
+    setLoading(true);
+    setError('');
     try {
-      setLoading(true);
+      const response = await fetch(`${import.meta.env.VITE_STAR_API}api/game/start`, {
+        method: 'POST', signal: controller.signal,
+      });
+      if (!response.ok) throw new Error('Unable to start the game. Please try again.');
+      const data = await response.json();
+      const decoded = jwtDecode(data.token);
+      if (controller.signal.aborted) return;
+      setGameToken(data.token);
+      setGameStartTime(decoded.startTime);
       setGameTotalTime(null);
       setGameFinishedToken(null);
+      setName('');
+      setLeaderboardId(null);
       window.clearTimeout(clickFeedbackTimeoutRef.current);
       setStarClickFeedback?.(null);
-      const url = new URL(`${import.meta.env.VITE_STAR_API}api/game/start`);
-      const response = await fetch(url.toString(), {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        throw new Error('Problems starting the game, please retry.');
-      }
-
-      const data = await response.json();
-      setGameToken(data.token);
-
-      const decoded = jwtDecode(data.token);
-
-      setGameStartTime(decoded.startTime);
-
-      const starsDictionary = {};
-      for (const star of decoded.starsToFind) {
-        starsDictionary[star.id] = {
-          id: star.id,
-          name: star.proper,
-          found: false,
-        };
-      }
-
-      setStarsFoundDictionary(starsDictionary);
+      setStarsFoundDictionary(Object.fromEntries(decoded.starsToFind.map(star =>
+        [star.id, { id: star.id, name: star.proper, found: false }])));
       setSearchListExpanded(true);
       setHasAutoCollapsedSearchList(false);
-      closeDialog(dialogGameStartRef);
-      if (dialogLeaderboardRef.current?.open) {
-        closeDialog(dialogLeaderboardRef);
-      }
-      dialogSubmitScoreRef.current?.close();
-
-      setGameStarted(true);
-    } catch (error) {
-      console.log(error);
+      setPhase('playing');
+    } catch {
+      if (!controller.signal.aborted) setError('Unable to start the game. Please try again.');
     } finally {
-      setLoading(false);
+      requestPendingRef.current = false;
+      if (!controller.signal.aborted) setLoading(false);
     }
   };
 
-  const checkAllStarsFound = () => {
-    const stars = Object.values(starsFoundDictionary);
-    return stars.length > 0 && stars.every((star) => star.found);
-  };
-
-  const handleStarClick = (starId = selectedStarId) => {
-    if (!gameStarted || starId === null || starId === undefined) return;
-
+  const handleStarClick = useCallback((starId = selectedStarId) => {
+    if (!gameStarted || starId == null || starsFoundDictionary[starId]?.found) return;
     const isTargetStar = starsFoundDictionary[starId] !== undefined;
-    const feedbackDuration = getMotionDuration('--duration-slow');
-    setStarClickFeedback?.({
-      starId,
-      status: isTargetStar ? 'correct' : 'incorrect',
-      expiresAt: performance.now() + feedbackDuration,
-      duration: feedbackDuration,
-    });
+    const duration = getMotionDuration('--duration-slow');
+    setStarClickFeedback?.({ starId, status: isTargetStar ? 'correct' : 'incorrect',
+      expiresAt: performance.now() + duration, duration });
     window.clearTimeout(clickFeedbackTimeoutRef.current);
-    clickFeedbackTimeoutRef.current = window.setTimeout(
-      () => setStarClickFeedback?.(null),
-      feedbackDuration,
-    );
+    clickFeedbackTimeoutRef.current = window.setTimeout(() => setStarClickFeedback?.(null), duration);
     if (!isTargetStar) return;
-
-    setStarsFoundDictionary((prev) => ({
-      ...prev,
-      [starId]: { ...prev[starId], found: true },
-    }));
-  };
-
-  useEffect(() => {
-    return registerClickHandler(handleStarClick);
-  }, [registerClickHandler, handleStarClick]);
-
-  useEffect(() => {
-    return registerInteractionHandler((interaction) => {
-      if (
-        !gameStarted ||
-        hasAutoCollapsedSearchList ||
-        !['drag', 'zoom', 'star'].includes(interaction)
-      ) {
-        return;
-      }
-      setHasAutoCollapsedSearchList(true);
-      setSearchListExpanded(false);
+    setStarsFoundDictionary(prev => prev[starId].found ? prev : {
+      ...prev, [starId]: { ...prev[starId], found: true },
     });
-  }, [gameStarted, hasAutoCollapsedSearchList, registerInteractionHandler]);
+  }, [gameStarted, selectedStarId, starsFoundDictionary, setStarClickFeedback]);
+
+  useEffect(() => registerClickHandler(handleStarClick), [registerClickHandler, handleStarClick]);
+  useEffect(() => registerInteractionHandler(interaction => {
+    if (!sheet.isMobile || !gameStarted || hasAutoCollapsedSearchList || !['drag', 'zoom', 'star'].includes(interaction)) return;
+    setHasAutoCollapsedSearchList(true);
+    setSearchListExpanded(false);
+  }), [gameStarted, hasAutoCollapsedSearchList, registerInteractionHandler, sheet.isMobile]);
+
+  const finishGame = useCallback(async () => {
+    if (requestPendingRef.current) return;
+    requestPendingRef.current = true;
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
+    setPhase('finishing');
+    setLoading(true);
+    setError('');
+    window.clearTimeout(clickFeedbackTimeoutRef.current);
+    setStarClickFeedback?.(null);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_STAR_API}api/game/submit`, {
+        method: 'POST', headers: { Authorization: `Bearer ${gameToken}` }, signal: controller.signal,
+      });
+      if (!response.ok) throw new Error('Unable to calculate your time. Please try again.');
+      const data = await response.json();
+      const decoded = jwtDecode(data.token);
+      if (controller.signal.aborted) return;
+      setGameTotalTime(decoded.totalTime);
+      setGameFinishedToken(data.token);
+      setPhase('score');
+    } catch {
+      if (!controller.signal.aborted) setError('Unable to calculate your time. Please try again.');
+    } finally {
+      requestPendingRef.current = false;
+      if (!controller.signal.aborted) setLoading(false);
+    }
+  }, [gameToken, setStarClickFeedback]);
 
   useEffect(() => {
-    async function handleStarsFound() {
-      if (checkAllStarsFound() && gameStarted) {
-        const url = new URL(`${import.meta.env.VITE_STAR_API}api/game/submit`);
-        const response = await fetch(url.toString(), {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${gameToken}`,
-          },
-        });
+    const stars = Object.values(starsFoundDictionary);
+    if (gameStarted && stars.length > 0 && stars.every(star => star.found)) finishGame();
+  }, [starsFoundDictionary, gameStarted, finishGame]);
 
-        const data = await response.json();
-        const decoded = jwtDecode(data.token);
-
-        setGameTotalTime(decoded.totalTime);
-        setGameFinishedToken(data.token);
-        dialogSubmitScoreRef.current.show();
-      }
-    }
-
-    handleStarsFound();
-  }, [starsFoundDictionary]);
-
-  const handleSubmitName = async (e) => {
-    e.preventDefault();
-
-    if (!gameFinishedToken) return;
-
-    function geolocationPromise() {
-      return new Promise((resolve, reject) => {
-        if (!navigator.geolocation) {
-          reject(new Error('Geolocation not supported.'));
-          return;
-        }
+  const handleSubmitName = async event => {
+    event.preventDefault();
+    if (phase !== 'score' || !gameFinishedToken || requestPendingRef.current) return;
+    requestPendingRef.current = true;
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
+    setLoading(true);
+    setError('');
+    try {
+      // Location is optional; a denied or unanswered prompt must not block saving.
+      const position = await new Promise(resolve => {
+        if (!navigator.geolocation) return resolve(null);
+        const timeout = window.setTimeout(() => resolve(null), 5000);
         navigator.geolocation.getCurrentPosition(
-          (position) => {
-            resolve({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-            });
-            return;
-          },
-          (error) => {
-            reject(new Error(error));
-          },
+          position => { window.clearTimeout(timeout); resolve(position.coords); },
+          () => { window.clearTimeout(timeout); resolve(null); },
+          { timeout: 5000, maximumAge: 60000 },
         );
       });
-    }
-
-    let latitude, longitude;
-
-    try {
-      const position = await geolocationPromise();
-      latitude = position.latitude;
-      longitude = position.longitude;
-    } catch (error) {
-      console.log(error);
-    }
-
-    try {
-      const url = new URL(
-        `${import.meta.env.VITE_STAR_API}api/game/submit/name`,
-      );
-      const response = await fetch(url.toString(), {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${gameFinishedToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          latitude,
-          longitude,
-          name,
-        }),
+      if (controller.signal.aborted) return;
+      const response = await fetch(`${import.meta.env.VITE_STAR_API}api/game/submit/name`, {
+        method: 'POST', signal: controller.signal,
+        headers: { Authorization: `Bearer ${gameFinishedToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim(), latitude: position?.latitude, longitude: position?.longitude }),
       });
-
-      if (!response.ok) {
-        throw new Error('Issues submitting the score, try again.');
-      }
-
+      if (!response.ok) throw new Error('Unable to save your score. Please try again.');
       const data = await response.json();
-
-      if (data.success) {
-        // show the leaderboard and the users position
-        setLeaderboardId(data.leaderboardId);
-
-        // close the dialog
-
-        closeDialog(dialogSubmitScoreRef, () => {
-          dialogLeaderboardRef.current.show();
-          setRefreshLeaderboard(true);
-        });
-        // show the leaderboard modal
-      }
-    } catch (error) {
-      console.log(error);
+      if (!data.success) throw new Error('Unable to save your score. Please try again.');
+      if (controller.signal.aborted) return;
+      setLeaderboardId(data.leaderboardId);
+      setPhase('leaderboard');
+    } catch {
+      if (!controller.signal.aborted) setError('Unable to save your score. Please try again.');
+    } finally {
+      requestPendingRef.current = false;
+      if (!controller.signal.aborted) setLoading(false);
     }
-  };
-
-  const handleHowToPlay = () => {
-    closeDialog(dialogGameStartRef, () => {
-      dialogHowToPlayRef.current.show();
-    });
-  };
-
-  const closeDialog = (ref, onClosed) => {
-    const dialog = ref.current;
-
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      dialog.close();
-      onClosed?.();
-      return;
-    }
-
-    dialog.classList.add(dialogStyles.closing);
-
-    dialog.addEventListener(
-      'animationend',
-      () => {
-        dialog.close();
-        dialog.classList.remove(dialogStyles.closing);
-        onClosed?.();
-      },
-      { once: true },
-    );
   };
 
   const targetStars = Object.values(starsFoundDictionary);
   const foundStars = targetStars.filter((star) => star.found).length;
-  const firstMissingStar = targetStars.find((star) => !star.found);
-  const allStarsFound = targetStars.length > 0 && foundStars === targetStars.length;
-  // Stars have no order: the header just names the first unfound star in list order.
-  const statusName = allStarsFound ? 'All found' : firstMissingStar?.name ?? '';
-  const progressPercent = targetStars.length ? (foundStars / targetStars.length) * 100 : 0;
-
+  const previewStar = targetStars.find(star => !star.found);
   const toggleSearchList = () => setSearchListExpanded((expanded) => !expanded);
 
 
@@ -310,95 +194,66 @@ const Play = () => {
     <div className={styles.play}>
       <title>Play | Starry Sky</title>
 
-      <GameStart
+      {phase === 'start' && <GameStart
         dialogGameStartRef={dialogGameStartRef}
-        onHowToPlay={handleHowToPlay}
-        handleStartGame={handleStartGame}
-      />
-
-      <HowToPlay
-        ref={dialogHowToPlayRef}
-        onClose={() =>
-          closeDialog(dialogHowToPlayRef, () => {
-            dialogGameStartRef.current.show();
-          })
-        }
-      />
-      <SubmitScore
-        dialogSubmitScoreRef={dialogSubmitScoreRef}
-        handleSubmitName={handleSubmitName}
-        setName={setName}
-        gameTotalTime={gameTotalTime}
-      />
-
-      <Leaderboard
-        ref={dialogLeaderboardRef}
-        leaderboardId={leaderboardId}
-        handleStartGame={handleStartGame}
-        refreshLeaderboard={refreshLeaderboard}
-        setRefreshLeaderboard={setRefreshLeaderboard}
-      />
+        onHowToPlay={() => { setError(''); setPhase('instructions'); }}
+        handleStartGame={handleStartGame} loading={loading} error={error}
+      />}
+      {phase === 'instructions' && <HowToPlay ref={dialogHowToPlayRef} onClose={() => setPhase('start')} />}
+      {['finishing', 'score'].includes(phase) && <SubmitScore
+        dialogSubmitScoreRef={dialogSubmitScoreRef} handleSubmitName={handleSubmitName}
+        setName={setName} name={name} gameTotalTime={gameTotalTime}
+        finishing={phase === 'finishing'} loading={loading} error={error} onRetry={finishGame}
+      />}
+      {phase === 'leaderboard' && <Leaderboard
+        ref={dialogLeaderboardRef} leaderboardId={leaderboardId}
+        handleStartGame={handleStartGame} starting={loading} startError={error}
+      />}
       {gameStarted && (
         <section
           ref={sheet.panelRef}
-          className={`${styles.gamePanel} ${searchListExpanded ? styles.gamePanelOpen : ''}`}
+          className={styles.gamePanel}
           aria-label='Game status'
         >
-          {/* On mobile the header can be dragged or tapped; the chevron button is the accessible control. */}
-          <div className={styles.gamePanelHeader} {...sheet.headerHandlers}>
-            <span className={styles.grabHandle} aria-hidden='true' />
-            <div className={styles.gamePanelTimer}>
-              <span className={styles.gamePanelEyebrow}>TIME</span>
-              <GameTimer startTime={gameStartTime} totalTime={gameTotalTime} showLabel={false} />
-            </div>
-            <span className={styles.gamePanelDivider} aria-hidden='true' />
-            <div className={styles.gamePanelStatus}>
-              <span className={styles.gamePanelEyebrow}>
-                {allStarsFound ? 'COMPLETE' : 'MISSING'}
-              </span>
-              <strong className={statusName.length > 12 ? styles.gamePanelNameLong : ''}>
-                {statusName}
-              </strong>
-            </div>
-            <button
-              type='button'
-              className={styles.searchListToggle}
-              aria-label={searchListExpanded ? 'Collapse stars' : 'Expand stars'}
-              aria-controls='search-list'
-              aria-expanded={searchListExpanded}
-              onClick={() => {
-                if (sheet.consumeDragClick()) return;
+          <div
+            className={styles.gamePanelHeader}
+            {...sheet.headerHandlers}
+            role={sheet.isMobile ? 'button' : undefined}
+            tabIndex={sheet.isMobile ? 0 : undefined}
+            aria-label={sheet.isMobile ? (searchListExpanded ? 'Collapse stars' : 'Expand stars') : undefined}
+            aria-controls={sheet.isMobile ? 'search-list' : undefined}
+            aria-expanded={sheet.isMobile ? searchListExpanded : undefined}
+            aria-describedby={sheet.isMobile && !searchListExpanded && previewStar ? 'star-preview' : undefined}
+            onClick={() => {
+              if (sheet.isMobile && !sheet.consumeDragClick()) toggleSearchList();
+            }}
+            onKeyDown={event => {
+              if (sheet.isMobile && ['Enter', ' '].includes(event.key)) {
+                event.preventDefault();
                 toggleSearchList();
-              }}
-            >
-              <BiChevronDown aria-hidden='true' size={24} />
-            </button>
-            <div className={styles.gamePanelProgress}>
-              <span
-                className={`${styles.progressBar} ${allStarsFound ? styles.progressComplete : ''}`}
-                role='progressbar'
-                aria-label='Stars found'
-                aria-valuemin='0'
-                aria-valuemax={targetStars.length}
-                aria-valuenow={foundStars}
-              >
-                <span style={{ width: `${progressPercent}%` }} />
-              </span>
-              <span>
-                {foundStars}/{targetStars.length} FOUND
-              </span>
+              }
+            }}
+          >
+            <span className={styles.grabHandle} aria-hidden='true' />
+            <GameTimer startTime={gameStartTime} totalTime={gameTotalTime} showLabel={false} />
+            <span className={styles.gamePanelCount}>
+              {foundStars}/{targetStars.length}
+            </span>
+            <div className={styles.gamePanelPreview} aria-hidden={!sheet.isMobile || searchListExpanded}>
+              <div ref={sheet.previewRef} className={styles.gamePanelPreviewContent}>
+                <span id='star-preview'>{previewStar?.name}</span>
+              </div>
             </div>
           </div>
           <div
             ref={sheet.bodyRef}
             className={styles.gamePanelBody}
-            hidden={!searchListExpanded && !sheet.isMobile}
             inert={!searchListExpanded && sheet.isMobile ? true : undefined}
+            aria-hidden={!searchListExpanded && sheet.isMobile ? true : undefined}
           >
-            <SearchList
-              items={starsFoundDictionary}
-              expanded={searchListExpanded || sheet.isMobile}
-            />
+            <div className={styles.gamePanelBodyContent}>
+              <SearchList items={starsFoundDictionary} />
+            </div>
           </div>
         </section>
       )}

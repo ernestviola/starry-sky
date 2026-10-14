@@ -74,26 +74,21 @@ gameController.submitName = [
       const { name, latitude, longitude } = matchedData(req);
       const totalTime = req.user.totalTime;
 
-      console.log(totalTime);
-      console.log(req.body);
-
       const leaderboard = await prisma.leaderboard.create({
         data: {
           name,
           totalTimeMiliseconds: totalTime,
-          geoLat: latitude,
-          geoLong: longitude,
+          geoLat: latitude ?? null,
+          geoLong: longitude ?? null,
         },
       });
-
-      console.log(leaderboard);
 
       res.status(201).json({
         success: true,
         leaderboardId: leaderboard.id,
       });
     } catch (error) {
-      console.log(error);
+      next(error);
     }
   },
 ];

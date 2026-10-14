@@ -30,7 +30,7 @@ const starMetadata = (star) => {
 };
 
 const Explore = () => {
-  const { hoveredStarId, selectedStarId, setSelectedStarId, setSearchTarget } = useStarMap();
+  const { hoveredStarId, setSelectedStarId, setSearchTarget } = useStarMap();
   const { setStarsDictionary } = useStarData();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState(emptyResults);
@@ -293,7 +293,7 @@ const Explore = () => {
           </div>
         )}
       </section>
-      <StarDetails hoveredStarId={hoveredStarId} selectedStarId={selectedStarId} setSelectedStarId={setSelectedStarId} />
+      <StarDetails hoveredStarId={hoveredStarId} />
     </div>
   );
 };

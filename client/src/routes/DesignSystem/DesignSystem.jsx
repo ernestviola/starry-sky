@@ -100,6 +100,23 @@ const DesignSystem = () => (
           </p>
         </div>
         <div>
+          <span className={styles.label}>Play flow</span>
+          <p className={styles.body}>
+            Show one phase at a time. The game panel yields to results when all
+            stars are found. Contextual dialogs become inset floating panels at
+            700px, keep navigation available, and remain positioned correctly
+            with reduced motion. Pending actions report progress; failures offer
+            a retry without losing entered information. Leaderboard paging keeps
+            the table area and centered, stacked footer steady across loading and shorter pages.
+            Gameplay uses a compact star list with found names struck through;
+            desktop keeps its 220px panel open, while mobile toggles it from the header.
+            Unfound stars stay above found stars; collapsed mobile panels preview the top target.
+            Submit time emphasizes the result above an accessible Name input and full-width action.
+            Wider mobile screens cap gameplay at 340px and dialogs at 400px.
+            Dialogs and controls share the same warm-white focus outline and violet ring.
+          </p>
+        </div>
+        <div>
           <span className={styles.label}>Motion</span>
           <p className={styles.body}>
             Motion uses shared duration tokens and becomes instant when the
