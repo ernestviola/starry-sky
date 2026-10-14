@@ -80,11 +80,6 @@ const Explore = () => {
     }
 
     const controller = new AbortController();
-    setIsLoading(true);
-    setResults(emptyResults());
-    setHasMore(emptyMore());
-    setLoadingMore(null);
-    setActiveIndex(-1);
     const timeout = setTimeout(async () => {
       setError('');
       try {
@@ -216,13 +211,15 @@ const Explore = () => {
               setQuery(nextQuery);
               setSelectedKey(null);
               setIsResultsOpen(true);
+              setResults(emptyResults());
+              setHasMore(emptyMore());
+              setLoadingMore(null);
+              setError('');
+              setActiveIndex(-1);
               if (!nextQuery.trim()) {
-                setResults(emptyResults());
-                setHasMore(emptyMore());
                 setIsLoading(false);
-                setLoadingMore(null);
-                setError('');
-                setActiveIndex(-1);
+              } else {
+                setIsLoading(true);
               }
             }}
             onKeyDown={handleSearchKeyDown}

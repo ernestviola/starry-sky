@@ -27,40 +27,32 @@ const Leaderboard = ({
     page: 1,
   });
 
-  const loadGlobal = useCallback(async (page, leaderboardId, initialLoad = false) => {
+  const fetchGlobal = useCallback(async (page, leaderboardId, signal) => {
+    const url = new URL(
+      `${import.meta.env.VITE_STAR_API}api/game/leaderboard/global`,
+    );
+    if (page) url.searchParams.set('page', page);
+    if (leaderboardId) url.searchParams.set('leaderboardId', leaderboardId);
+
+    const response = await fetch(url.toString(), { method: 'GET', signal });
+    if (!response.ok) throw new Error('Problems starting the game, please retry.');
+    return response.json();
+  }, []);
+
+  const loadGlobal = useCallback(async (page, leaderboardId) => {
     requestRef.current?.abort();
     clearTimeout(loadingTimerRef.current);
     const controller = new AbortController();
     requestRef.current = controller;
-    if (!initialLoad) {
-      setGlobalLoading(true);
-      setShowLoadingMessage(false);
-      setGlobalError(false);
-    }
+    setGlobalLoading(true);
+    setShowLoadingMessage(false);
+    setGlobalError(false);
     loadingTimerRef.current = setTimeout(() => {
       if (!controller.signal.aborted) setShowLoadingMessage(true);
     }, 1000);
 
     try {
-      const url = new URL(
-        `${import.meta.env.VITE_STAR_API}api/game/leaderboard/global`,
-      );
-      if (page) {
-        url.searchParams.set('page', page);
-      }
-      if (leaderboardId) {
-        url.searchParams.set('leaderboardId', leaderboardId);
-      }
-
-      const response = await fetch(url.toString(), {
-        method: 'GET', signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error('Problems starting the game, please retry.');
-      }
-
-      const data = await response.json();
+      const data = await fetchGlobal(page, leaderboardId, controller.signal);
       if (!controller.signal.aborted) setGlobalLeaderboardData(data);
     } catch {
       if (!controller.signal.aborted) setGlobalError(true);
@@ -71,15 +63,38 @@ const Leaderboard = ({
         setShowLoadingMessage(false);
       }
     }
-  }, []);
+  }, [fetchGlobal]);
 
   useEffect(() => {
-    loadGlobal(null, leaderboardId, true);
+    requestRef.current?.abort();
+    const controller = new AbortController();
+    requestRef.current = controller;
+    clearTimeout(loadingTimerRef.current);
+    loadingTimerRef.current = setTimeout(() => {
+      if (!controller.signal.aborted) setShowLoadingMessage(true);
+    }, 1000);
+
+    const fetchInitialPage = async () => {
+      try {
+        const data = await fetchGlobal(null, leaderboardId, controller.signal);
+        if (!controller.signal.aborted) setGlobalLeaderboardData(data);
+      } catch {
+        if (!controller.signal.aborted) setGlobalError(true);
+      } finally {
+        if (!controller.signal.aborted) {
+          clearTimeout(loadingTimerRef.current);
+          setGlobalLoading(false);
+          setShowLoadingMessage(false);
+        }
+      }
+    };
+    fetchInitialPage();
+
     return () => {
-      requestRef.current?.abort();
+      controller.abort();
       clearTimeout(loadingTimerRef.current);
     };
-  }, [leaderboardId, loadGlobal]);
+  }, [fetchGlobal, leaderboardId]);
 
   return (
     <Dialog
