@@ -12,7 +12,7 @@ const GameStart = ({ dialogGameStartRef, onHowToPlay, handleStartGame, loading, 
         </p>
         {error && <p className={dialogStyles.error} role='alert'>{error}</p>}
         <button className={dialogStyles.submitButton} onClick={handleStartGame} disabled={loading}>
-          {loading ? 'Starting…' : 'Start'}
+          Start
         </button>
         <button className={styles.secondaryButton} onClick={onHowToPlay} disabled={loading}>
           How to play

@@ -4,6 +4,10 @@
   view-transition-name: about-content;
 }
 
+@media (max-width: 360px) {
+  .mobileSceneInfo .liveCalculation { top: 11svh; }
+}
+
 .about h1,
 .aboutHeader > p {
   position: relative;
@@ -12,6 +16,8 @@
 
 .aboutHeader {
   position: relative;
+  scroll-snap-align: start;
+  scroll-margin-block-start: 10rem;
   isolation: isolate;
   display: flex;
   flex-direction: column;

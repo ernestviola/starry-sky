@@ -77,3 +77,13 @@ model Leaderboard {
   geoLat               Float?
   geoLong              Float?
 }
+
+model GameSession {
+  id            String    @id @default(uuid())
+  targetStarIds Int[]
+  foundStarIds  Int[]     @default([])
+  startedAt     DateTime  @default(now())
+  finishedAt    DateTime?
+  totalTimeMs   Int?
+  savedAt       DateTime?
+}

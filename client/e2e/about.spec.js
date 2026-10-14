@@ -38,15 +38,18 @@ test('keeps the About model and controls available through the walkthrough', asy
   await expect(explore).toBeFocused();
 });
 
-test('uses native proximity snap and lets the reader leave step 1 upward', async ({ page }) => {
+test('snaps to walkthrough steps and lets the reader leave step 1 upward', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/about');
   await page.evaluate(() => document.fonts.ready);
   const stepOne = page.locator('[data-derivation-step="1"]');
   await stepOne.evaluate((section) => section.scrollIntoView());
   await expect.poll(async () => Math.abs((await stepOne.boundingBox()).y)).toBeLessThan(2);
-  expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollSnapType)).toMatch(/^y( proximity)?$/);
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollSnapType)).toBe('y mandatory');
   await page.mouse.wheel(0, -400);
+  await expect.poll(async () => (await stepOne.boundingBox()).y).toBeGreaterThan(50);
+  await stepOne.evaluate((section) => section.scrollIntoView());
+  await page.keyboard.press('PageUp');
   await expect.poll(async () => (await stepOne.boundingBox()).y).toBeGreaterThan(50);
   await stepOne.evaluate((section) => section.scrollIntoView());
   await page.mouse.wheel(0, 900);
@@ -54,7 +57,22 @@ test('uses native proximity snap and lets the reader leave step 1 upward', async
   await expect.poll(async () => Math.abs((await stepTwo.boundingBox()).y)).toBeLessThan(2);
 });
 
-test('shows only one desktop step card at a time', async ({ page }) => {
+test('settles a partial desktop scroll on a walkthrough step', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('/about');
+  const stepOne = page.locator('[data-derivation-step="1"]');
+  const stepTwo = page.locator('[data-derivation-step="2"]');
+  await stepOne.evaluate((section) => section.scrollIntoView());
+  await expect.poll(async () => Math.abs((await stepOne.boundingBox()).y)).toBeLessThan(2);
+
+  await page.mouse.wheel(0, 480);
+  await expect.poll(async () => Math.min(
+    Math.abs((await stepOne.boundingBox()).y),
+    Math.abs((await stepTwo.boundingBox()).y),
+  )).toBeLessThan(2);
+});
+
+test('reveals the next desktop card while the previous card remains visible', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/about');
   await page.evaluate(() => document.fonts.ready);
@@ -62,12 +80,12 @@ test('shows only one desktop step card at a time', async ({ page }) => {
   const firstTop = await page.locator('[data-derivation-step="1"]').evaluate((section) =>
     section.getBoundingClientRect().top + window.scrollY,
   );
-  for (const [offset, expectedStep] of [[100, 1], [450, 1], [550, 2], [850, 2], [1100, 2]]) {
+  for (const [offset, expectedSteps] of [[100, [1]], [550, [1, 2]], [1100, [2]]]) {
     await page.evaluate((top) => window.scrollTo(0, top), firstTop + offset);
     await expect.poll(async () => page.locator('[data-derivation-step] [class*="stepCard"]').evaluateAll((cards) =>
       cards.filter((card) => Number(getComputedStyle(card.closest('[data-derivation-step]')).opacity) > 0.01)
         .map((card) => Number(card.closest('[data-derivation-step]').dataset.derivationStep)),
-    )).toEqual([expectedStep]);
+    )).toEqual(expectedSteps);
     if (offset === 550) {
       const opacity = await page.locator('[data-derivation-step="2"]').evaluate((section) =>
         Number(getComputedStyle(section).opacity),

@@ -9,7 +9,7 @@ export default function StarMap({ handleClick, handleInteraction }) {
   return React.createElement('div', {style:{height:'100vh',background:'#0b0c16'}},
     ...['sirius','polaris'].map((id,index)=>React.createElement('button', {
       key:id, type:'button', style:{position:'absolute',top:120+index*60,left:20,minHeight:44},
-      onClick:()=>{handleInteraction('star');handleClick(id);}
+      onClick:()=>{handleInteraction('star');handleClick(index+1);}
     }, 'Select '+id)));
 }`;
 
@@ -25,7 +25,9 @@ async function fixtures(page) {
     if (path.endsWith('/start')) {
       state.starts++;
       if (state.failStart) return route.fulfill({ status: 500, json: {} });
-      data = { token: token({ startTime: Date.now(), starsToFind: [{ id: 'sirius', proper: 'Sirius' }, { id: 'polaris', proper: 'Polaris' }] }) };
+      data = { token: token({ startTime: Date.now(), starsToFind: [{ id: 1, proper: 'Sirius' }, { id: 2, proper: 'Polaris' }] }) };
+    } else if (path.endsWith('/select')) {
+      data = { success: true, found: [1, 2].includes(Number(route.request().postDataJSON().starId)) };
     } else if (path.endsWith('/submit')) {
       state.finishes++;
       if (state.finishGate) await state.finishGate;

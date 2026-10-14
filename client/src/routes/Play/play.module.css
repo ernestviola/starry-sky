@@ -52,6 +52,7 @@
 
 .gamePanelBody { max-height: 36rem; overflow-y: auto; }
 .gamePanelBodyContent { padding-top: var(--space-2); }
+.gameError { margin: var(--space-2) 0 0; color: var(--color-danger); font-size: var(--font-size-sm); }
 
 @media (max-width: 700px) {
   .gamePanel {

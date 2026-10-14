@@ -129,6 +129,14 @@ const AboutWalkthrough = ({ isMobile }) => {
     );
     let snapEnabled = true;
     let previousScrollY = window.scrollY;
+    const releaseIntroSnap = (event) => {
+      if (event.deltaY >= 0 || Math.abs(stepCards[0]?.getBoundingClientRect().top ?? Infinity) > 2) return;
+      // Mandatory snapping would consume the first upward wheel movement at step 1.
+      event.preventDefault();
+      snapEnabled = false;
+      root.style.scrollSnapType = 'none';
+      window.scrollBy(0, event.deltaY);
+    };
     const updateStep = () => {
       const modelStepLine = window.innerHeight * 0.25;
       const active = sections.find((section) => {
@@ -147,12 +155,11 @@ const AboutWalkthrough = ({ isMobile }) => {
         : 0;
       const scrollY = window.scrollY;
       if (!isMobile) {
-        if (focusedStepNumber === 0) {
-          if (scrollY < previousScrollY) snapEnabled = false;
-          if (scrollY > previousScrollY) snapEnabled = true;
-        } else snapEnabled = true;
+        const firstStepTop = stepCards[0].getBoundingClientRect().top + scrollY;
+        if (scrollY < previousScrollY && scrollY <= firstStepTop) snapEnabled = false;
+        if (scrollY > previousScrollY) snapEnabled = true;
         previousScrollY = scrollY;
-        const snapType = snapEnabled ? 'y proximity' : 'none';
+        const snapType = snapEnabled ? 'y mandatory' : 'none';
         if (root.style.scrollSnapType !== snapType) {
           root.style.scrollSnapType = snapType;
         }
@@ -198,10 +205,12 @@ const AboutWalkthrough = ({ isMobile }) => {
     };
 
     updateStep();
+    window.addEventListener('wheel', releaseIntroSnap, { passive: false });
     window.addEventListener('scroll', updateStep, { passive: true });
     window.addEventListener('resize', updateStep);
     return () => {
       if (!isMobile) root.style.scrollSnapType = previousSnapType;
+      window.removeEventListener('wheel', releaseIntroSnap);
       window.removeEventListener('scroll', updateStep);
       window.removeEventListener('resize', updateStep);
     };

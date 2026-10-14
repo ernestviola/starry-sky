@@ -151,7 +151,7 @@ test('mobile walkthrough scrubs one visible card in both directions without pane
   await expect(sceneLabels.filter({ hasText: /^Star/ })).toHaveCount(1);
   await expect(page.locator('[class*="axisLabel"]')).toHaveCount(6);
   const enterExplore = page.getByRole('button', { name: 'Explore The Model' });
-  await expect(enterExplore).toHaveText('↓Explore The Model');
+  await expect(enterExplore).toHaveText('Explore The Model');
   await expect(page.locator('[class*="controllerParent"]')).toHaveCount(0);
   await enterExplore.click();
   await expect(enterExplore).toBeHidden();
@@ -159,7 +159,7 @@ test('mobile walkthrough scrubs one visible card in both directions without pane
   await expect(sceneLabels).toHaveCount(3);
   await expect.poll(() => page.evaluate(() => document.documentElement.style.overflow)).toBe('hidden');
   const backToStar = page.getByRole('button', { name: 'Back to Walkthrough' });
-  await expect(backToStar).toHaveText('Back to Walkthrough↑');
+  await expect(backToStar).toHaveText('Back to Walkthrough');
   await expect(backToStar).toBeFocused();
   const controller = page.locator('[class*="controllerParent"]');
   await expect(controller).toBeVisible();

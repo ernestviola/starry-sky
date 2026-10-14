@@ -6,6 +6,7 @@ import leaderboardRouter from './leaderboardRouter.js';
 const gameRouter = Router();
 
 gameRouter.post('/start', gameController.start);
+gameRouter.post('/select', authJWT, gameController.select);
 
 gameRouter.post('/submit', authJWT, gameController.submit);
 gameRouter.post('/submit/name', authJWT, gameController.submitName);
