@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, vi } from 'vitest';
 import Leaderboard from './Leaderboard.jsx';
 
@@ -32,6 +32,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
 });
@@ -89,13 +90,21 @@ test('loads the next page when the next button is clicked', async () => {
   expect(requestUrl.searchParams.get('page')).toBe('2');
 });
 
-test('retry calls the expected game start behavior', () => {
+test('retry calls the expected game start behavior', async () => {
   const handleStartGame = vi.fn();
   renderLeaderboard({ handleStartGame });
 
+  await waitFor(() => expect(screen.getByTitle('retry')).toBeEnabled());
   fireEvent.click(screen.getByTitle('retry'));
 
   expect(handleStartGame).toHaveBeenCalledOnce();
+});
+
+test('keeps the replay label steady while a game start is pending', () => {
+  renderLeaderboard({ starting: true });
+
+  expect(screen.getByRole('button', { name: /Play again/, hidden: true })).toBeDisabled();
+  expect(screen.queryByText('Starting…')).not.toBeInTheDocument();
 });
 
 test('has no rows before the leaderboard fetch resolves', () => {
@@ -110,6 +119,23 @@ test('renders the returned leaderboard data after fetch', async () => {
 
   expect(await screen.findByText('Ada')).toBeInTheDocument();
   expect(screen.getByText('1.23s')).toBeInTheDocument();
+  expect(screen.queryByText('Loading leaderboard…')).not.toBeInTheDocument();
+});
+
+test('shows loading text only after a request lasts one second', async () => {
+  let resolveRequest;
+  fetch.mockReturnValueOnce(new Promise((resolve) => { resolveRequest = resolve; }));
+  vi.useFakeTimers();
+  renderLeaderboard();
+
+  expect(screen.queryByText('Loading leaderboard…')).not.toBeInTheDocument();
+  await act(async () => { await vi.advanceTimersByTimeAsync(999); });
+  expect(screen.queryByText('Loading leaderboard…')).not.toBeInTheDocument();
+  await act(async () => { await vi.advanceTimersByTimeAsync(1); });
+  expect(screen.getByText('Loading leaderboard…')).toBeInTheDocument();
+
+  await act(async () => { resolveRequest(responseFor(leaderboard)); });
+  expect(screen.queryByText('Loading leaderboard…')).not.toBeInTheDocument();
 });
 
 test('does not crash when the leaderboard fetch fails', async () => {

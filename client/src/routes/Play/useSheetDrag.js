@@ -18,23 +18,13 @@ const useMediaQuery = (query) => {
   return matches;
 };
 
-/*
- * Drag-to-open for the mobile game sheet.
- *
- * The sheet always has its full open height. Closing slides it down by the
- * height of the list (the `translate` property, set through --sheet-offset),
- * so only the header stays on screen. Sliding with translate runs on the GPU,
- * unlike animating height, which re-lays out the page every frame.
- *
- * While dragging, the offset follows the finger with transitions off. On
- * release it snaps open or closed from the flick speed, or from whether it
- * passed halfway, and the CSS transition animates the rest. A press that
- * barely moves counts as a tap and toggles.
- */
-const useSheetDrag = ({ expanded, setExpanded }) => {
+/* Collapse the list inside the inset panel so its border and bottom gutter
+ * stay visible. Measure the inner content, independently of its animated wrapper. */
+const useSheetDrag = ({ expanded, setExpanded, visible = true }) => {
   const isMobile = useMediaQuery(MOBILE_QUERY);
   const panelRef = useRef(null);
   const bodyRef = useRef(null);
+  const previewRef = useRef(null);
   const drag = useRef(null);
   const justDragged = useRef(false);
 
@@ -42,39 +32,41 @@ const useSheetDrag = ({ expanded, setExpanded }) => {
     const panel = panelRef.current;
     const body = bodyRef.current;
     if (!panel || !body) return;
-    const range = body.offsetHeight || 1;
-    panel.style.setProperty('--sheet-offset', `${offset}px`);
-    // 1 = fully open, 0 = closed; fades the list so it's invisible when tucked away.
+    const range = body.firstElementChild?.offsetHeight || 1;
+    panel.style.setProperty('--sheet-body-size', `${Math.max(0, range - offset)}px`);
+    const previewHeight = previewRef.current?.offsetHeight || 0;
+    panel.style.setProperty('--sheet-preview-size', `${(offset / range) * previewHeight}px`);
+    // Keep the full list invisible and inert when collapsed; the preview stays visible.
     panel.style.setProperty('--sheet-progress', String(1 - offset / range));
   }, []);
 
-  // Rest position: open = 0, closed = the list's height. The list is always
-  // rendered on mobile, so it can be measured at any time.
   useLayoutEffect(() => {
     const panel = panelRef.current;
     const body = bodyRef.current;
     if (!panel || !body) return undefined;
 
     if (!isMobile) {
-      panel.style.removeProperty('--sheet-offset');
+      panel.style.removeProperty('--sheet-body-size');
       panel.style.removeProperty('--sheet-progress');
+      panel.style.removeProperty('--sheet-preview-size');
       return undefined;
     }
 
     const place = () => {
-      if (!drag.current?.moved) setOffset(expanded ? 0 : body.offsetHeight);
+      if (!drag.current?.moved) setOffset(expanded ? 0 : body.firstElementChild.offsetHeight);
     };
     place();
 
     if (typeof ResizeObserver === 'undefined') return undefined;
     const observer = new ResizeObserver(place);
-    observer.observe(body);
+    observer.observe(body.firstElementChild);
+    if (previewRef.current) observer.observe(previewRef.current);
     return () => observer.disconnect();
-  }, [expanded, isMobile, setOffset]);
+  }, [expanded, isMobile, setOffset, visible]);
 
   const onPointerDown = (event) => {
     if (!isMobile || event.button !== 0) return;
-    const range = bodyRef.current.offsetHeight;
+    const range = bodyRef.current.firstElementChild.offsetHeight;
     const now = performance.now();
     drag.current = {
       pointerId: event.pointerId,
@@ -124,12 +116,11 @@ const useSheetDrag = ({ expanded, setExpanded }) => {
     drag.current = null;
 
     if (!state.moved) {
-      // A tap on the header. The chevron button handles its own click.
-      if (!event.target.closest('button')) setExpanded(!expanded);
+      // The header click also handles keyboard activation.
       return;
     }
 
-    // A drag that ends on the button still fires a click there; skip that one.
+    // A drag still fires a header click; skip that one.
     justDragged.current = true;
     setTimeout(() => {
       justDragged.current = false;
@@ -152,6 +143,7 @@ const useSheetDrag = ({ expanded, setExpanded }) => {
   return {
     panelRef,
     bodyRef,
+    previewRef,
     isMobile,
     consumeDragClick: () => justDragged.current,
     headerHandlers: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel },

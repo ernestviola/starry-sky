@@ -58,6 +58,9 @@ leaderboardController.getGlobal = [
         order by position
         `;
 
+        if (leaderboard.length === 0) {
+          return res.status(404).json({ success: false, message: 'Leaderboard entry not found.' });
+        }
         page = Number(leaderboard.at(-1).pageNumber);
       } else {
         let skip;

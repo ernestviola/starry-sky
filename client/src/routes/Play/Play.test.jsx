@@ -1,39 +1,31 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useNavigate } from 'react-router';
 import { afterAll, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 import Play from './Play.jsx';
 
-const mapMock = vi.hoisted(() => ({ interactionHandler: null }));
+const mapMock = vi.hoisted(() => ({ interactionHandler: null, clickHandler: null, setStarClickFeedback: vi.fn() }));
 
 vi.mock('../../contexts/StarMapContext.jsx', () => ({
   useStarMap: () => ({
     hoveredStarId: null,
-    registerClickHandler: vi.fn(() => vi.fn()),
+    registerClickHandler: vi.fn((handler) => {
+      mapMock.clickHandler = handler;
+      return () => {
+        if (mapMock.clickHandler === handler) mapMock.clickHandler = null;
+      };
+    }),
     registerInteractionHandler: vi.fn((handler) => {
       mapMock.interactionHandler = handler;
       return () => {
         if (mapMock.interactionHandler === handler) mapMock.interactionHandler = null;
       };
     }),
+    setStarClickFeedback: mapMock.setStarClickFeedback,
   }),
-}));
-
-vi.mock('../../components/PlayRoute/Leaderboard/Leaderboard.jsx', () => ({
-  default: () => null,
-}));
-
-vi.mock('../../components/PlayRoute/SubmitScore/SubmitScore.jsx', () => ({
-  default: () => null,
 }));
 
 vi.mock('../../components/PlayRoute/GameTimer/GameTimer.jsx', () => ({
   default: () => null,
-}));
-
-vi.mock('../../components/SearchList/SearchList.jsx', () => ({
-  default: ({ expanded }) => (
-    <div data-testid='search-list-state'>{expanded ? 'expanded' : 'collapsed'}</div>
-  ),
 }));
 
 const NavigateAway = () => {
@@ -73,6 +65,8 @@ afterAll(() => {
 beforeEach(() => {
   vi.clearAllMocks();
   mapMock.interactionHandler = null;
+  mapMock.clickHandler = null;
+  mapMock.setStarClickFeedback.mockClear();
   vi.stubEnv('VITE_STAR_API', 'http://api.test/');
   vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false })));
 });
@@ -107,32 +101,32 @@ describe('Play dialog flow', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  test('expands stars at game start and collapses once on valid map interaction', async () => {
+  test('desktop stars remain expanded through map interactions', async () => {
     const token = `eyJhbGciOiJub25lIn0.${btoa(
       JSON.stringify({ startTime: 1000, starsToFind: [] }),
     )}.signature`;
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+    vi.stubGlobal('fetch', vi.fn(async (url) => ({
       ok: true,
-      json: async () => ({ token }),
-    }));
+      json: async () => String(url).endsWith('/select') ? { found: true } : { token },
+    })));
 
     render(<Play />);
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
 
-    expect(await screen.findByTestId('search-list-state')).toHaveTextContent('expanded');
+    expect(await screen.findByRole('list', { name: 'Stars to find!' })).toBeVisible();
     expect(mapMock.interactionHandler).toEqual(expect.any(Function));
 
-    act(() => mapMock.interactionHandler('drag'));
-    expect(screen.getByTestId('search-list-state')).toHaveTextContent('collapsed');
+    await act(async () => mapMock.interactionHandler('drag'));
+    expect(screen.getByRole('list', { name: 'Stars to find!' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: /stars/i })).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Expand stars' }));
-    expect(screen.getByTestId('search-list-state')).toHaveTextContent('expanded');
 
     act(() => mapMock.interactionHandler('zoom'));
-    expect(screen.getByTestId('search-list-state')).toHaveTextContent('expanded');
+    expect(screen.getByRole('list', { name: 'Stars to find!' })).toBeVisible();
   });
 
-  test('does not collapse for an invalid map interaction', async () => {
+  test('mobile header toggles by keyboard and collapses once on map interaction', async () => {
+    window.matchMedia.mockImplementation(query => ({ matches: query.includes('max-width') }));
     const token = `eyJhbGciOiJub25lIn0.${btoa(
       JSON.stringify({ startTime: 1000, starsToFind: [] }),
     )}.signature`;
@@ -143,14 +137,21 @@ describe('Play dialog flow', () => {
 
     render(<Play />);
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
-    expect(await screen.findByTestId('search-list-state')).toHaveTextContent('expanded');
+    expect(await screen.findByRole('list', { name: 'Stars to find!' })).toBeVisible();
 
     act(() => mapMock.interactionHandler('blank'));
-    expect(screen.getByTestId('search-list-state')).toHaveTextContent('expanded');
-    expect(screen.getByRole('button', { name: 'Collapse stars' })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('list', { name: 'Stars to find!' })).toBeVisible();
+    const header = screen.getByRole('button', { name: 'Collapse stars' });
+    expect(header).toHaveAttribute('aria-expanded', 'true');
+    await act(async () => mapMock.interactionHandler('drag'));
+    expect(screen.getByRole('button', { name: 'Expand stars' })).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.keyDown(header, { key: 'Enter' });
+    expect(header).toHaveAttribute('aria-expanded', 'true');
+    act(() => mapMock.interactionHandler('zoom'));
+    expect(header).toHaveAttribute('aria-expanded', 'true');
   });
 
-  test('closes immediately in reduced motion and invokes the next-dialog callback', () => {
+  test('changes the sole modeless dialog without waiting for animation in reduced motion', () => {
     window.matchMedia.mockReturnValue({ matches: true });
 
     render(<Play />);
@@ -167,11 +168,146 @@ describe('Play dialog flow', () => {
       addEventListener.mock.calls.some(([event]) => event === 'animationend'),
     ).toBe(false);
     expect(screen.getByRole('dialog').open).toBe(true);
-    expect(HTMLDialogElement.prototype.close).toHaveBeenCalled();
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
 
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
 
-    expect(screen.getByRole('heading', { name: 'Find The Stars!' })).toBeInTheDocument();
-    expect(HTMLDialogElement.prototype.close).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole('heading', { name: 'Find the stars!' })).toBeInTheDocument();
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+  });
+});
+
+describe('Play star click feedback', () => {
+  test('sets red model feedback for an incorrect star and green model feedback for a target star', async () => {
+    const token = `eyJhbGciOiJub25lIn0.${btoa(
+      JSON.stringify({
+        startTime: 1000,
+        starsToFind: [
+          { id: 'target-1', proper: 'Vega' },
+          { id: 'target-2', proper: 'Altair' },
+        ],
+      }),
+    )}.signature`;
+    vi.stubGlobal('fetch', vi.fn(async (url) => ({
+      ok: true,
+      json: async () => String(url).endsWith('/select') ? { found: true } : { token },
+    })));
+
+    render(<Play />);
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    expect(await screen.findByRole('list', { name: 'Stars to find!' })).toBeVisible();
+
+    await act(async () => mapMock.clickHandler('unrelated-star'));
+    expect(mapMock.setStarClickFeedback).toHaveBeenLastCalledWith(expect.objectContaining({
+      starId: 'unrelated-star',
+      status: 'incorrect',
+      expiresAt: expect.any(Number),
+      duration: expect.any(Number),
+    }));
+
+    await act(async () => mapMock.clickHandler('target-1'));
+    expect(mapMock.setStarClickFeedback).toHaveBeenLastCalledWith(expect.objectContaining({
+      starId: 'target-1',
+      status: 'correct',
+      expiresAt: expect.any(Number),
+      duration: expect.any(Number),
+    }));
+    expect(screen.getByText('1/2')).toBeInTheDocument();
+  });
+});
+
+const tokenFor = data => `e30.${btoa(JSON.stringify(data))}.signature`;
+const startData = { startTime: Date.now(), starsToFind: [{ id: 'sirius', proper: 'Sirius' }, { id: 'polaris', proper: 'Polaris' }] };
+const gameResponse = data => ({ ok: true, json: async () => data });
+const startAndFinish = async () => {
+  fireEvent.click(screen.getByRole('button', { name: 'Start', exact: true }));
+  await screen.findByRole('region', { name: 'Game status' });
+  await act(async () => mapMock.clickHandler('sirius'));
+  await act(async () => mapMock.clickHandler('polaris'));
+};
+
+describe('Play results and request recovery', () => {
+  test('hides gameplay, submits once, shows only leaderboard, and resets on replay', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(async url => {
+      if (String(url).endsWith('/start')) return gameResponse({ token: tokenFor(startData) });
+      if (String(url).endsWith('/select')) return gameResponse({ found: true });
+      if (String(url).endsWith('/submit')) return gameResponse({ token: tokenFor({ totalTime: 12000 }) });
+      if (String(url).endsWith('/name')) return gameResponse({ success: true, leaderboardId: 7 });
+      return gameResponse({ leaderboard: [{ id: 7, rank: 1, name: 'Ada', totalTimeMiliseconds: 12000 }], page: 1, hasNext: false });
+    }));
+    render(<Play />);
+    await startAndFinish();
+    await screen.findByRole('dialog', { name: 'Submit your time' });
+    expect(screen.queryByRole('region', { name: 'Game status' })).not.toBeInTheDocument();
+    await act(async () => mapMock.clickHandler('sirius'));
+    expect(fetch.mock.calls.filter(([url]) => String(url).endsWith('/submit'))).toHaveLength(1);
+    fireEvent.change(screen.getByRole('textbox', { name: 'Name' }), { target: { value: 'Ada' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Submit', exact: true }));
+    await screen.findByRole('dialog', { name: 'Leaderboard' });
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    await act(async () => mapMock.clickHandler('polaris'));
+    expect(fetch.mock.calls.filter(([url]) => String(url).endsWith('/submit'))).toHaveLength(1);
+    await waitFor(() => expect(screen.getByRole('button', { name: /Play again/ })).toBeEnabled());
+    fireEvent.click(screen.getByRole('button', { name: /Play again/ }));
+    await screen.findByRole('region', { name: 'Game status' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByText('0/2')).toBeInTheDocument();
+  });
+
+  test('disables duplicate start requests and exposes a retryable error', async () => {
+    let resolve;
+    vi.stubGlobal('fetch', vi.fn(() => new Promise(done => { resolve = done; })));
+    render(<Play />);
+    fireEvent.click(screen.getByRole('button', { name: 'Start', exact: true }));
+    expect(screen.getByRole('button', { name: 'Start', exact: true })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Start', exact: true }));
+    expect(fetch).toHaveBeenCalledOnce();
+    await act(async () => resolve({ ok: false }));
+    expect(screen.getByRole('alert')).toHaveTextContent('Unable to start');
+    expect(screen.getByRole('button', { name: 'Start', exact: true })).toBeEnabled();
+  });
+
+  test('completion failure keeps gameplay inactive and supports retry', async () => {
+    let finishRequests = 0;
+    vi.stubGlobal('fetch', vi.fn(async (url) => {
+      if (String(url).endsWith('/start')) return gameResponse({ token: tokenFor(startData) });
+      if (String(url).endsWith('/select')) return gameResponse({ found: true });
+      if (String(url).endsWith('/submit')) {
+        finishRequests++;
+        return finishRequests === 1 ? { ok: false } : gameResponse({ token: tokenFor({ totalTime: 12000 }) });
+      }
+    }));
+    render(<Play />);
+    await startAndFinish();
+    expect(await screen.findByRole('alert')).toHaveTextContent('Unable to calculate');
+    expect(screen.queryByRole('region', { name: 'Game status' })).not.toBeInTheDocument();
+    await act(async () => mapMock.clickHandler('sirius'));
+    expect(fetch).toHaveBeenCalledTimes(4);
+    fireEvent.click(screen.getByRole('button', { name: 'Retry calculation' }));
+    await screen.findByRole('dialog', { name: 'Submit your time' });
+    expect(fetch).toHaveBeenCalledTimes(5);
+  });
+
+  test('failed score submission preserves the name and allows retry without duplicate requests', async () => {
+    let resolve;
+    vi.stubGlobal('fetch', vi.fn((url) => {
+      if (String(url).endsWith('/start')) return Promise.resolve(gameResponse({ token: tokenFor(startData) }));
+      if (String(url).endsWith('/select')) return Promise.resolve(gameResponse({ found: true }));
+      if (String(url).endsWith('/submit')) return Promise.resolve(gameResponse({ token: tokenFor({ totalTime: 12000 }) }));
+      if (String(url).endsWith('/name')) return new Promise(done => { resolve = done; });
+    }));
+    render(<Play />);
+    await startAndFinish();
+    await screen.findByRole('dialog', { name: 'Submit your time' });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Name' }), { target: { value: 'Ada' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Submit', exact: true }));
+    await waitFor(() => expect(fetch).toHaveBeenCalledTimes(5));
+    expect(screen.getByRole('button', { name: 'Saving…' })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Saving…' }));
+    expect(fetch).toHaveBeenCalledTimes(5);
+    await act(async () => resolve({ ok: false }));
+    expect(screen.getByRole('alert')).toHaveTextContent('Unable to save');
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('Ada');
+    expect(screen.getByRole('button', { name: 'Submit', exact: true })).toBeEnabled();
   });
 });

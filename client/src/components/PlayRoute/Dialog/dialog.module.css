@@ -4,17 +4,24 @@
   top: 50%;
   left: 50%;
   animation: dialog-enter var(--duration-slow) var(--ease-standard) both;
-  z-index: 1;
+  z-index: 3;
+  transform: translate(-50%, -50%);
   width: min(40rem, calc(100vw - 2rem));
-  max-height: calc(100svh - 2rem);
+  max-height: calc(100svh - env(safe-area-inset-top) - 8rem);
   margin: 0;
   padding: var(--space-6);
   overflow: auto;
 
-  border: var(--border-width) solid var(--color-accent);
+  border: var(--border-width) solid var(--color-border);
   border-radius: var(--radius-card);
   background: var(--color-panel);
   color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+  box-shadow: var(--shadow-overlay);
+}
+
+.dialog:focus-visible {
+  box-shadow: var(--shadow-overlay), var(--focus-ring);
 }
 
 .dialog[open] {
@@ -22,22 +29,17 @@
 }
 
 .dialog h1 {
-  font-size: 2.4rem;
+  font-size: var(--font-size-xl);
 }
 
-.dialog p {
-  font-size: 1.6rem;
+.dialog :where(p) {
+  font-size: var(--font-size-md);
   color: var(--color-text-body);
 }
 
 .dialog button {
   min-height: var(--touch-target-min);
   cursor: pointer;
-}
-
-.closing,
-dialog[open].closing {
-  animation: dialog-exit var(--duration-normal) var(--ease-standard) both;
 }
 
 .submitButton {
@@ -52,7 +54,7 @@ dialog[open].closing {
   background: var(--color-accent);
   color: var(--color-background);
   font-family: var(--font-heading);
-  font-size: 1.6rem;
+  font-size: var(--font-size-md);
   font-weight: 600;
   cursor: pointer;
 }
@@ -69,41 +71,23 @@ dialog[open].closing {
   }
 }
 
-@keyframes dialog-exit {
-  from {
-    opacity: 1;
-    transform: translate(-50%, -50%);
-  }
-
-  to {
-    opacity: 0;
-    transform: translate(-50%, -70%);
-  }
-}
-
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   .dialog {
     top: auto;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    max-height: calc(100svh - var(--space-3));
-    padding: var(--space-5) var(--page-edge-end)
-      calc(var(--space-5) + env(safe-area-inset-bottom)) var(--page-edge-start);
-    border-right: 0;
-    border-bottom: 0;
-    border-left: 0;
-    border-radius: 0;
+    right: var(--page-edge-end);
+    bottom: max(var(--space-4), env(safe-area-inset-bottom));
+    left: var(--page-edge-start);
+    width: auto;
+    max-width: 40rem;
+    margin-inline: auto;
+    max-height: calc(100svh - env(safe-area-inset-top) - 10rem);
+    padding: var(--space-5);
+    border-radius: var(--radius-card);
+    transform: none;
   }
 
   .dialog[open] {
     animation-name: dialog-sheet-enter;
-  }
-
-  .dialog.closing,
-  dialog[open].closing {
-    animation-name: dialog-sheet-exit;
   }
 
   @keyframes dialog-sheet-enter {
@@ -118,24 +102,17 @@ dialog[open].closing {
     }
   }
 
-  @keyframes dialog-sheet-exit {
-    from {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    to {
-      opacity: 0;
-      transform: translateY(100%);
-    }
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .dialog,
-  .dialog[open],
-  .dialog.closing,
-  dialog[open].closing {
+  .dialog[open] {
     animation: none;
   }
 }
+
+.dialog .error { color: var(--color-danger); }
+.dialog button:disabled { color: var(--color-text-disabled); cursor: wait; }
+.submitButton:disabled { background: var(--color-panel-raised); }
+.submitButton:hover:not(:disabled) { background: var(--color-accent-hover); }
+.submitButton:active:not(:disabled) { background: var(--color-accent-pressed); }

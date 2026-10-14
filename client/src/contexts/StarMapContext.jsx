@@ -5,6 +5,8 @@ const StarMapContext = createContext(null);
 export const StarMapProvider = ({ children }) => {
   const [hoveredStarId, setHoveredStarId] = useState(null);
   const [selectedStarId, setSelectedStarId] = useState(null);
+  const [starClickFeedback, setStarClickFeedback] = useState(null);
+  const [searchTarget, setSearchTarget] = useState(null);
   const clickHandler = useRef(() => {});
   const interactionHandler = useRef(() => {});
 
@@ -37,6 +39,10 @@ export const StarMapProvider = ({ children }) => {
         setHoveredStarId,
         selectedStarId,
         setSelectedStarId,
+        starClickFeedback,
+        setStarClickFeedback,
+        searchTarget,
+        setSearchTarget,
         handleClick,
         registerClickHandler,
         handleInteraction,

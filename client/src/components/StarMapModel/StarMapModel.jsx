@@ -720,7 +720,13 @@ const StarMapModel = ({
         )}
         {showSphere && <CelestialSphere />}
         {allowOrbit && (
-          <OrbitControls enabled={step === 0 || step === 5} enableZoom={step === 5} />
+          <OrbitControls
+            enabled={step === 0 || step === 5}
+            enableZoom={step === 5}
+            // The unit sphere stays outside the camera and large enough to inspect.
+            minDistance={starRadius * 2.2}
+            maxDistance={starRadius * 5}
+          />
         )}
       </Canvas>
       {controlsContainer ? createPortal(controls, controlsContainer) : controls}

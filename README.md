@@ -91,6 +91,6 @@ Should be able to test the API and maybe the database
 
 # Sources
 
-HygStar data
-either d3-celestial's constellations.lines.json or
-Stellarium's constellationship.fab
+- [HYG Star Database](https://codeberg.org/astronexus/hyg) — star catalog data. The archived repository lists the data under [CC BY-SA 4.0](https://github.com/astronexus/HYG-Database/blob/main/LICENSE).
+- [Stellarium sky cultures: Western](https://github.com/Stellarium/stellarium-skycultures/tree/master/western) — Western constellation line patterns and associated names. The [Western sky culture description](https://github.com/Stellarium/stellarium-skycultures/blob/master/western/description.md) identifies its text and data as CC BY-SA.
+- [International Astronomical Union (IAU)](https://www.iau.org/IAU/IAU/Astronomy-FAQs/Constellations.aspx?hkey=bb9dc841-0618-41b5-ac70-149741062141) — official constellation names and abbreviations.

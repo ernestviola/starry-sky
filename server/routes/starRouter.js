@@ -4,6 +4,7 @@ import starController from '../controllers/starController.js';
 const starRouter = Router();
 
 starRouter.get('/', starController.getAll);
+starRouter.get('/search', starController.search);
 starRouter.get('/frame', starController.getFrame);
 
 export default starRouter;

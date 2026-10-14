@@ -9,23 +9,25 @@ const Layout = () => {
     hoveredStarId,
     setHoveredStarId,
     setSelectedStarId,
+    starClickFeedback,
     handleClick,
     handleInteraction,
+    searchTarget,
   } = useStarMap();
   const { pathname } = useLocation();
   const normalizedPathname = pathname.replace(/\/+$/, '') || '/';
   const showStarMap = !['/about', '/design-system'].includes(normalizedPathname);
 
   return (
-    <div
-      className={`${styles.layout} ${normalizedPathname === '/about' ? styles.aboutLayout : ''}`}
-    >
+    <div className={styles.layout}>
       {showStarMap && (
         <div className={styles.mapLayer}>
           <StarMap
             hoveredStarId={hoveredStarId}
             setHoveredStarId={setHoveredStarId}
             setSelectedStarId={setSelectedStarId}
+            starClickFeedback={starClickFeedback}
+            searchTarget={searchTarget}
             handleClick={handleClick}
             handleInteraction={handleInteraction}
             enableHover={pathname !== '/'}
