@@ -38,20 +38,38 @@ test('keeps the About model and controls available through the walkthrough', asy
   await expect(explore).toBeFocused();
 });
 
-test('uses native proximity snap and lets the reader leave step 1 upward', async ({ page }) => {
+test('snaps to walkthrough steps and lets the reader leave step 1 upward', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/about');
   await page.evaluate(() => document.fonts.ready);
   const stepOne = page.locator('[data-derivation-step="1"]');
   await stepOne.evaluate((section) => section.scrollIntoView());
   await expect.poll(async () => Math.abs((await stepOne.boundingBox()).y)).toBeLessThan(2);
-  expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollSnapType)).toMatch(/^y( proximity)?$/);
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollSnapType)).toBe('y mandatory');
   await page.mouse.wheel(0, -400);
+  await expect.poll(async () => (await stepOne.boundingBox()).y).toBeGreaterThan(50);
+  await stepOne.evaluate((section) => section.scrollIntoView());
+  await page.keyboard.press('PageUp');
   await expect.poll(async () => (await stepOne.boundingBox()).y).toBeGreaterThan(50);
   await stepOne.evaluate((section) => section.scrollIntoView());
   await page.mouse.wheel(0, 900);
   const stepTwo = page.locator('[data-derivation-step="2"]');
   await expect.poll(async () => Math.abs((await stepTwo.boundingBox()).y)).toBeLessThan(2);
+});
+
+test('settles a partial desktop scroll on a walkthrough step', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('/about');
+  const stepOne = page.locator('[data-derivation-step="1"]');
+  const stepTwo = page.locator('[data-derivation-step="2"]');
+  await stepOne.evaluate((section) => section.scrollIntoView());
+  await expect.poll(async () => Math.abs((await stepOne.boundingBox()).y)).toBeLessThan(2);
+
+  await page.mouse.wheel(0, 480);
+  await expect.poll(async () => Math.min(
+    Math.abs((await stepOne.boundingBox()).y),
+    Math.abs((await stepTwo.boundingBox()).y),
+  )).toBeLessThan(2);
 });
 
 test('reveals the next desktop card while the previous card remains visible', async ({ page }) => {

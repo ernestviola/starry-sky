@@ -16,6 +16,8 @@
 
 .aboutHeader {
   position: relative;
+  scroll-snap-align: start;
+  scroll-margin-block-start: 10rem;
   isolation: isolate;
   display: flex;
   flex-direction: column;
