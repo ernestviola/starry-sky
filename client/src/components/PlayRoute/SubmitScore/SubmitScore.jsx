@@ -21,7 +21,7 @@ const SubmitScore = ({ dialogSubmitScoreRef, handleSubmitName, setName, name,
         </button>
       ) : (
         <button className={`${dialogStyles.submitButton} ${styles.submitButton}`} type='submit' disabled={finishing || loading}>
-          {loading && !finishing ? 'Saving…' : 'Submit'}
+          {loading ? (finishing ? 'Calculating…' : 'Saving…') : 'Submit'}
         </button>
       )}
       <p className={styles.requestStatus} role='status'>

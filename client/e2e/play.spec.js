@@ -151,7 +151,7 @@ for (const [width, height] of [[390, 844], [1024, 768]]) {
     await finish(page);
     const dialog = page.getByRole('dialog', { name: 'Submit your time' });
     const input = page.getByRole('textbox', { name: 'Name', exact: true });
-    const submit = page.getByRole('button', { name: 'Submit', exact: true });
+    const submit = dialog.getByRole('button');
     await expect(page.getByRole('status')).toHaveText('Calculating your time…');
     await expect(input).toBeDisabled();
     await expect(submit).toBeDisabled();
@@ -161,12 +161,16 @@ for (const [width, height] of [[390, 844], [1024, 768]]) {
     });
     const before = await dialog.boundingBox();
     const buttonBefore = await submit.boundingBox();
+    await expect(submit).toHaveText('Calculating…');
     release();
     await expect(input).toBeEnabled();
     await expect(submit).toBeEnabled();
     await expect(page.getByText('12.35s', { exact: true })).toBeVisible();
     const after = await dialog.boundingBox();
     const buttonAfter = await submit.boundingBox();
+    await expect(submit).toHaveText('Submit');
+    const bottomPadding = await dialog.evaluate(element => parseFloat(getComputedStyle(element).paddingBottom));
+    expect(after.y + after.height - buttonAfter.y - buttonAfter.height).toBeCloseTo(bottomPadding + 1, 0);
     for (const key of ['x', 'y', 'width', 'height']) {
       expect(Math.abs(after[key] - before[key])).toBeLessThan(1);
       expect(Math.abs(buttonAfter[key] - buttonBefore[key])).toBeLessThan(1);

@@ -30,7 +30,14 @@
   color: var(--color-text-primary);
 }
 
-/* Keep the pending and ready form the same height, including its live status. */
+/* Announce progress without reserving a blank row below Submit.
+   The full-width button shows the same progress visually, without changing size. */
 .requestStatus {
-  min-block-size: 1.5em;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

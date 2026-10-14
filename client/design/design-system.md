@@ -54,6 +54,8 @@ Reuse the spacing scale, button/card radii, focus ring, and shadow tokens from `
 
 Cards should remain dark, lightly bordered, moderately rounded, and restrained in their use of shadow.
 
+About walkthrough cards and exploration controls cap at 400px and remain centered throughout the mobile layout (up to 900px); narrow phones retain fluid widths and page gutters.
+
 Mobile geometry uses the shared `--page-gutter-mobile`, `--page-edge-start`, and `--page-edge-end` tokens. The edge tokens include `safe-area-inset-*` so content clears notches and rounded screen corners. `--touch-target-min` is the 44px minimum for controls. At the mobile breakpoint, the type scale steps down through token overrides; cards and grids become a single column.
 
 ### Accessibility
@@ -134,7 +136,7 @@ The timer and the "Stars to find" list are one component. They share one source 
 
 ### Submit time
 
-Option C is selected: a 32px Space Mono result with 44px line height, a Name placeholder with an accessible Name label, and a full-width Submit action. Keep validation, nickname autocomplete, and the 12-character limit. Reserve the same live-status area while calculating, ready, and saving to avoid moving the panel.
+Option C is selected: a 32px Space Mono result with 44px line height, a Name placeholder with an accessible Name label, and a full-width Submit action. Keep validation, nickname autocomplete, and the 12-character limit. Show calculating/saving feedback in the fixed-size action button and announce it through a visually hidden live region. Do not reserve a blank status row below Submit; the bottom gap is the shared dialog padding.
 
 ### Leaderboard
 
