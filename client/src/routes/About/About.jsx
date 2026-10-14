@@ -160,19 +160,15 @@ const AboutWalkthrough = ({ isMobile }) => {
       const viewportHeight = window.innerHeight;
       stepCards.forEach((section, index) => {
         const cardTop = section.firstElementChild.getBoundingClientRect().top;
-        const nextTop = stepCards[index + 1]?.getBoundingClientRect().top;
         const fadeIn =
           (viewportHeight * 0.75 - cardTop) / (viewportHeight * 0.25);
         const fadeOut = cardTop / (viewportHeight * 0.25);
-        // The sticky outgoing card stays at 25vh while the next card enters.
-        // Finish its fade before the next card starts to appear at 75vh.
-        const handoff = nextTop == null ? 1 :
-          (nextTop - viewportHeight * 0.75) / (viewportHeight * 0.25);
         section.style.setProperty(
           '--reveal',
-          Math.max(0, Math.min(1, fadeIn, fadeOut, handoff)),
+          Math.max(0, Math.min(1, fadeIn, fadeOut)),
         );
         if (index === stepCards.length - 1) return;
+        const nextTop = stepCards[index + 1].getBoundingClientRect().top;
 
         const progress = Math.max(
           0,
