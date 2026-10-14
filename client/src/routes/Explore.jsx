@@ -30,7 +30,7 @@ const starMetadata = (star) => {
 };
 
 const Explore = () => {
-  const { hoveredStarId, setSelectedStarId, setSearchTarget } = useStarMap();
+  const { hoveredStarId, selectedStarId, setSelectedStarId, setSearchTarget } = useStarMap();
   const { setStarsDictionary } = useStarData();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState(emptyResults);
@@ -147,7 +147,7 @@ const Explore = () => {
     if (entry.type === 'star') {
       const star = entry.value;
       setStarsDictionary((previous) => ({ ...previous, [star.id]: star }));
-      setSelectedStarId(null);
+      setSelectedStarId(star.id);
       setSearchTarget({ type: 'star', id: star.id, name: starName(star), star });
       setSelectedKey(`star-${star.id}`);
       return;
@@ -196,7 +196,10 @@ const Explore = () => {
     if (activeIndex >= 0) resultRefs.current[activeIndex]?.scrollIntoView?.({ block: 'nearest' });
   }, [activeIndex]);
 
-  useEffect(() => () => setSearchTarget(null), [setSearchTarget]);
+  useEffect(() => () => {
+    setSearchTarget(null);
+    setSelectedStarId(null);
+  }, [setSearchTarget, setSelectedStarId]);
 
   return (
     <div className={styles.explore}>
@@ -293,7 +296,8 @@ const Explore = () => {
           </div>
         )}
       </section>
-      <StarDetails hoveredStarId={hoveredStarId} />
+      <StarDetails hoveredStarId={hoveredStarId} selectedStarId={selectedStarId}
+        onClose={() => setSelectedStarId(null)} />
     </div>
   );
 };

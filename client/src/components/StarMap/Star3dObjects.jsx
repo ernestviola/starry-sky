@@ -34,7 +34,7 @@ const pointerFromEvent = (canvas, event) => {
   );
 };
 
-export const CanvasClick = ({ handleClick, handleInteraction, pickStar }) => {
+export const CanvasClick = ({ handleClick, handleInteraction, pickStar, setSelectedStarId }) => {
   const { gl } = useThree();
 
   useEffect(() => {
@@ -43,6 +43,7 @@ export const CanvasClick = ({ handleClick, handleInteraction, pickStar }) => {
       if (event.sourceCapabilities?.firesTouchEvents) return;
 
       const starId = pickStar(pointerFromEvent(canvas, event));
+      setSelectedStarId?.(starId);
 
       if (starId !== null && starId !== undefined) {
         handleInteraction?.('star');
@@ -52,7 +53,7 @@ export const CanvasClick = ({ handleClick, handleInteraction, pickStar }) => {
 
     canvas.addEventListener('click', handleCanvasClick);
     return () => canvas.removeEventListener('click', handleCanvasClick);
-  }, [gl, handleClick, handleInteraction, pickStar]);
+  }, [gl, handleClick, handleInteraction, pickStar, setSelectedStarId]);
 
   return null;
 };
@@ -415,6 +416,7 @@ const Star3dObjects = ({
         handleClick={handleClick}
         handleInteraction={handleInteraction}
         pickStar={pickStar}
+        setSelectedStarId={setSelectedStarId}
       />
       {enableHover && <StarIndicator indicatorRef={indicatorRingMeshRef} />}
       <SearchTargetTransition

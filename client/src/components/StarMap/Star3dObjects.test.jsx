@@ -28,12 +28,14 @@ describe('CanvasClick', () => {
     const pickStar = vi.fn(() => null);
     const handleClick = vi.fn();
     const handleInteraction = vi.fn();
+    const setSelectedStarId = vi.fn();
 
     render(
       <CanvasClick
         pickStar={pickStar}
         handleClick={handleClick}
         handleInteraction={handleInteraction}
+        setSelectedStarId={setSelectedStarId}
       />,
     );
 
@@ -41,7 +43,16 @@ describe('CanvasClick', () => {
 
     expect(pickStar).toHaveBeenCalledWith(expect.objectContaining({ x: 0, y: 0 }));
     expect(handleClick).toHaveBeenCalledWith(null);
+    expect(setSelectedStarId).toHaveBeenCalledWith(null);
     expect(handleInteraction).not.toHaveBeenCalled();
+  });
+
+  test('selects a picked star for the persistent details view', () => {
+    const setSelectedStarId = vi.fn();
+    render(<CanvasClick pickStar={() => 7} handleClick={vi.fn()}
+      handleInteraction={vi.fn()} setSelectedStarId={setSelectedStarId} />);
+    fireEvent.click(mapMock.canvas, { clientX: 50, clientY: 50 });
+    expect(setSelectedStarId).toHaveBeenCalledWith(7);
   });
 });
 

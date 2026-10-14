@@ -39,9 +39,12 @@ const Play = () => {
   const requestPendingRef = useRef(false);
   const requestControllerRef = useRef(null);
   const clickFeedbackTimeoutRef = useRef(null);
+  const selectionControllersRef = useRef(new Set());
+  const pendingStarIdsRef = useRef(new Set());
 
   useEffect(() => () => {
     requestControllerRef.current?.abort();
+    for (const controller of selectionControllersRef.current) controller.abort();
     window.clearTimeout(clickFeedbackTimeoutRef.current);
     setStarClickFeedback?.(null);
   }, [setStarClickFeedback]);
@@ -75,6 +78,9 @@ const Play = () => {
       setGameFinishedToken(null);
       setName('');
       setLeaderboardId(null);
+      for (const selectionController of selectionControllersRef.current) selectionController.abort();
+      selectionControllersRef.current.clear();
+      pendingStarIdsRef.current.clear();
       window.clearTimeout(clickFeedbackTimeoutRef.current);
       setStarClickFeedback?.(null);
       setStarsFoundDictionary(Object.fromEntries(decoded.starsToFind.map(star =>
@@ -90,19 +96,43 @@ const Play = () => {
     }
   };
 
-  const handleStarClick = useCallback((starId = selectedStarId) => {
-    if (!gameStarted || starId == null || starsFoundDictionary[starId]?.found) return;
+  const handleStarClick = useCallback(async (starId = selectedStarId) => {
+    if (!gameStarted || starId == null || starsFoundDictionary[starId]?.found || pendingStarIdsRef.current.has(starId)) return;
     const isTargetStar = starsFoundDictionary[starId] !== undefined;
     const duration = getMotionDuration('--duration-slow');
-    setStarClickFeedback?.({ starId, status: isTargetStar ? 'correct' : 'incorrect',
-      expiresAt: performance.now() + duration, duration });
-    window.clearTimeout(clickFeedbackTimeoutRef.current);
-    clickFeedbackTimeoutRef.current = window.setTimeout(() => setStarClickFeedback?.(null), duration);
-    if (!isTargetStar) return;
-    setStarsFoundDictionary(prev => prev[starId].found ? prev : {
-      ...prev, [starId]: { ...prev[starId], found: true },
-    });
-  }, [gameStarted, selectedStarId, starsFoundDictionary, setStarClickFeedback]);
+    const showFeedback = (status) => {
+      setStarClickFeedback?.({ starId, status, expiresAt: performance.now() + duration, duration });
+      window.clearTimeout(clickFeedbackTimeoutRef.current);
+      clickFeedbackTimeoutRef.current = window.setTimeout(() => setStarClickFeedback?.(null), duration);
+    };
+    if (!isTargetStar) {
+      showFeedback('incorrect');
+      return;
+    }
+    const controller = new AbortController();
+    selectionControllersRef.current.add(controller);
+    pendingStarIdsRef.current.add(starId);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_STAR_API}api/game/select`, {
+        method: 'POST', signal: controller.signal,
+        headers: { Authorization: `Bearer ${gameToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ starId }),
+      });
+      if (!response.ok) throw new Error('Unable to check that star. Please try again.');
+      const data = await response.json();
+      if (controller.signal.aborted) return;
+      showFeedback(data.found ? 'correct' : 'incorrect');
+      if (data.found) setStarsFoundDictionary(prev => prev[starId]?.found ? prev : {
+        ...prev, [starId]: { ...prev[starId], found: true },
+      });
+      setError('');
+    } catch {
+      if (!controller.signal.aborted) setError('Unable to check that star. Please try again.');
+    } finally {
+      selectionControllersRef.current.delete(controller);
+      pendingStarIdsRef.current.delete(starId);
+    }
+  }, [gameStarted, gameToken, selectedStarId, starsFoundDictionary, setStarClickFeedback]);
 
   useEffect(() => registerClickHandler(handleStarClick), [registerClickHandler, handleStarClick]);
   useEffect(() => registerInteractionHandler(interaction => {
@@ -255,6 +285,7 @@ const Play = () => {
               <SearchList items={starsFoundDictionary} />
             </div>
           </div>
+          {error && <p role='alert' className={styles.gameError}>{error}</p>}
         </section>
       )}
     </div>
