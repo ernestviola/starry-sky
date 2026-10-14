@@ -31,7 +31,14 @@ const Play = () => {
   const [starsFoundDictionary, setStarsFoundDictionary] = useState({});
   const [searchListExpanded, setSearchListExpanded] = useState(true);
   const [hasAutoCollapsedSearchList, setHasAutoCollapsedSearchList] = useState(false);
-  const sheet = useSheetDrag({ expanded: searchListExpanded, setExpanded: setSearchListExpanded, visible: gameStarted });
+  const {
+    panelRef: gamePanelRef,
+    bodyRef: gamePanelBodyRef,
+    previewRef: gamePanelPreviewRef,
+    isMobile: isMobileSheet,
+    consumeDragClick,
+    headerHandlers,
+  } = useSheetDrag({ expanded: searchListExpanded, setExpanded: setSearchListExpanded, visible: gameStarted });
   const dialogGameStartRef = useRef();
   const dialogSubmitScoreRef = useRef();
   const dialogLeaderboardRef = useRef();
@@ -41,6 +48,7 @@ const Play = () => {
   const clickFeedbackTimeoutRef = useRef(null);
   const selectionControllersRef = useRef(new Set());
   const pendingStarIdsRef = useRef(new Set());
+  const foundStarIdsRef = useRef(new Set());
 
   useEffect(() => () => {
     requestControllerRef.current?.abort();
@@ -81,6 +89,7 @@ const Play = () => {
       for (const selectionController of selectionControllersRef.current) selectionController.abort();
       selectionControllersRef.current.clear();
       pendingStarIdsRef.current.clear();
+      foundStarIdsRef.current.clear();
       window.clearTimeout(clickFeedbackTimeoutRef.current);
       setStarClickFeedback?.(null);
       setStarsFoundDictionary(Object.fromEntries(decoded.starsToFind.map(star =>
@@ -95,51 +104,6 @@ const Play = () => {
       if (!controller.signal.aborted) setLoading(false);
     }
   };
-
-  const handleStarClick = useCallback(async (starId = selectedStarId) => {
-    if (!gameStarted || starId == null || starsFoundDictionary[starId]?.found || pendingStarIdsRef.current.has(starId)) return;
-    const isTargetStar = starsFoundDictionary[starId] !== undefined;
-    const duration = getMotionDuration('--duration-slow');
-    const showFeedback = (status) => {
-      setStarClickFeedback?.({ starId, status, expiresAt: performance.now() + duration, duration });
-      window.clearTimeout(clickFeedbackTimeoutRef.current);
-      clickFeedbackTimeoutRef.current = window.setTimeout(() => setStarClickFeedback?.(null), duration);
-    };
-    if (!isTargetStar) {
-      showFeedback('incorrect');
-      return;
-    }
-    const controller = new AbortController();
-    selectionControllersRef.current.add(controller);
-    pendingStarIdsRef.current.add(starId);
-    try {
-      const response = await fetch(`${import.meta.env.VITE_STAR_API}api/game/select`, {
-        method: 'POST', signal: controller.signal,
-        headers: { Authorization: `Bearer ${gameToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ starId }),
-      });
-      if (!response.ok) throw new Error('Unable to check that star. Please try again.');
-      const data = await response.json();
-      if (controller.signal.aborted) return;
-      showFeedback(data.found ? 'correct' : 'incorrect');
-      if (data.found) setStarsFoundDictionary(prev => prev[starId]?.found ? prev : {
-        ...prev, [starId]: { ...prev[starId], found: true },
-      });
-      setError('');
-    } catch {
-      if (!controller.signal.aborted) setError('Unable to check that star. Please try again.');
-    } finally {
-      selectionControllersRef.current.delete(controller);
-      pendingStarIdsRef.current.delete(starId);
-    }
-  }, [gameStarted, gameToken, selectedStarId, starsFoundDictionary, setStarClickFeedback]);
-
-  useEffect(() => registerClickHandler(handleStarClick), [registerClickHandler, handleStarClick]);
-  useEffect(() => registerInteractionHandler(interaction => {
-    if (!sheet.isMobile || !gameStarted || hasAutoCollapsedSearchList || !['drag', 'zoom', 'star'].includes(interaction)) return;
-    setHasAutoCollapsedSearchList(true);
-    setSearchListExpanded(false);
-  }), [gameStarted, hasAutoCollapsedSearchList, registerInteractionHandler, sheet.isMobile]);
 
   const finishGame = useCallback(async () => {
     if (requestPendingRef.current) return;
@@ -170,10 +134,57 @@ const Play = () => {
     }
   }, [gameToken, setStarClickFeedback]);
 
-  useEffect(() => {
-    const stars = Object.values(starsFoundDictionary);
-    if (gameStarted && stars.length > 0 && stars.every(star => star.found)) finishGame();
-  }, [starsFoundDictionary, gameStarted, finishGame]);
+  const handleStarClick = useCallback(async (starId = selectedStarId) => {
+    if (!gameStarted || starId == null || starsFoundDictionary[starId]?.found || pendingStarIdsRef.current.has(starId)) return;
+    const isTargetStar = starsFoundDictionary[starId] !== undefined;
+    const duration = getMotionDuration('--duration-slow');
+    const showFeedback = (status) => {
+      setStarClickFeedback?.({ starId, status, expiresAt: performance.now() + duration, duration });
+      window.clearTimeout(clickFeedbackTimeoutRef.current);
+      clickFeedbackTimeoutRef.current = window.setTimeout(() => setStarClickFeedback?.(null), duration);
+    };
+    if (!isTargetStar) {
+      showFeedback('incorrect');
+      return;
+    }
+    const controller = new AbortController();
+    selectionControllersRef.current.add(controller);
+    pendingStarIdsRef.current.add(starId);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_STAR_API}api/game/select`, {
+        method: 'POST', signal: controller.signal,
+        headers: { Authorization: `Bearer ${gameToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ starId }),
+      });
+      if (!response.ok) throw new Error('Unable to check that star. Please try again.');
+      const data = await response.json();
+      if (controller.signal.aborted) return;
+      showFeedback(data.found ? 'correct' : 'incorrect');
+      if (data.found) {
+        foundStarIdsRef.current.add(String(starId));
+        const isFinalStar = Object.values(starsFoundDictionary).every(
+          (star) => star.found || foundStarIdsRef.current.has(String(star.id)),
+        );
+        setStarsFoundDictionary(prev => prev[starId]?.found ? prev : {
+          ...prev, [starId]: { ...prev[starId], found: true },
+        });
+        if (isFinalStar) finishGame();
+      }
+      setError('');
+    } catch {
+      if (!controller.signal.aborted) setError('Unable to check that star. Please try again.');
+    } finally {
+      selectionControllersRef.current.delete(controller);
+      pendingStarIdsRef.current.delete(starId);
+    }
+  }, [finishGame, gameStarted, gameToken, selectedStarId, starsFoundDictionary, setStarClickFeedback]);
+
+  useEffect(() => registerClickHandler(handleStarClick), [registerClickHandler, handleStarClick]);
+  useEffect(() => registerInteractionHandler(interaction => {
+    if (!isMobileSheet || !gameStarted || hasAutoCollapsedSearchList || !['drag', 'zoom', 'star'].includes(interaction)) return;
+    setHasAutoCollapsedSearchList(true);
+    setSearchListExpanded(false);
+  }), [gameStarted, hasAutoCollapsedSearchList, isMobileSheet, registerInteractionHandler]);
 
   const handleSubmitName = async event => {
     event.preventDefault();
@@ -241,24 +252,24 @@ const Play = () => {
       />}
       {gameStarted && (
         <section
-          ref={sheet.panelRef}
+          ref={gamePanelRef}
           className={styles.gamePanel}
           aria-label='Game status'
         >
           <div
             className={styles.gamePanelHeader}
-            {...sheet.headerHandlers}
-            role={sheet.isMobile ? 'button' : undefined}
-            tabIndex={sheet.isMobile ? 0 : undefined}
-            aria-label={sheet.isMobile ? (searchListExpanded ? 'Collapse stars' : 'Expand stars') : undefined}
-            aria-controls={sheet.isMobile ? 'search-list' : undefined}
-            aria-expanded={sheet.isMobile ? searchListExpanded : undefined}
-            aria-describedby={sheet.isMobile && !searchListExpanded && previewStar ? 'star-preview' : undefined}
+            {...headerHandlers}
+            role={isMobileSheet ? 'button' : undefined}
+            tabIndex={isMobileSheet ? 0 : undefined}
+            aria-label={isMobileSheet ? (searchListExpanded ? 'Collapse stars' : 'Expand stars') : undefined}
+            aria-controls={isMobileSheet ? 'search-list' : undefined}
+            aria-expanded={isMobileSheet ? searchListExpanded : undefined}
+            aria-describedby={isMobileSheet && !searchListExpanded && previewStar ? 'star-preview' : undefined}
             onClick={() => {
-              if (sheet.isMobile && !sheet.consumeDragClick()) toggleSearchList();
+              if (isMobileSheet && !consumeDragClick()) toggleSearchList();
             }}
             onKeyDown={event => {
-              if (sheet.isMobile && ['Enter', ' '].includes(event.key)) {
+              if (isMobileSheet && ['Enter', ' '].includes(event.key)) {
                 event.preventDefault();
                 toggleSearchList();
               }
@@ -269,17 +280,17 @@ const Play = () => {
             <span className={styles.gamePanelCount}>
               {foundStars}/{targetStars.length}
             </span>
-            <div className={styles.gamePanelPreview} aria-hidden={!sheet.isMobile || searchListExpanded}>
-              <div ref={sheet.previewRef} className={styles.gamePanelPreviewContent}>
+            <div className={styles.gamePanelPreview} aria-hidden={!isMobileSheet || searchListExpanded}>
+              <div ref={gamePanelPreviewRef} className={styles.gamePanelPreviewContent}>
                 <span id='star-preview'>{previewStar?.name}</span>
               </div>
             </div>
           </div>
           <div
-            ref={sheet.bodyRef}
+            ref={gamePanelBodyRef}
             className={styles.gamePanelBody}
-            inert={!searchListExpanded && sheet.isMobile ? true : undefined}
-            aria-hidden={!searchListExpanded && sheet.isMobile ? true : undefined}
+            inert={!searchListExpanded && isMobileSheet ? true : undefined}
+            aria-hidden={!searchListExpanded && isMobileSheet ? true : undefined}
           >
             <div className={styles.gamePanelBodyContent}>
               <SearchList items={starsFoundDictionary} />

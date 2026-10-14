@@ -81,6 +81,7 @@ const SearchTargetTransition = ({
     easing: null,
     active: false,
   });
+  const lineRef = useRef(null);
   const targetPositionRef = useRef(new THREE.Vector3());
   const tangentXRef = useRef(new THREE.Vector3());
   const tangentYRef = useRef(new THREE.Vector3());
@@ -111,26 +112,33 @@ const SearchTargetTransition = ({
   }, []);
 
   useEffect(
-    () => () => {
-      line.geometry.dispose();
-      line.material.dispose();
+    () => {
+      lineRef.current = line;
+      return () => {
+        if (lineRef.current === line) lineRef.current = null;
+        line.geometry.dispose();
+        line.material.dispose();
+      };
     },
     [line],
   );
 
   useEffect(() => {
     if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) {
-      animationRef.current.active = false;
-      animationRef.current.sequence = null;
-      line.visible = false;
+      animationRef.current = {
+        ...animationRef.current,
+        active: false,
+        sequence: null,
+      };
+      lineRef.current.visible = false;
       return;
     }
 
     targetPositionRef.current.set(x, y, z).normalize();
 
     if (sequence !== completedSequence || sequence === 0) {
-      animationRef.current.active = false;
-      line.visible = false;
+      animationRef.current = { ...animationRef.current, active: false };
+      lineRef.current.visible = false;
       return;
     }
 
@@ -145,13 +153,13 @@ const SearchTargetTransition = ({
       easing,
       active: duration > 0 || fadeDuration > 0,
     };
-    line.material.opacity = 0.9;
-    line.visible = duration > 0 || fadeDuration > 0;
+    lineRef.current.material.opacity = 0.9;
+    lineRef.current.visible = duration > 0 || fadeDuration > 0;
   }, [completedSequence, line, sequence, x, y, z]);
 
   useFrame(() => {
     const animation = animationRef.current;
-    if (!animation.active || !line.visible) return;
+    if (!animation.active || !lineRef.current.visible) return;
 
     const elapsed = performance.now() - animation.startedAt;
     const shrinkProgress =
@@ -185,7 +193,7 @@ const SearchTargetTransition = ({
       .normalize();
     const tangent = tangentRef.current;
     const point = pointRef.current;
-    const positions = line.geometry.getAttribute('position');
+    const positions = lineRef.current.geometry.getAttribute('position');
     const points = positions.array;
     const cosine = Math.cos(angle);
     const sine = Math.sin(angle);
@@ -208,11 +216,11 @@ const SearchTargetTransition = ({
     }
 
     positions.needsUpdate = true;
-    line.material.opacity =
+    lineRef.current.material.opacity =
       0.9 * (1 - applyEasing(fadeProgress, animation.easing));
     if (fadeProgress >= 1) {
-      animation.active = false;
-      line.visible = false;
+      animationRef.current = { ...animationRef.current, active: false };
+      lineRef.current.visible = false;
     }
   });
 

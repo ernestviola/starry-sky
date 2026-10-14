@@ -27,14 +27,16 @@ const Leaderboard = ({
     page: 1,
   });
 
-  const loadGlobal = useCallback(async (page, leaderboardId) => {
+  const loadGlobal = useCallback(async (page, leaderboardId, initialLoad = false) => {
     requestRef.current?.abort();
     clearTimeout(loadingTimerRef.current);
     const controller = new AbortController();
     requestRef.current = controller;
-    setGlobalLoading(true);
-    setShowLoadingMessage(false);
-    setGlobalError(false);
+    if (!initialLoad) {
+      setGlobalLoading(true);
+      setShowLoadingMessage(false);
+      setGlobalError(false);
+    }
     loadingTimerRef.current = setTimeout(() => {
       if (!controller.signal.aborted) setShowLoadingMessage(true);
     }, 1000);
@@ -72,7 +74,7 @@ const Leaderboard = ({
   }, []);
 
   useEffect(() => {
-    loadGlobal(null, leaderboardId);
+    loadGlobal(null, leaderboardId, true);
     return () => {
       requestRef.current?.abort();
       clearTimeout(loadingTimerRef.current);

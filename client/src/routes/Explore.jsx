@@ -45,6 +45,7 @@ const Explore = () => {
   const searchPanelRef = useRef(null);
   const resultRefs = useRef([]);
   const requestIdRef = useRef(0);
+  const searchFocusSequenceRef = useRef(0);
   const entries = [
     ...results.stars.map((star) => ({ type: 'star', value: star })),
     ...results.constellations.map((constellation) => ({ type: 'constellation', value: constellation })),
@@ -75,12 +76,6 @@ const Explore = () => {
     const trimmedQuery = query.trim();
     const requestId = ++requestIdRef.current;
     if (!trimmedQuery) {
-      setResults(emptyResults());
-      setHasMore(emptyMore());
-      setIsLoading(false);
-      setLoadingMore(null);
-      setError('');
-      setActiveIndex(-1);
       return undefined;
     }
 
@@ -148,19 +143,24 @@ const Explore = () => {
       const star = entry.value;
       setStarsDictionary((previous) => ({ ...previous, [star.id]: star }));
       setSelectedStarId(null);
-      setSearchTarget({ type: 'star', id: star.id, name: starName(star), star });
+      setSearchTarget({ type: 'star', id: star.id, name: starName(star), star, sequence: ++searchFocusSequenceRef.current });
       setSelectedKey(`star-${star.id}`);
       return;
     }
 
     const constellation = entry.value;
     setSelectedStarId(null);
-    setSearchTarget({ type: 'constellation', name: constellation.constellationName, byname: constellation.byname });
+    setSearchTarget({ type: 'constellation', name: constellation.constellationName, byname: constellation.byname, sequence: ++searchFocusSequenceRef.current });
     setSelectedKey(`constellation-${constellation.constellationName}`);
   };
 
   const clearSearch = () => {
     setQuery('');
+    setResults(emptyResults());
+    setHasMore(emptyMore());
+    setIsLoading(false);
+    setLoadingMore(null);
+    setError('');
     setIsResultsOpen(false);
     setActiveIndex(-1);
     setSelectedKey(null);
@@ -211,7 +211,20 @@ const Explore = () => {
             type='search'
             value={query}
             onFocus={() => setIsResultsOpen(true)}
-            onChange={(event) => { setQuery(event.target.value); setSelectedKey(null); setIsResultsOpen(true); }}
+            onChange={(event) => {
+              const nextQuery = event.target.value;
+              setQuery(nextQuery);
+              setSelectedKey(null);
+              setIsResultsOpen(true);
+              if (!nextQuery.trim()) {
+                setResults(emptyResults());
+                setHasMore(emptyMore());
+                setIsLoading(false);
+                setLoadingMore(null);
+                setError('');
+                setActiveIndex(-1);
+              }
+            }}
             onKeyDown={handleSearchKeyDown}
             placeholder='Search stars and constellations'
             autoComplete='off'

@@ -272,8 +272,13 @@ const StarMap = ({
 
   const [viewedFrames, setViewedFrames] = useState(new Set());
   const [zenith, setZenith] = useState([0, 0, 0.1]);
-  const [searchFocusDirection, setSearchFocusDirection] = useState(null);
-  const [searchFocusSequence, setSearchFocusSequence] = useState(0);
+  const [resolvedSearchFocus, setResolvedSearchFocus] = useState(null);
+  const searchFocusSequence = searchTarget?.type === 'star' ? searchTarget.sequence : 0;
+  const searchFocusDirection = searchTarget?.type === 'star'
+    ? getStarPosition(searchTarget.star.decrad, searchTarget.star.rarad)
+    : searchTarget?.type === 'constellation' && resolvedSearchFocus?.sequence === searchTarget.sequence
+      ? resolvedSearchFocus.direction
+      : null;
   const [completedSearchFocusSequence, setCompletedSearchFocusSequence] = useState(0);
   const { setStarsDictionary, setConstellationLinesDictionary } = useStarData();
 
@@ -284,24 +289,16 @@ const StarMap = ({
   }, []);
 
   useEffect(() => {
-    if (!searchTarget) {
-      setSearchFocusDirection(null);
-      return undefined;
-    }
+    if (!searchTarget) return undefined;
 
     if (searchTarget.type === 'star') {
-      const { decrad, rarad } = searchTarget.star;
-      const { x, y, z } = getStarPosition(decrad, rarad);
       setStarsDictionary((previous) => ({
         ...previous,
         [searchTarget.star.id]: searchTarget.star,
       }));
-      setSearchFocusDirection({ x, y, z });
-      setSearchFocusSequence((sequence) => sequence + 1);
       return undefined;
     }
 
-    setSearchFocusDirection(null);
     const controller = new AbortController();
     const fetchConstellation = async () => {
       try {
@@ -329,7 +326,10 @@ const StarMap = ({
         }
         if (seen.size > 0) {
           center.normalize();
-          setSearchFocusDirection({ x: center.x, y: center.y, z: center.z });
+          setResolvedSearchFocus({
+            sequence: searchTarget.sequence,
+            direction: { x: center.x, y: center.y, z: center.z },
+          });
         }
       } catch (error) {
         if (!controller.signal.aborted) console.error(error);
