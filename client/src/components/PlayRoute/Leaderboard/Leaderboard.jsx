@@ -142,7 +142,7 @@ const Leaderboard = ({
           disabled={starting || globalLoading}
           onClick={handleStartGame}
         >
-          {starting ? 'Starting…' : 'Play again'} <BiRefresh size={16} className={styles.icon} />
+          Play again <BiRefresh size={16} className={styles.icon} />
         </button>
       </div>
     </Dialog>

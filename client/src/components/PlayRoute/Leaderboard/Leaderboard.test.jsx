@@ -100,6 +100,13 @@ test('retry calls the expected game start behavior', async () => {
   expect(handleStartGame).toHaveBeenCalledOnce();
 });
 
+test('keeps the replay label steady while a game start is pending', () => {
+  renderLeaderboard({ starting: true });
+
+  expect(screen.getByRole('button', { name: /Play again/, hidden: true })).toBeDisabled();
+  expect(screen.queryByText('Starting…')).not.toBeInTheDocument();
+});
+
 test('has no rows before the leaderboard fetch resolves', () => {
   fetch.mockReturnValueOnce(new Promise(() => {}));
   renderLeaderboard();

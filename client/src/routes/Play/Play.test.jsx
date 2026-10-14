@@ -259,8 +259,8 @@ describe('Play results and request recovery', () => {
     vi.stubGlobal('fetch', vi.fn(() => new Promise(done => { resolve = done; })));
     render(<Play />);
     fireEvent.click(screen.getByRole('button', { name: 'Start', exact: true }));
-    expect(screen.getByRole('button', { name: 'Starting…' })).toBeDisabled();
-    fireEvent.click(screen.getByRole('button', { name: 'Starting…' }));
+    expect(screen.getByRole('button', { name: 'Start', exact: true })).toBeDisabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Start', exact: true }));
     expect(fetch).toHaveBeenCalledOnce();
     await act(async () => resolve({ ok: false }));
     expect(screen.getByRole('alert')).toHaveTextContent('Unable to start');
