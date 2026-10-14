@@ -15,47 +15,10 @@
   background: transparent;
   color: var(--color-accent);
   font-family: var(--font-heading);
-  font-size: 1.4rem;
+  font-size: var(--font-size-sm);
   cursor: pointer;
 }
 
 .secondaryButton:hover {
   text-decoration: underline;
 }
-
-/* Blocking game panels share the game drawer's outline: accent border, card radius, violet glow. */
-.gameStart {
-  box-shadow: var(--shadow-overlay), var(--shadow-accent);
-}
-
-@media (max-width: 600px) {
-  /* Match the mobile game drawer: edge-to-edge sheet with rounded top corners. */
-  .gameStart {
-    border: var(--border-width) solid var(--color-accent);
-    border-bottom: 0;
-    border-radius: var(--radius-card) var(--radius-card) 0 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .gameStart {
-    animation: none;
-  }
-}
-
-/* @media (max-width: 600px) {
-  .heroActions {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .heroActions p {
-    flex: 0 1 auto;
-    min-width: 0;
-    width: 100%;
-  }
-
-  .heroActions a {
-    align-self: flex-start;
-  }
-} */

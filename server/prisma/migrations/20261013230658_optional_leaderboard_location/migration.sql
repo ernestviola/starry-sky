@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Leaderboard" ALTER COLUMN "geoLat" DROP NOT NULL,
+ALTER COLUMN "geoLong" DROP NOT NULL;

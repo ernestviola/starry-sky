@@ -75,3 +75,42 @@ describe('POST /api/game/submit/name', () => {
     },
   );
 });
+
+describe('score submission without location', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  test.each([
+    ['missing coordinates', {}, null, null],
+    ['zero coordinates', { latitude: 0, longitude: 0 }, 0, 0],
+  ])('saves %s', async (_label, coordinates, geoLat, geoLong) => {
+    prismaMock.leaderboard.create.mockResolvedValue({ id: 43 });
+    const token = jwt.sign({ totalTime: 53255 }, process.env.PASSPORT_JS_SECRET);
+
+    const response = await request(app)
+      .post('/api/game/submit/name')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Ernest', ...coordinates })
+      .expect(201);
+
+    expect(response.body).toEqual({ success: true, leaderboardId: 43 });
+    expect(prismaMock.leaderboard.create).toHaveBeenCalledWith({
+      data: { name: 'Ernest', totalTimeMiliseconds: 53255, geoLat, geoLong },
+    });
+  });
+
+  test('returns an error response when persistence fails', async () => {
+    const log = jest.spyOn(console, 'log').mockImplementation(() => {});
+    prismaMock.leaderboard.create.mockRejectedValue(new Error('Database unavailable'));
+    const token = jwt.sign({ totalTime: 53255 }, process.env.PASSPORT_JS_SECRET);
+    try {
+      const response = await request(app)
+        .post('/api/game/submit/name')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ name: 'Ernest' })
+        .expect(500);
+      expect(response.body).toEqual({ message: 'Internal server error' });
+    } finally {
+      log.mockRestore();
+    }
+  });
+});

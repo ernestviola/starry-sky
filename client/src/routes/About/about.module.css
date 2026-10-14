@@ -420,6 +420,12 @@
     width: 100%;
   }
 
+  .stepCard,
+  .explorePanel {
+    max-width: 40rem;
+    margin-inline: auto;
+  }
+
   .stepCard {
     position: fixed;
     top: auto;

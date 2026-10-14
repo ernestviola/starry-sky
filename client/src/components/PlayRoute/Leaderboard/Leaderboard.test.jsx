@@ -89,10 +89,11 @@ test('loads the next page when the next button is clicked', async () => {
   expect(requestUrl.searchParams.get('page')).toBe('2');
 });
 
-test('retry calls the expected game start behavior', () => {
+test('retry calls the expected game start behavior', async () => {
   const handleStartGame = vi.fn();
   renderLeaderboard({ handleStartGame });
 
+  await waitFor(() => expect(screen.getByTitle('retry')).toBeEnabled());
   fireEvent.click(screen.getByTitle('retry'));
 
   expect(handleStartGame).toHaveBeenCalledOnce();
