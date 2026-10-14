@@ -5,8 +5,6 @@ import { useStarData } from '../../contexts/StarDataContext.jsx';
 
 const StarDetails = ({
   hoveredStarId,
-  selectedStarId,
-  onClose,
 }) => {
   const { starsDictionary } = useStarData();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -60,24 +58,19 @@ const StarDetails = ({
     return () => clearTimeout(timeout);
   }, [hoveredStarId, isPointerOverMap, displayedStarId]);
 
-  const selectedStarData = selectedStarId != null ? starsDictionary[selectedStarId] : null;
-  const starId = selectedStarData ? selectedStarId : displayedStarId;
-  const starData = starId != null ? starsDictionary[starId] : null;
+  const starId = displayedStarId;
+  const starData = starId ? starsDictionary[starId] : null;
   if (!starData) return null;
   const identifier = starData.hip ? ['HIP', starData.hip] : ['ID', starData.id];
-  const persistent = Boolean(selectedStarData);
 
   return (
     <div
       ref={cardRef}
-      className={`${styles.container} ${persistent ? styles.selected :
-        isExiting ? styles.fadeOut : styles.fadeIn}`}
-      style={persistent ? undefined : { left: mousePosition.x, top: mousePosition.y }}
-      role={persistent ? 'region' : undefined}
-      aria-label={persistent ? 'Selected star details' : undefined}
+      className={`${styles.container} ${
+        isExiting ? styles.fadeOut : styles.fadeIn
+      }`}
+      style={{ left: mousePosition.x, top: mousePosition.y }}
     >
-      {persistent && <button className={styles.close} type='button' onClick={onClose}
-        aria-label='Close star details'>×</button>}
       <p className={styles.data}><span>{identifier[0]}</span>{identifier[1]}</p>
       {starData.proper && (
         <p className={styles.data}><span>NAME</span>{starData.proper}</p>
