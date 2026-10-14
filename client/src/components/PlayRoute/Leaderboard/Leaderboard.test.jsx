@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, vi } from 'vitest';
 import Leaderboard from './Leaderboard.jsx';
 
@@ -32,6 +32,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
 });
@@ -111,6 +112,23 @@ test('renders the returned leaderboard data after fetch', async () => {
 
   expect(await screen.findByText('Ada')).toBeInTheDocument();
   expect(screen.getByText('1.23s')).toBeInTheDocument();
+  expect(screen.queryByText('Loading leaderboard…')).not.toBeInTheDocument();
+});
+
+test('shows loading text only after a request lasts one second', async () => {
+  let resolveRequest;
+  fetch.mockReturnValueOnce(new Promise((resolve) => { resolveRequest = resolve; }));
+  vi.useFakeTimers();
+  renderLeaderboard();
+
+  expect(screen.queryByText('Loading leaderboard…')).not.toBeInTheDocument();
+  await act(async () => { await vi.advanceTimersByTimeAsync(999); });
+  expect(screen.queryByText('Loading leaderboard…')).not.toBeInTheDocument();
+  await act(async () => { await vi.advanceTimersByTimeAsync(1); });
+  expect(screen.getByText('Loading leaderboard…')).toBeInTheDocument();
+
+  await act(async () => { resolveRequest(responseFor(leaderboard)); });
+  expect(screen.queryByText('Loading leaderboard…')).not.toBeInTheDocument();
 });
 
 test('does not crash when the leaderboard fetch fails', async () => {

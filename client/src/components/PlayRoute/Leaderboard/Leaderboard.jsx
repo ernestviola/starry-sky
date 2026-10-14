@@ -17,7 +17,9 @@ const Leaderboard = ({
   startError,
 }) => {
   const [globalLoading, setGlobalLoading] = useState(true);
+  const [showLoadingMessage, setShowLoadingMessage] = useState(false);
   const requestRef = useRef(null);
+  const loadingTimerRef = useRef(null);
   const [globalError, setGlobalError] = useState(false);
 
   const [globalLeaderboardData, setGlobalLeaderboardData] = useState({
@@ -27,10 +29,15 @@ const Leaderboard = ({
 
   const loadGlobal = useCallback(async (page, leaderboardId) => {
     requestRef.current?.abort();
+    clearTimeout(loadingTimerRef.current);
     const controller = new AbortController();
     requestRef.current = controller;
     setGlobalLoading(true);
+    setShowLoadingMessage(false);
     setGlobalError(false);
+    loadingTimerRef.current = setTimeout(() => {
+      if (!controller.signal.aborted) setShowLoadingMessage(true);
+    }, 1000);
 
     try {
       const url = new URL(
@@ -56,13 +63,20 @@ const Leaderboard = ({
     } catch {
       if (!controller.signal.aborted) setGlobalError(true);
     } finally {
-      if (!controller.signal.aborted) setGlobalLoading(false);
+      if (!controller.signal.aborted) {
+        clearTimeout(loadingTimerRef.current);
+        setGlobalLoading(false);
+        setShowLoadingMessage(false);
+      }
     }
   }, []);
 
   useEffect(() => {
     loadGlobal(null, leaderboardId);
-    return () => requestRef.current?.abort();
+    return () => {
+      requestRef.current?.abort();
+      clearTimeout(loadingTimerRef.current);
+    };
   }, [leaderboardId, loadGlobal]);
 
   return (
@@ -91,7 +105,7 @@ const Leaderboard = ({
             </div>
           ))}
         </div>
-        {globalLoading && <p className={styles.feedback} role='status'>Loading leaderboard…</p>}
+        {globalLoading && showLoadingMessage && <p className={styles.feedback} role='status'>Loading leaderboard…</p>}
         {(globalError || startError) && (
           <div className={styles.feedback}>
             <p className={styles.error} role='alert'>{startError || 'Unable to load leaderboard.'}</p>
