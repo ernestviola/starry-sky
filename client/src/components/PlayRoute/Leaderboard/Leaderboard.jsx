@@ -30,6 +30,7 @@ const Leaderboard = ({
   const fetchGlobal = useCallback(async (page, leaderboardId, signal) => {
     const url = new URL(
       `${import.meta.env.VITE_STAR_API}api/game/leaderboard/global`,
+      window.location.origin,
     );
     if (page) url.searchParams.set('page', page);
     if (leaderboardId) url.searchParams.set('leaderboardId', leaderboardId);

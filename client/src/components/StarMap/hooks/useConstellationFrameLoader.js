@@ -14,6 +14,7 @@ const useConstellationFrameLoader = () => {
       try {
         const url = new URL(
           `${import.meta.env.VITE_STAR_API}api/constellations/frame`,
+          window.location.origin,
         );
         url.searchParams.append('frames', Array.from(frames).join(','));
         url.searchParams.append(

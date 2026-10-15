@@ -12,7 +12,10 @@ const emptyResults = () => ({ stars: [], constellations: [] });
 const emptyMore = () => ({ stars: false, constellations: false });
 
 const apiUrl = (path, query, offset = 0) => {
-  const url = new URL(`${import.meta.env.VITE_STAR_API}api/${path}`);
+  const url = new URL(
+    `${import.meta.env.VITE_STAR_API}api/${path}`,
+    window.location.origin,
+  );
   url.searchParams.set('q', query);
   url.searchParams.set('offset', String(offset));
   return url;

@@ -304,6 +304,7 @@ const StarMap = ({
       try {
         const url = new URL(
           `${import.meta.env.VITE_STAR_API}api/constellations/lookup/${encodeURIComponent(searchTarget.name)}`,
+          window.location.origin,
         );
         const response = await fetch(url, { signal: controller.signal });
         if (!response.ok) throw new Error('Could not load constellation lines.');

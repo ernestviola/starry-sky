@@ -14,7 +14,10 @@ const useStarFrameLoader = () => {
   const loadStarFrames = useCallback(
     async (frames) => {
       try {
-        const url = new URL(`${import.meta.env.VITE_STAR_API}api/stars/frame`);
+        const url = new URL(
+          `${import.meta.env.VITE_STAR_API}api/stars/frame`,
+          window.location.origin,
+        );
         url.searchParams.append('frames', Array.from(frames).join(','));
         const response = await fetch(url.toString());
 
