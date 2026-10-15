@@ -24,17 +24,19 @@ const app = express();
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS.'));
-      }
-    },
-  }),
-);
+if (configuredOrigin) {
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS.'));
+        }
+      },
+    }),
+  );
+}
 
 app.use(passport.initialize());
 
@@ -42,6 +44,19 @@ app.use(passport.initialize());
 app.use('/api/stars', starRouter);
 app.use('/api/constellations', constellationRouter);
 app.use('/api/game', gameRouter);
+
+// The production container serves the Vite build from the same origin as the API.
+// Same-origin requests do not need CORS headers, so CORS remains enabled only for
+// local development or a separately configured frontend origin.
+if (process.env.NODE_ENV === 'production') {
+  const staticDir = new URL('../client/dist/', import.meta.url);
+  app.use(express.static(staticDir.pathname));
+  app.get('/{*path}', (req, res, next) => {
+    res.sendFile(new URL('../client/dist/index.html', import.meta.url).pathname, (error) => {
+      if (error) next(error);
+    });
+  });
+}
 
 // Error Handling
 app.use((error, req, res, next) => {
