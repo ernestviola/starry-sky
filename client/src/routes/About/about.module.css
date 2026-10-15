@@ -128,34 +128,18 @@
   z-index: 1;
   width: min(100%, 52ch);
   padding: var(--space-5);
-  border: var(--border-width) solid var(--color-border);
+  border: var(--border-width) solid transparent;
   border-radius: var(--radius-card);
-  background: var(--color-panel);
+  background:
+    linear-gradient(var(--color-panel), var(--color-panel)) padding-box,
+    conic-gradient(
+        from 0deg,
+        var(--color-accent) 0deg calc(var(--border-progress, 0) * 180deg),
+        var(--color-border) 0deg calc(360deg - var(--border-progress, 0) * 180deg),
+        var(--color-accent) 0deg
+      )
+      border-box;
   box-shadow: var(--shadow-panel);
-}
-
-.stepCard::after {
-  position: absolute;
-  z-index: 2;
-  inset: calc(-1 * var(--border-width));
-  content: '';
-  pointer-events: none;
-  border-radius: inherit;
-  background: conic-gradient(
-    from 0deg,
-    var(--color-accent) 0deg calc(var(--border-progress) * 180deg),
-    transparent 0deg calc(360deg - var(--border-progress) * 180deg),
-    var(--color-accent) 0deg
-  );
-  padding: var(--border-width);
-  mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  mask-composite: exclude;
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
 }
 
 .stepCard h2 {
@@ -533,10 +517,6 @@
   }
 
   .stepEquation {
-    display: none;
-  }
-
-  .stepCard::after {
     display: none;
   }
 
