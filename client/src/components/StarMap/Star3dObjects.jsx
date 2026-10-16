@@ -237,11 +237,11 @@ const Star3dObjects = ({
     if (droppedStars.length > 0 && starDiagnosticsEnabled) {
       console.warn(
         '[star-buffer-diagnostic] Stars dropped while inserting a batch',
-        getStarBufferDropReport(droppedStars, {
+        JSON.stringify(getStarBufferDropReport(droppedStars, {
           bufferCount: nextIndexRef.current,
           maxStars: MAX_STARS,
           pendingStarCount: pendingStars.length,
-        }),
+        })),
       );
     }
 
@@ -269,7 +269,13 @@ const Star3dObjects = ({
     if (pendingStars.length > 0) {
       consumePendingStars?.(pendingStars.length);
     }
-  }, [starsDictionary, pendingStars, consumePendingStars, searchTarget]);
+  }, [
+    starsDictionary,
+    pendingStars,
+    consumePendingStars,
+    searchTarget,
+    starDiagnosticsEnabled,
+  ]);
 
   const visitedStarManager = (starId) => {
     const visitedStars = visitedStarsRef.current;
@@ -381,25 +387,22 @@ const Star3dObjects = ({
       const bufferIndex = idToIndexRef.current.get(starId);
       const colorOffset = bufferIndex === undefined ? -1 : bufferIndex * 3;
 
+      const diagnostic = getStarRenderDiagnostic(starsDictionary[starId], {
+        bufferIndex,
+        drawCount: geometryRef.current?.drawRange.count ?? 0,
+        bufferCapacity: MAX_STARS,
+        size: bufferIndex === undefined ? null : sizeRef.current[bufferIndex],
+        fade: bufferIndex === undefined ? null : fadeRef.current[bufferIndex],
+        globalOpacity:
+          starMaterialRef.current?.uniforms.globalOpacity.value ?? null,
+        color:
+          colorOffset < 0
+            ? null
+            : Array.from(colorRef.current.slice(colorOffset, colorOffset + 3)),
+      });
       console.info(
         '[star-render-diagnostic] Hovered star render state',
-        getStarRenderDiagnostic(starsDictionary[starId], {
-          bufferIndex,
-          drawCount: geometryRef.current?.drawRange.count ?? 0,
-          bufferCapacity: MAX_STARS,
-          size:
-            bufferIndex === undefined ? null : sizeRef.current[bufferIndex],
-          fade:
-            bufferIndex === undefined ? null : fadeRef.current[bufferIndex],
-          globalOpacity:
-            starMaterialRef.current?.uniforms.globalOpacity.value ?? null,
-          color:
-            colorOffset < 0
-              ? null
-              : Array.from(
-                  colorRef.current.slice(colorOffset, colorOffset + 3),
-                ),
-        }),
+        JSON.stringify(diagnostic),
       );
       lastDiagnosedHoveredStarIdRef.current = starId;
     }
