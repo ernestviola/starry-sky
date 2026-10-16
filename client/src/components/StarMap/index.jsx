@@ -13,6 +13,7 @@ import useStarFrameLoader from './hooks/useStarFrameLoader.js';
 import useConstellationFrameLoader from './hooks/useConstellationFrameLoader.js';
 import { useStarData } from '../../contexts/StarDataContext.jsx';
 import { loadConstellationCatalog } from './staticCatalog.js';
+import { attachZoomControls } from './zoomControls.js';
 
 const ConstellationAnglesBasedOnCamera = ({ setDec, setRa }) => {
   const lastRa = useRef(null);
@@ -51,22 +52,10 @@ const ConstellationAnglesBasedOnCamera = ({ setDec, setRa }) => {
 };
 
 const FovZoomControls = () => {
-  const { camera, pointer, gl } = useThree();
+  const { camera, gl } = useThree();
 
   useEffect(() => {
-    const handleWheel = (e) => {
-      e.preventDefault();
-      const newFov = THREE.MathUtils.clamp(
-        camera.fov + e.deltaY * 0.05,
-        10,
-        90,
-      );
-      camera.fov = newFov;
-      camera.updateProjectionMatrix();
-    };
-
-    gl.domElement.addEventListener('wheel', handleWheel, { passive: false });
-    return () => gl.domElement.removeEventListener('wheel', handleWheel);
+    return attachZoomControls(gl.domElement, camera);
   }, [camera, gl]);
 
   return null;
@@ -111,28 +100,47 @@ const FrustumRadiusTracker = ({ setRadius }) => {
 
 const MapInteraction = ({ handleInteraction }) => {
   const { gl } = useThree();
-  const gestureRef = useRef(null);
+  const pointersRef = useRef(new Map());
+  const pinchReportedRef = useRef(false);
 
   useEffect(() => {
     const canvas = gl.domElement;
     const handlePointerDown = (event) => {
-      gestureRef.current = {
-        pointerId: event.pointerId,
+      pointersRef.current.set(event.pointerId, {
         x: event.clientX,
         y: event.clientY,
         moved: false,
-      };
+        pointerType: event.pointerType,
+      });
     };
     const handlePointerMove = (event) => {
-      const gesture = gestureRef.current;
-      if (!gesture || gesture.pointerId !== event.pointerId) return;
-      if (Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) > 10) {
-        if (!gesture.moved) handleInteraction('drag');
-        gesture.moved = true;
+      const pointer = pointersRef.current.get(event.pointerId);
+      if (!pointer) return;
+      const isPinching = [...pointersRef.current.values()].filter(
+        ({ pointerType }) => pointerType === 'touch',
+      ).length >= 2;
+      if (isPinching) {
+        if (!pinchReportedRef.current) {
+          handleInteraction('zoom');
+          pinchReportedRef.current = true;
+        }
+        pointer.moved = true;
+        return;
+      }
+      if (Math.hypot(event.clientX - pointer.x, event.clientY - pointer.y) > 10) {
+        if (!pointer.moved) handleInteraction('drag');
+        pointer.moved = true;
       }
     };
-    const handlePointerUp = () => {
-      gestureRef.current = null;
+    const handlePointerUp = (event) => {
+      pointersRef.current.delete(event.pointerId);
+      if (
+        [...pointersRef.current.values()].filter(
+          ({ pointerType }) => pointerType === 'touch',
+        ).length < 2
+      ) {
+        pinchReportedRef.current = false;
+      }
     };
     const handleWheel = () => handleInteraction('zoom');
 
@@ -442,15 +450,15 @@ const StarMap = ({
       <Canvas
         camera={{ position: [0, 0, 0], fov: 50 }}
         onCreated={() => requestAnimationFrame(() => requestAnimationFrame(() => setCanvasReady(true)))}
-        style={{ opacity: canvasReady ? 1 : 0, transition: 'opacity 500ms ease' }}
+        style={{ opacity: canvasReady ? 1 : 0, transition: 'opacity 500ms ease', touchAction: 'none' }}
       >
         <color attach='background' args={['#000000']} />
         {/* <ModelGrid /> */}
         <CameraControls
           ref={orbitControlRef}
           smoothTime={0.5}
-          azimuthRotateSpeed={0.3}
-          polarRotateSpeed={0.3}
+          azimuthRotateSpeed={-0.3}
+          polarRotateSpeed={-0.3}
           minDistance={0.01}
           maxDistance={0.01}
         />
