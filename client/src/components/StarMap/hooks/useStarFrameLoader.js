@@ -95,8 +95,14 @@ const useStarFrameLoader = () => {
     [setReceivedHealpixIds, setStarsDictionary],
   );
 
-  const consumePendingStars = useCallback((count) => {
-    setPendingStars((prev) => prev.slice(count));
+  const consumePendingStars = useCallback((starIds) => {
+    const acknowledgedStarIds = new Set(starIds);
+    setPendingStars((prev) => {
+      const remaining = prev.filter(
+        (star) => !acknowledgedStarIds.has(star.id),
+      );
+      return remaining.length === prev.length ? prev : remaining;
+    });
   }, []);
 
   return {

@@ -181,6 +181,8 @@ const Star3dObjects = ({
 
     let changed = false;
     const droppedStars = [];
+    const pendingStarIds = new Set(pendingStars.map((star) => star.id));
+    const acknowledgedPendingStarIds = new Set();
     const color = new THREE.Color();
     const focusedStar =
       searchTarget?.type === 'star' ? searchTarget.star : null;
@@ -194,7 +196,11 @@ const Star3dObjects = ({
     starBufferInitializedRef.current = true;
 
     for (const star of starsToProcess) {
-      if (idToIndex.has(star.id)) continue;
+      const isPendingStar = pendingStarIds.has(star.id);
+      if (idToIndex.has(star.id)) {
+        if (isPendingStar) acknowledgedPendingStarIds.add(star.id);
+        continue;
+      }
       if (!Number.isFinite(star.decrad) || !Number.isFinite(star.rarad))
         continue;
 
@@ -232,6 +238,7 @@ const Star3dObjects = ({
       idToIndex.set(star.id, index);
       nextIndexRef.current += 1;
       changed = true;
+      if (isPendingStar) acknowledgedPendingStarIds.add(star.id);
     }
 
     if (droppedStars.length > 0 && starDiagnosticsEnabled) {
@@ -266,8 +273,8 @@ const Star3dObjects = ({
       }
     }
 
-    if (pendingStars.length > 0) {
-      consumePendingStars?.(pendingStars.length);
+    if (acknowledgedPendingStarIds.size > 0) {
+      consumePendingStars?.([...acknowledgedPendingStarIds]);
     }
   }, [
     starsDictionary,
