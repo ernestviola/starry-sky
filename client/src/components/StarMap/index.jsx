@@ -1,7 +1,7 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Line, Html, Grid, CameraControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 
 import { ang2vec, query_disc_inclusive_ring } from '@hscmap/healpix';
 import { nside } from './config.js';
@@ -261,11 +261,25 @@ const StarMap = ({
   const [zenith, setZenith] = useState([0, 0, 0.1]);
   const [resolvedSearchFocus, setResolvedSearchFocus] = useState(null);
   const searchFocusSequence = searchTarget?.type === 'star' ? searchTarget.sequence : 0;
-  const searchFocusDirection = searchTarget?.type === 'star'
-    ? getStarPosition(searchTarget.star.decrad, searchTarget.star.rarad)
-    : searchTarget?.type === 'constellation' && resolvedSearchFocus?.sequence === searchTarget.sequence
-      ? resolvedSearchFocus.direction
-      : null;
+  const searchFocusDirection = useMemo(() => {
+    if (searchTarget?.type === 'star') {
+      return getStarPosition(searchTarget.star.decrad, searchTarget.star.rarad);
+    }
+    if (
+      searchTarget?.type === 'constellation' &&
+      resolvedSearchFocus?.sequence === searchTarget.sequence
+    ) {
+      return resolvedSearchFocus.direction;
+    }
+    return null;
+  }, [
+    searchTarget?.type,
+    searchTarget?.sequence,
+    searchTarget?.star?.decrad,
+    searchTarget?.star?.rarad,
+    resolvedSearchFocus?.sequence,
+    resolvedSearchFocus?.direction,
+  ]);
   const [completedSearchFocusSequence, setCompletedSearchFocusSequence] = useState(0);
   const { setStarsDictionary, setConstellationLinesDictionary } = useStarData();
 
