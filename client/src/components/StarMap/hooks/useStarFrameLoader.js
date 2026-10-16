@@ -1,5 +1,22 @@
 import { useCallback, useRef, useState } from 'react';
+import { ang2pix_nest, pix2ang_ring } from '@hscmap/healpix';
 import { useStarData } from '../../../contexts/StarDataContext.jsx';
+import { nside } from '../config.js';
+import { loadStarFrameBundle } from '../staticCatalog.js';
+
+const STAR_BUNDLE_NSIDE = 4;
+
+const fetchStarFramesFromApi = async (frames) => {
+  const url = new URL(
+    `${import.meta.env.VITE_STAR_API}api/stars/frame`,
+    window.location.origin,
+  );
+  url.searchParams.append('frames', frames.join(','));
+  const response = await fetch(url.toString());
+  if (!response.ok) throw new Error('Problems fetching star data.');
+  const data = await response.json();
+  return data.stars;
+};
 
 const useStarFrameLoader = () => {
   const {
@@ -14,22 +31,47 @@ const useStarFrameLoader = () => {
   const loadStarFrames = useCallback(
     async (frames) => {
       try {
-        const url = new URL(
-          `${import.meta.env.VITE_STAR_API}api/stars/frame`,
-          window.location.origin,
-        );
-        url.searchParams.append('frames', Array.from(frames).join(','));
-        const response = await fetch(url.toString());
+        const requestedFrames = new Set(frames);
+        const bundleIds = new Set([...requestedFrames].map((frameId) => {
+          const { theta, phi } = pix2ang_ring(nside, frameId);
+          return ang2pix_nest(STAR_BUNDLE_NSIDE, theta, phi);
+        }));
+        const loadedFrames = new Set();
+        const starsByFrame = new Map();
 
-        if (!response.ok) {
-          throw new Error('Problems fetching star data.');
+        await Promise.all(
+          [...bundleIds].map(async (bundleId) => {
+            try {
+              const bundle = await loadStarFrameBundle(bundleId);
+              for (const frameId of requestedFrames) {
+                if (!Object.hasOwn(bundle.frames, frameId)) continue;
+                loadedFrames.add(frameId);
+                starsByFrame.set(frameId, bundle.frames[frameId]);
+              }
+            } catch {
+              // Missing or unreadable static bundles are retried through the API below.
+            }
+          }),
+        );
+
+        const missingFrames = [...requestedFrames].filter(
+          (frameId) => !loadedFrames.has(frameId),
+        );
+        if (missingFrames.length > 0) {
+          const fallbackStars = await fetchStarFramesFromApi(missingFrames);
+          for (const frameId of missingFrames) loadedFrames.add(frameId);
+          for (const star of fallbackStars) {
+            const frameStars = starsByFrame.get(star.healpixId) ?? [];
+            frameStars.push(star);
+            starsByFrame.set(star.healpixId, frameStars);
+          }
         }
 
-        const data = await response.json();
+        setReceivedHealpixIds((prev) => new Set([...prev, ...loadedFrames]));
 
-        setReceivedHealpixIds((prev) => new Set([...prev, ...frames]));
+        const loadedStars = [...starsByFrame.values()].flat();
 
-        const newStars = data.stars.filter((star) => {
+        const newStars = loadedStars.filter((star) => {
           if (knownStarIdsRef.current.has(star.id)) return false;
           knownStarIdsRef.current.add(star.id);
           return true;
@@ -44,7 +86,7 @@ const useStarFrameLoader = () => {
           });
         }
 
-        return true;
+        return loadedFrames.size === requestedFrames.size;
       } catch (error) {
         console.log(error);
         return false;

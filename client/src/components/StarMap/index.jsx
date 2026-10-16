@@ -12,20 +12,7 @@ import { getStarPosition } from './starPosition.js';
 import useStarFrameLoader from './hooks/useStarFrameLoader.js';
 import useConstellationFrameLoader from './hooks/useConstellationFrameLoader.js';
 import { useStarData } from '../../contexts/StarDataContext.jsx';
-
-const ZenithTargetDirection = ({ zenith }) => {
-  return (
-    <mesh>
-      <Line
-        points={[
-          [0, 0, 0],
-          [zenith[0] * 3, zenith[1] * 3, zenith[2] * 3],
-        ]}
-        color='yellow'
-      />
-    </mesh>
-  );
-};
+import { loadConstellationCatalog } from './staticCatalog.js';
 
 const ConstellationAnglesBasedOnCamera = ({ setDec, setRa }) => {
   const lastRa = useRef(null);
@@ -302,22 +289,33 @@ const StarMap = ({
     const controller = new AbortController();
     const fetchConstellation = async () => {
       try {
-        const url = new URL(
-          `${import.meta.env.VITE_STAR_API}api/constellations/lookup/${encodeURIComponent(searchTarget.name)}`,
-          window.location.origin,
-        );
-        const response = await fetch(url, { signal: controller.signal });
-        if (!response.ok) throw new Error('Could not load constellation lines.');
-        const data = await response.json();
+        let constellationLines;
+        try {
+          const catalog = await loadConstellationCatalog();
+          constellationLines = catalog.constellationLinesByName[searchTarget.name];
+          if (!constellationLines) throw new Error('Constellation is missing from the static catalog.');
+        } catch {
+          const url = new URL(
+            `${import.meta.env.VITE_STAR_API}api/constellations/lookup/${encodeURIComponent(searchTarget.name)}`,
+            window.location.origin,
+          );
+          const response = await fetch(url, { signal: controller.signal });
+          if (!response.ok) throw new Error('Could not load constellation lines.');
+          const data = await response.json();
+          constellationLines = data.constellationLines;
+        }
+
+        if (controller.signal.aborted) return;
+
         setConstellationLinesDictionary((previous) => {
           const next = { ...previous };
-          for (const line of data.constellationLines) next[line.id] = line;
+          for (const line of constellationLines) next[line.id] = line;
           return next;
         });
 
         const center = new THREE.Vector3();
         const seen = new Set();
-        for (const line of data.constellationLines) {
+        for (const line of constellationLines) {
           if (!line.star) continue;
           const pointKey = `${line.star.rarad}:${line.star.decrad}`;
           if (seen.has(pointKey)) continue;
@@ -450,7 +448,6 @@ const StarMap = ({
           onFocusSettled={handleSearchFocusSettled}
         />
         <ConstellationAnglesBasedOnCamera setDec={setDec} setRa={setRa} />
-        <ZenithTargetDirection zenith={zenith} />
         <FovZoomControls />
         <FrustumRadiusTracker setRadius={setRadius} />
         <Star3dObjects

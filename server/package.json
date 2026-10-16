@@ -8,7 +8,8 @@
   "main": "app.js",
   "scripts": {
     "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles",
-    "dev": "node --watch app.js"
+    "dev": "node --watch app.js",
+    "build:static-data": "node utils/buildStaticCatalogData.js"
   },
   "dependencies": {
     "@hscmap/healpix": "^1.4.12",
