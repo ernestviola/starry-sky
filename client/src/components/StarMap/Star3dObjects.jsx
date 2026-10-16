@@ -8,6 +8,10 @@ import SearchTargetTransition from './SearchTargetTransition.jsx';
 import useStarHover from './hooks/useStarHover.js';
 import { getStarPosition } from './starPosition.js';
 import {
+  getStarBufferDropReport,
+  isStarBufferDiagnosticsEnabled,
+} from './starBufferDiagnostics.js';
+import {
   getStarClickIndicatorColor,
   getStarClickIndicatorOpacity,
 } from './starClickIndicator.js';
@@ -173,6 +177,7 @@ const Star3dObjects = ({
     const fades = fadeRef.current;
 
     let changed = false;
+    const droppedStars = [];
     const color = new THREE.Color();
     const focusedStar =
       searchTarget?.type === 'star' ? searchTarget.star : null;
@@ -192,7 +197,7 @@ const Star3dObjects = ({
 
       const index = nextIndexRef.current;
       if (index >= MAX_STARS) {
-        console.warn('Star buffer is full, dropping star', star.id);
+        droppedStars.push(star);
         continue;
       }
 
@@ -224,6 +229,17 @@ const Star3dObjects = ({
       idToIndex.set(star.id, index);
       nextIndexRef.current += 1;
       changed = true;
+    }
+
+    if (droppedStars.length > 0 && isStarBufferDiagnosticsEnabled()) {
+      console.warn(
+        '[star-buffer-diagnostic] Stars dropped while inserting a batch',
+        getStarBufferDropReport(droppedStars, {
+          bufferCount: nextIndexRef.current,
+          maxStars: MAX_STARS,
+          pendingStarCount: pendingStars.length,
+        }),
+      );
     }
 
     if (
