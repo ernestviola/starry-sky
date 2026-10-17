@@ -3,7 +3,7 @@ import * as THREE from 'three';
 const MIN_FOV = 10;
 const MAX_FOV = 90;
 const WHEEL_ZOOM_SENSITIVITY = 0.05;
-const PINCH_ZOOM_SENSITIVITY = WHEEL_ZOOM_SENSITIVITY * 2;
+const PINCH_ZOOM_SENSITIVITY = WHEEL_ZOOM_SENSITIVITY * 4;
 
 const applyFovDelta = (camera, delta) => {
   camera.fov = THREE.MathUtils.clamp(camera.fov + delta, MIN_FOV, MAX_FOV);
