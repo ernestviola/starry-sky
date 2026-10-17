@@ -61,6 +61,21 @@ const FovZoomControls = () => {
   return null;
 };
 
+const useCoarsePointer = () => {
+  const [isCoarsePointer, setIsCoarsePointer] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(pointer: coarse)');
+    const update = () => setIsCoarsePointer(mediaQuery.matches);
+
+    update();
+    mediaQuery.addEventListener('change', update);
+    return () => mediaQuery.removeEventListener('change', update);
+  }, []);
+
+  return isCoarsePointer;
+};
+
 const MAX_QUERY_RADIUS = Math.PI / 2 - 0.001;
 
 const FrustumRadiusTracker = ({ setRadius }) => {
@@ -241,6 +256,7 @@ const StarMap = ({
   enableHover = true,
 }) => {
   const [canvasReady, setCanvasReady] = useState(false);
+  const isCoarsePointer = useCoarsePointer();
   const { constellationLinesDictionary, loadConstellationFrames } =
     useConstellationFrameLoader();
   const {
@@ -457,8 +473,8 @@ const StarMap = ({
         <CameraControls
           ref={orbitControlRef}
           smoothTime={0.5}
-          azimuthRotateSpeed={-0.3}
-          polarRotateSpeed={-0.3}
+          azimuthRotateSpeed={isCoarsePointer ? -0.6 : -0.3}
+          polarRotateSpeed={isCoarsePointer ? -0.6 : -0.3}
           minDistance={0.01}
           maxDistance={0.01}
         />

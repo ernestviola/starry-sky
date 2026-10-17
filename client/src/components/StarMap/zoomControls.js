@@ -3,6 +3,7 @@ import * as THREE from 'three';
 const MIN_FOV = 10;
 const MAX_FOV = 90;
 const WHEEL_ZOOM_SENSITIVITY = 0.05;
+const PINCH_ZOOM_SENSITIVITY = WHEEL_ZOOM_SENSITIVITY * 2;
 
 const applyFovDelta = (camera, delta) => {
   camera.fov = THREE.MathUtils.clamp(camera.fov + delta, MIN_FOV, MAX_FOV);
@@ -40,7 +41,7 @@ export const attachZoomControls = (canvas, camera, onZoom) => {
       // Moving the fingers apart zooms in, just like a negative wheel delta.
       applyFovDelta(
         camera,
-        (previousPinchDistance - distance) * WHEEL_ZOOM_SENSITIVITY,
+        (previousPinchDistance - distance) * PINCH_ZOOM_SENSITIVITY,
       );
       onZoom?.();
     }
